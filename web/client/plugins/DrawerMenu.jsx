@@ -123,7 +123,7 @@ class DrawerMenu extends React.Component {
         items: [],
         toggleMenu: () => {},
         glyph: "1-layer",
-        buttonStyle: "primary",
+        buttonStyle: "success",
         menuOptions: {},
         singleSection: true,
         buttonClassName: "square-button ms-drawer-menu-button",
