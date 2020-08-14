@@ -6,11 +6,11 @@ export const setProjectConfig = projectConfig => ({
     projectConfig: projectConfig
 });
 
-export const getProjectConfig = (projectId)=> {
+export const getProjectConfig = (mapId)=> {
     return (dispatch) => {
-        axios.get(`/projects/api/projects/${projectId}/`).then(
+        axios.get(`/projects/api/maps/${mapId}/`).then(
             response => {
-                dispatch(setProjectConfig(response.data));
+                dispatch(setProjectConfig(response.data.project));
             }
         );
     };

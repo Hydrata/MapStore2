@@ -26,9 +26,19 @@ const style = {
 
 const MenuButton = (props) => {
     const {projection} = props;
-    useEffect(() => { props.getProjectConfig(13); }, []);
+    if (props.mapId) {
+        useEffect(() => {
+            props.getProjectConfig(props.mapId);
+        }, []);
+    } else {
+        useEffect(() => {
+            props.getProjectConfig(props.mapId);
+        });
+    }
     const [updatedProps, setupdatedProps] = useState(props);
-    useEffect(() => { setupdatedProps(props); }, [props]);
+    useEffect(() => {
+        setupdatedProps(props);
+    }, [props]);
     return (
         <div>
             <div style={style}>MenuTime {projection}</div>
@@ -39,6 +49,7 @@ const MenuButton = (props) => {
 
 const mapStateToProps = state => {
     return {
+        mapId: state.map.present.mapId,
         projection: projectionSelector(state),
         projectConfig: state.projectManager.projectConfig,
         getProjectConfig: state.getProjectConfig
