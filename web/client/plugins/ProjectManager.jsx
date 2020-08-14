@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { connect } from 'react-redux';
 import { createPlugin } from '../utils/PluginsUtils';
 
@@ -27,11 +27,12 @@ const style = {
 const MenuButton = (props) => {
     const {projection} = props;
     useEffect(() => { props.getProjectConfig(13); }, []);
+    const [updatedProps, setupdatedProps] = useState(props);
+    useEffect(() => { setupdatedProps(props); }, [props]);
     return (
         <div>
             <div style={style}>MenuTime {projection}</div>
-            <hr />
-            <button style={style} onClick={() => props.getProjectConfig(13)}>Get Project Config</button>
+            <div style={{...style, zIndex: 100000000000, left: 200}}>{updatedProps.projectConfig?.dataset_set[0].mapstore_menu_group.title}</div>
         </div>
     );
 };
