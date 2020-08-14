@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { createPlugin } from '../utils/PluginsUtils';
-// import { changeZoomLevel } from '../../MapStore2/web/client/actions/map';
+
 import { projectionSelector } from '../selectors/map';
-import { projectDetails } from '../../../../../../geonode_mapstore_client/client/js/api';
+import { getProjectConfig } from '../actions/projectManager';
+import projectManager from '../reducers/projectManager';
 
 const style = {
     position: "absolute",
@@ -23,25 +24,33 @@ const style = {
     textAlign: "center"
 };
 
-// const MenuBar = (props) =
-
 const MenuButton = (props) => {
     const {projection} = props;
+    useEffect(() => { props.getProjectConfig(13); }, []);
     return (
-        <div style={style}>MenuTime {projection}</div>
+        <div>
+            <div style={style}>MenuTime {projection}</div>
+            <hr />
+            <button style={style} onClick={() => props.getProjectConfig(13)}>Get Project Config</button>
+        </div>
     );
 };
 
 const mapStateToProps = state => {
     return {
-        projection: projectionSelector(state)
+        projection: projectionSelector(state),
+        projectConfig: state.projectManager.projectConfig,
+        getProjectConfig: state.getProjectConfig
     };
 };
 
-const ProjectManager = connect(
-    mapStateToProps
-)(MenuButton);
+const ProjectManager = connect(mapStateToProps, {
+    getProjectConfig: getProjectConfig
+})(MenuButton);
 
 export default createPlugin('ProjectManager', {
-    component: ProjectManager
+    component: ProjectManager,
+    reducers: {
+        projectManager
+    }
 });
