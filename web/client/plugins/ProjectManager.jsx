@@ -53,7 +53,6 @@ const MenuButton = (props) => {
 
 const mapStateToProps = state => {
     return {
-        // menuGroups: state.projectManager.projectConfig.dataset_set,
         mapId: state.map.present.mapId,
         projection: projectionSelector(state),
         projectConfig: state.projectManager.projectConfig,
