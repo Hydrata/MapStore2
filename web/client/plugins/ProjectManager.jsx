@@ -39,11 +39,14 @@ const MenuButton = (props) => {
     useEffect(() => {
         setupdatedProps(props);
     }, [props]);
+    const buttons = updatedProps.projectConfig?.mapstoremenugroup_set.map(
+            (item) => {
+                const spacing = (item?.id - 1) * 130 + 20;
+                return <button style={{...style, left: spacing }} key={ item?.id }>{ item?.title }</button>;
+            });
     return (
         <div>
-            <button style={{...style, left: 20}}>{updatedProps.projectConfig?.mapstoremenugroup_set[0].title}</button>
-            <button style={{...style, left: 150}}>{updatedProps.projectConfig?.mapstoremenugroup_set[1].title}</button>
-            <button style={{...style, left: 280}}>{updatedProps.projectConfig?.mapstoremenugroup_set[2].title}</button>
+            {buttons}
         </div>
     );
 };
