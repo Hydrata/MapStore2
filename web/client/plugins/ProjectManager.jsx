@@ -25,7 +25,7 @@ const style = {
 };
 
 const MenuButton = (props) => {
-    const {projection} = props;
+    // const {projection} = props;
     if (props.mapId) {
         useEffect(() => {
             props.getProjectConfig(props.mapId);
@@ -41,14 +41,16 @@ const MenuButton = (props) => {
     }, [props]);
     return (
         <div>
-            <div style={style}>MenuTime {projection}</div>
-            <div style={{...style, zIndex: 100000000000, left: 200}}>{updatedProps.projectConfig?.dataset_set[0].mapstore_menu_group.title}</div>
+            <button style={{...style, left: 20}}>{updatedProps.projectConfig?.mapstore_menu_group_set[0]?.title}</button>
+            <button style={{...style, left: 150}}>{updatedProps.projectConfig?.mapstore_menu_group_set[1]?.title}</button>
+            <button style={{...style, left: 280}}>{updatedProps.projectConfig?.mapstore_menu_group_set[2]?.title}</button>
         </div>
     );
 };
 
 const mapStateToProps = state => {
     return {
+        // menuGroups: state.projectManager.projectConfig.dataset_set,
         mapId: state.map.present.mapId,
         projection: projectionSelector(state),
         projectConfig: state.projectManager.projectConfig,
