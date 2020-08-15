@@ -40,8 +40,8 @@ const MenuButton = (props) => {
         setupdatedProps(props);
     }, [props]);
     const buttons = updatedProps.projectConfig?.mapstoremenugroup_set.map(
-            (item) => {
-                const spacing = (item?.id - 1) * 130 + 20;
+            (item, index) => {
+                const spacing = index * 130 + 20;
                 return <button style={{...style, left: spacing }} key={ item?.id }>{ item?.title }</button>;
             });
     return (
