@@ -41,9 +41,9 @@ const MenuButton = (props) => {
     }, [props]);
     return (
         <div>
-            <button style={{...style, left: 20}}>{updatedProps.projectConfig?.mapstore_menu_group_set[0]?.title}</button>
-            <button style={{...style, left: 150}}>{updatedProps.projectConfig?.mapstore_menu_group_set[1]?.title}</button>
-            <button style={{...style, left: 280}}>{updatedProps.projectConfig?.mapstore_menu_group_set[2]?.title}</button>
+            <button style={{...style, left: 20}}>{updatedProps.projectConfig?.mapstoremenugroup_set[0].title}</button>
+            <button style={{...style, left: 150}}>{updatedProps.projectConfig?.mapstoremenugroup_set[1].title}</button>
+            <button style={{...style, left: 280}}>{updatedProps.projectConfig?.mapstoremenugroup_set[2].title}</button>
         </div>
     );
 };
