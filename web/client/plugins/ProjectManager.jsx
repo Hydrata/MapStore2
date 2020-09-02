@@ -10,7 +10,7 @@ const style = {
     position: "absolute",
     background: "blue",
     opacity: 50,
-    zIndex: 1000000,
+    zIndex: 1021,
     top: 10,
     left: 10,
     minWidth: "115px",
@@ -45,9 +45,9 @@ const MenuButton = (props) => {
                 return <button style={{...style, left: spacing }} key={ item?.id }>{ item?.title }</button>;
             });
     return (
-        <div>
+        <span id="project-manager">
             {buttons}
-        </div>
+        </span>
     );
 };
 
