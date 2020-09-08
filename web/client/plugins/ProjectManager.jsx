@@ -8,18 +8,19 @@ import projectManager from '../reducers/projectManager';
 
 const style = {
     position: "absolute",
-    background: "blue",
-    opacity: 50,
+    // background: "blue",
+    // opacity: 50,
     zIndex: 1021,
     top: 10,
-    left: 10,
+    // left: 10,
     minWidth: "115px",
     backgroundColor: "rgba(0,60,136,0.5)",
-    borderColor: "#97b3cd",
+    borderColor: "rgb(255 255 255 / 70%)",
+    borderWidth: "2px",
     padding: "5px 10px",
     fontSize: "12px",
     lineHeight: "1.5",
-    borderRadius: "3px",
+    borderRadius: "4px",
     color: "white",
     textAlign: "center"
 };
@@ -42,7 +43,7 @@ const MenuButton = (props) => {
     const buttons = updatedProps.projectConfig?.mapstoremenugroup_set.map(
             (item, index) => {
                 const spacing = index * 130 + 20;
-                return <button style={{...style, left: spacing }} key={ item?.id }>{ item?.title }</button>;
+                return <button className={"btn"} style={{...style, left: spacing }} key={ item?.id }>{ item?.title }</button>;
             });
     return (
         <span id="project-manager">
