@@ -49,7 +49,7 @@ class Component extends React.Component {
     render() {
         return (
             <div style={{position: "absolute"}} id={"project-manager"}>
-                <p>YayBalls!</p>
+                <p>Yay2!</p>
                 <p>{this.props.layers}</p>
                 <p>{this.props.projectTitle}</p>
                 {/*<button onClick={this.props.increment}>INCREMENT</button>*/}
