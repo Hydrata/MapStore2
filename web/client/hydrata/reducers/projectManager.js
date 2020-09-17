@@ -5,18 +5,13 @@ export default ( state = {}, action) => {
     case FETCH_PROJECT_MANAGER_CONFIG:
         return {
             ...state,
-            projectManager: {
-                fetching: action.mapId
-            }
+            fetching: action.mapId
         };
     case FETCH_PROJECT_MANAGER_CONFIG_SUCCESS:
         return {
             ...state,
-            projectManager: {
-                ...state.projectManager,
-                fetching: false,
-                data: action.payload
-            }
+            fetching: null,
+            data: action.payload
         };
     default:
         return state;
