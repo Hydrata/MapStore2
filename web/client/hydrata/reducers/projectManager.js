@@ -1,4 +1,4 @@
-import { FETCH_PROJECT_MANAGER_CONFIG_SUCCESS, FETCH_PROJECT_MANAGER_CONFIG } from "../actions/projectManager";
+import { FETCH_PROJECT_MANAGER_CONFIG_SUCCESS, FETCH_PROJECT_MANAGER_CONFIG, SET_MENU_GROUP } from "../actions/projectManager";
 
 export default ( state = {}, action) => {
     switch (action.type) {
@@ -13,6 +13,18 @@ export default ( state = {}, action) => {
             fetching: null,
             data: action.payload
         };
+    case SET_MENU_GROUP:
+        if (state.openMenuGroup === action.payload) {
+            return {
+                ...state,
+                openMenuGroup: null
+            };
+        } else {
+            return {
+                ...state,
+                openMenuGroup: action.payload
+            };
+        }
     default:
         return state;
     }

@@ -2,8 +2,8 @@ import React from 'react';
 import { connect } from 'react-redux';
 const PropTypes = require('prop-types');
 const {mapIdSelector} = require('../../selectors/map');
-import { fetchProjectManagerConfig, increment, decrement, reset } from "../actions/projectManager";
-import MenuButtonList from "./projectManagerMenus";
+import { fetchProjectManagerConfig } from "../actions/projectManager";
+import { MenuPanel, MenuButtonList } from "./projectManagerMenus";
 
 // eslint-disable-next-line camelcase
 const menuGroupsSelector = (state) => state?.projectManager?.data?.mapstoremenugroup_set || [];
@@ -20,10 +20,7 @@ class ProjectManagerContainer extends React.Component {
     };
 
     static defaultProps = {
-        fetchProjectManagerConfig: () => {},
-        increment: () => {},
-        decrement: () => {},
-        reset: () => {}
+        fetchProjectManagerConfig: () => {}
     }
 
     constructor(props) {
@@ -40,7 +37,8 @@ class ProjectManagerContainer extends React.Component {
                         }
                     ]
                 }
-            }
+            },
+            openMenuGroup: null
         };
     }
 
@@ -61,9 +59,11 @@ class ProjectManagerContainer extends React.Component {
         return (
             <div style={{position: "absolute"}} id={"project-manager"}>
                 <MenuButtonList menuGroups={this.props.menuGroups}/>
+                { this.props.openMenuGroup ? <MenuPanel menuGroup={this.props.openMenuGroup}/> : null }
             </div>
         );
     }
+
 }
 
 const mapStateToProps = (state) => {
@@ -74,16 +74,13 @@ const mapStateToProps = (state) => {
         menuGroups: menuGroupsSelector(state),
         projectTitle: state?.projectManager?.data?.title,
         isFetching: state?.projectManager?.fetching,
-        hasPmData: state?.projectManager?.data
+        hasPmData: state?.projectManager?.data,
+        openMenuGroup: state?.projectManager?.openMenuGroup
     };
 };
 
 const mapDispatchToProps = ( dispatch ) => {
     return {
-        dispatch,
-        increment: () => dispatch(increment()),
-        decrement: () => dispatch(decrement()),
-        reset: () => dispatch(reset()),
         fetchProjectManagerConfig: fetchProjectManagerConfig(dispatch)
     };
 };

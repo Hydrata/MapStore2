@@ -3,9 +3,7 @@ const axios = require('../../libs/ajax');
 const FETCH_PROJECT_MANAGER_CONFIG = 'FETCH_PROJECT_MANAGER_CONFIG';
 const FETCH_PROJECT_MANAGER_CONFIG_ERROR = 'FETCH_PROJECT_MANAGER_CONFIG_ERROR';
 const FETCH_PROJECT_MANAGER_CONFIG_SUCCESS = 'FETCH_PROJECT_MANAGER_CONFIG_SUCCESS';
-const INCREMENT = 'INCREMENT';
-const DECREMENT = 'DECREMENT';
-const RESET = 'RESET';
+const SET_MENU_GROUP = 'SET_MENU_GROUP';
 
 const fetchProjectManagerConfigSuccess = (config) => {
     return {
@@ -20,10 +18,6 @@ function fetchProjectManagerConfigError(e) {
         error: e
     };
 }
-
-const increment = () => ({ type: 'INCREMENT' });
-const decrement = () => ({ type: 'DECREMENT' });
-const reset = () => ({ type: 'RESET' });
 
 const fetchProjectManagerConfig = (dispatch) => {
     return (mapId) => {
@@ -40,12 +34,17 @@ const fetchProjectManagerConfig = (dispatch) => {
     };
 };
 
+function setMenuGroup(menuGroup) {
+    console.log(menuGroup);
+    return {
+        type: SET_MENU_GROUP,
+        payload: menuGroup
+    };
+}
 
 module.exports = {
     FETCH_PROJECT_MANAGER_CONFIG, fetchProjectManagerConfig,
     FETCH_PROJECT_MANAGER_CONFIG_ERROR, fetchProjectManagerConfigError,
     FETCH_PROJECT_MANAGER_CONFIG_SUCCESS, fetchProjectManagerConfigSuccess,
-    INCREMENT, increment,
-    DECREMENT, decrement,
-    RESET, reset
+    SET_MENU_GROUP, setMenuGroup
 };
