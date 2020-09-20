@@ -56,6 +56,7 @@ const MenuButtonList = (props) => (
                             spacing={index * 150 + 20}
                             key={menu.id}
                             openMenuGroup={props.openMenuGroup}
+                            active={menu.id_label === props.openMenuGroup}
                         />
                     );
                 })

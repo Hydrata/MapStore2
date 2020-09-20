@@ -1,11 +1,10 @@
 import React from "react";
 import {setMenuGroup} from "../actions/projectManager";
 import {connect} from "react-redux";
-import {changeLayerProperties} from "../../actions/layers";
 import {MenuDatasetRow} from "./projectManagerMenuDatasetRow";
 
 const rowsStyle = {
-    padding: "3px"
+    borderTop: "1px solid #ffffffad"
 };
 
 
@@ -18,6 +17,13 @@ class MenuDatasetRowsClass extends React.Component {
     }
 
     render() {
+        if (this.props.datasets.length === 0) {
+            return (
+                <div style={rowsStyle}>
+                    <MenuDatasetRow dataset={null}/>
+                </div>
+            );
+        }
         return (
             <div style={rowsStyle}>
                 {this.props.datasets.map((dataset) => (

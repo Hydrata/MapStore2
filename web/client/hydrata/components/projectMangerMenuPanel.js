@@ -7,7 +7,7 @@ const panelStyle = {
     top: "50px",
     left: "20px",
     minWidth: "400px",
-    backgroundColor: "rgba(0,60,136,0.8)",
+    backgroundColor: "rgba(0,60,136,0.6)",
     borderColor: "rgb(255 255 255 / 70%)",
     borderWidth: "2px",
     padding: "5px 10px",
