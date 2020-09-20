@@ -3,7 +3,8 @@ import { connect } from 'react-redux';
 const PropTypes = require('prop-types');
 const {mapIdSelector} = require('../../selectors/map');
 import { fetchProjectManagerConfig } from "../actions/projectManager";
-import { MenuPanel, MenuButtonList } from "./projectManagerMenus";
+import { MenuButtonList } from "./projectManagerMenus";
+import { MenuPanel } from "./projectMangerMenuPanel";
 
 // eslint-disable-next-line camelcase
 const menuGroupsSelector = (state) => state?.projectManager?.data?.mapstoremenugroup_set || [];
@@ -58,7 +59,7 @@ class ProjectManagerContainer extends React.Component {
     render() {
         return (
             <div style={{position: "absolute"}} id={"project-manager"}>
-                <MenuButtonList menuGroups={this.props.menuGroups}/>
+                <MenuButtonList menuGroups={this.props.menuGroups} openMenuGroup={this.props.openMenuGroup}/>
                 { this.props.openMenuGroup ? <MenuPanel menuGroup={this.props.openMenuGroup}/> : null }
             </div>
         );

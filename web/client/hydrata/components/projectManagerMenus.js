@@ -6,7 +6,7 @@ const buttonStyle = {
     position: "absolute",
     zIndex: 1021,
     top: 10,
-    minWidth: "115px",
+    minWidth: "135px",
     backgroundColor: "rgba(0,60,136,0.5)",
     borderColor: "rgb(255 255 255 / 70%)",
     borderWidth: "2px",
@@ -18,24 +18,7 @@ const buttonStyle = {
     textAlign: "center"
 };
 
-const panelStyle = {
-    position: "absolute",
-    zIndex: 1021,
-    top: "50px",
-    left: "20px",
-    minWidth: "400px",
-    backgroundColor: "rgba(0,60,136,0.8)",
-    borderColor: "rgb(255 255 255 / 70%)",
-    borderWidth: "2px",
-    padding: "5px 10px",
-    fontSize: "12px",
-    lineHeight: "1.5",
-    borderRadius: "4px",
-    color: "white",
-    textAlign: "center"
-};
-
-class MenuButton extends React.Component {
+class MenuButtonClass extends React.Component {
 
     constructor(props) {
         super(props);
@@ -45,9 +28,8 @@ class MenuButton extends React.Component {
         return (
             <div>
                 <button
-                    className="btn"
                     style={{...buttonStyle, left: this.props.spacing}}
-                    onClick={() => {this.props.setMenuGroup(this.props.menu.id);}}>
+                    onClick={() => {this.props.setMenuGroup(this.props.menu);}}>
                     {this.props.menu.title}
                 </button>
             </div>
@@ -61,7 +43,7 @@ const mapDispatchToProps = ( dispatch ) => {
     };
 };
 
-const ConnectedMenuButton = connect(null, mapDispatchToProps)(MenuButton);
+const MenuButton = connect(null, mapDispatchToProps)(MenuButtonClass);
 
 const MenuButtonList = (props) => (
     <div>
@@ -69,7 +51,12 @@ const MenuButtonList = (props) => (
             {props.menuGroups && props.menuGroups.length && props.menuGroups.map(
                 (menu, index) => {
                     return (
-                        <ConnectedMenuButton menu={menu} spacing={index * 130 + 20} key={menu.id}/>
+                        <MenuButton
+                            menu={menu}
+                            spacing={index * 150 + 20}
+                            key={menu.id}
+                            openMenuGroup={props.openMenuGroup}
+                        />
                     );
                 })
             }
@@ -77,16 +64,7 @@ const MenuButtonList = (props) => (
     </div>
 );
 
-const MenuPanel = ({menuGroup}) => (
-    <div>
-        <div className={`${menuGroup ? "active" : ""}`} style={{...panelStyle}}>
-            {menuGroup}asdf
-        </div>
-    </div>
-);
-
 export {
-    ConnectedMenuButton,
-    MenuButtonList,
-    MenuPanel
+    MenuButton,
+    MenuButtonList
 };

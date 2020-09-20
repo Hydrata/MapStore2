@@ -35,7 +35,6 @@ const fetchProjectManagerConfig = (dispatch) => {
 };
 
 function setMenuGroup(menuGroup) {
-    console.log(menuGroup);
     return {
         type: SET_MENU_GROUP,
         payload: menuGroup
