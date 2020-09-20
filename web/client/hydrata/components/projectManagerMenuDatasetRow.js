@@ -18,7 +18,7 @@ const glyphStyle = {
     borderRadius: "3px",
     margin: "5px",
     marginRight: "20px",
-    color: "#27ff00"
+    color: "limegreen"
 };
 
 const textStyle = {
@@ -40,7 +40,7 @@ class MenuDatasetRowClass extends React.Component {
             return (
                 <div className={"row"} style={{...rowStyle}}>
                     <div className={"btn-group inline pull-left"} style={{...btnGroupStyle}}>
-                        <div className="h4" style={textStyle}>No datasets here yet...</div>
+                        <div className="h5" style={textStyle}>No datasets here yet...</div>
                     </div>
                 </div>
             );
@@ -49,11 +49,11 @@ class MenuDatasetRowClass extends React.Component {
             <div className={"row"} style={{...rowStyle}}>
                 <div className={"btn-group inline pull-left"} style={{...btnGroupStyle}}>
                     <div
-                        className={"btn glyphicon " + (this.props.thisLayer.visibility ? "glyphicon-ok" : "glyphicon-remove")}
-                        style={{...glyphStyle, "color": this.props.thisLayer.visibility ? "#27ff00" : "red"}}
-                        onClick={() => {this.props.toggleLayer(this.props.thisLayer.id, this.props.thisLayer.visibility);}}
+                        className={"btn glyphicon " + (this.props.thisLayer?.visibility ? "glyphicon-ok" : "glyphicon-remove")}
+                        style={{...glyphStyle, "color": this.props.thisLayer?.visibility ? "limegreen" : "red"}}
+                        onClick={() => {this.props.toggleLayer(this.props.thisLayer?.id, this.props.thisLayer?.visibility);}}
                     />
-                    <div className="h4" style={textStyle}>{this.props.dataset?.layer_title}</div>
+                    <div className="h5" style={textStyle}>{this.props.dataset?.layer_title}</div>
                 </div>
             </div>
         );
