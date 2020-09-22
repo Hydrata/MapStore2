@@ -18,7 +18,8 @@ const glyphStyle = {
     borderRadius: "3px",
     margin: "5px",
     marginRight: "20px",
-    color: "limegreen"
+    color: "limegreen",
+    fontSize: "10px"
 };
 
 const textStyle = {
