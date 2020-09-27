@@ -5,6 +5,7 @@ const {mapIdSelector} = require('../../selectors/map');
 import { fetchProjectManagerConfig } from "../actions/projectManager";
 import { MenuButtonList } from "./projectManagerMenus";
 import { MenuPanel } from "./projectMangerMenuPanel";
+import LegendPanel from "./legendPanel";
 
 // eslint-disable-next-line camelcase
 const menuGroupsSelector = (state) => state?.projectManager?.data?.mapstoremenugroup_set || [];
@@ -37,9 +38,9 @@ class ProjectManagerContainer extends React.Component {
                             title: 'default'
                         }
                     ]
-                }
-            },
-            openMenuGroup: null
+                },
+                openMenuGroup: null
+            }
         };
     }
 
@@ -61,6 +62,7 @@ class ProjectManagerContainer extends React.Component {
             <div style={{position: "absolute"}} id={"project-manager"}>
                 <MenuButtonList menuGroups={this.props.menuGroups} openMenuGroup={this.props.openMenuGroup}/>
                 { this.props.openMenuGroup ? <MenuPanel menuGroup={this.props.openMenuGroup}/> : null }
+                <LegendPanel/>
             </div>
         );
     }
