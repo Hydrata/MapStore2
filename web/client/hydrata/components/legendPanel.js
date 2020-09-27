@@ -18,7 +18,8 @@ const legendPanelStyle = {
     color: "white",
     textAlign: "right",
     overflowY: "auto",
-    overflowX: "hidden"
+    overflowX: "hidden",
+    maxHeight: "92%"
 };
 
 const buttonStyle = {
@@ -83,7 +84,7 @@ class legendPanel extends React.Component {
                                         className={"col-sm-6"}
                                         style={{
                                             backgroundColor: "white",
-                                            padding: "20px",
+                                            padding: "3px",
                                             borderRadius: "3px"
                                         }}
                                     >
