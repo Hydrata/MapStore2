@@ -8,7 +8,7 @@ import { MenuPanel } from "./projectMangerMenuPanel";
 import LegendPanel from "./legendPanel";
 
 // eslint-disable-next-line camelcase
-const menuGroupsSelector = (state) => state?.projectManager?.data?.mapstoremenugroup_set || [];
+const menuGroupsSelector = (state) => state?.projectManager?.data?.map_store_menu_groups || [];
 
 class ProjectManagerContainer extends React.Component {
     static propTypes = {
