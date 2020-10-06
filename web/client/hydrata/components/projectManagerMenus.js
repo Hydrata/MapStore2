@@ -52,15 +52,13 @@ const MenuButtonList = (props) => (
             {props.menuGroups && props.menuGroups.length && props.menuGroups.map(
                 (menu, index) => {
                     return (
-                        menu.id_label === 'swamm' ?
-                            <SwammContainer/> :
-                            <MenuButton
-                                menu={menu}
-                                spacing={index * 150 + 20}
-                                key={menu.id}
-                                openMenuGroup={props.openMenuGroup}
-                                active={menu.id_label === props.openMenuGroup}
-                            />
+                        <MenuButton
+                            menu={menu}
+                            spacing={index * 150 + 20}
+                            key={menu.id}
+                            openMenuGroup={props.openMenuGroup}
+                            active={menu.id_label === props.openMenuGroup}
+                        />
                     );
                 })
             }
