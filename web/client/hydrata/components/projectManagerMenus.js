@@ -1,6 +1,7 @@
 import React from 'react';
 import {setMenuGroup} from "../actions/projectManager";
 import {connect} from "react-redux";
+import SwammContainer from "../components/swammContainer";
 
 const buttonStyle = {
     position: "absolute",
@@ -51,13 +52,15 @@ const MenuButtonList = (props) => (
             {props.menuGroups && props.menuGroups.length && props.menuGroups.map(
                 (menu, index) => {
                     return (
-                        <MenuButton
-                            menu={menu}
-                            spacing={index * 150 + 20}
-                            key={menu.id}
-                            openMenuGroup={props.openMenuGroup}
-                            active={menu.id_label === props.openMenuGroup}
-                        />
+                        menu.id_label === 'swamm' ?
+                            <SwammContainer/> :
+                            <MenuButton
+                                menu={menu}
+                                spacing={index * 150 + 20}
+                                key={menu.id}
+                                openMenuGroup={props.openMenuGroup}
+                                active={menu.id_label === props.openMenuGroup}
+                            />
                     );
                 })
             }
