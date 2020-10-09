@@ -21,9 +21,14 @@ const panelStyle = {
     color: "white"
 };
 
-const tableHeaderStyle = {
+const tableHeaderStyleOrgs = {
     textAlign: "center",
     width: "100px"
+};
+
+const tableHeaderStyleTypes = {
+    textAlign: "left",
+    width: "200px"
 };
 
 const filterButtonStyle = {
@@ -71,19 +76,19 @@ class SwammContainer extends React.Component {
     render() {
         return (
             <div style={{...panelStyle}} id="swamm">
-                <table className="table" style={{marginBottom: "0"}}>
+                <table className="table" style={{tableLayout: "fixed", marginBottom: "0"}}>
                     <thead>
                         <tr>
-                            <th style={tableHeaderStyle}>BMP Type</th>
+                            <th style={tableHeaderStyleTypes}>BMP Type</th>
                             {this.props.orgs.map((item) => (
-                                <th key={item.id} style={tableHeaderStyle}>{item.name}</th>
+                                <th key={item.id} style={tableHeaderStyleOrgs}>{item.name}</th>
                             ))}
                         </tr>
                     </thead>
                     <tbody>
                         {this.props.bmpTypes.map((bmpType) => (
                             <tr key={bmpType.name}>
-                                <td className="h5" style={{minWidth: "200px"}}>{bmpType.name}</td>
+                                <td className="h5">{bmpType.name}</td>
                                 {this.props.orgs.map((org) => (
                                     <td key={org.id}>
                                         <SwammBmpToggler bmpCode={this.props.projectCode + '_' + org.code + '_' + bmpType.code}/>
