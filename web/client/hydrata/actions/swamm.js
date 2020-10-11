@@ -6,11 +6,12 @@ const FETCH_SWAMM_CONFIG_SUCCESS = 'FETCH_SWAMM_CONFIG_SUCCESS';
 const TOGGLE_OUTLETS = 'TOGGLE_OUTLETS';
 const TOGGLE_FOOTPRINTS = 'TOGGLE_FOOTPRINTS';
 const TOGGLE_WATERSHEDS = 'TOGGLE_WATERSHEDS';
+const TOGGLE_BMP_TYPE = 'TOGGLE_BMP_TYPE';
 
 const fetchSwammConfigSuccess = (config) => {
     return {
         type: FETCH_SWAMM_CONFIG_SUCCESS,
-        payload: config
+        bmpTypes: config
     };
 };
 
@@ -36,28 +37,50 @@ const fetchSwammConfig = (dispatch) => {
     };
 };
 
-function toggleOutlets() {
-    return {
-        type: 'TOGGLE_OUTLETS'
+const toggleBmpType = (bmpType) => {
+    return (dispatch) => {
+        dispatch({
+            type: 'TOGGLE_BMP_TYPE',
+            bmpType: bmpType
+        });
     };
-}
+};
 
-function toggleFootprints() {
-    return {
-        type: 'TOGGLE_FOOTPRINTS'
+const toggleOutlets = () => {
+    return (dispatch, getState) => {
+        const state = getState();
+        dispatch({
+            type: 'TOGGLE_OUTLETS',
+            layers: state.layers
+        });
     };
-}
+};
 
-function toggleWatersheds() {
-    return {
-        type: 'TOGGLE_WATERSHEDS'
+const toggleFootprints = () => {
+    return (dispatch, getState) => {
+        const state = getState();
+        dispatch({
+            type: 'TOGGLE_FOOTPRINTS',
+            layers: state.layers
+        });
     };
-}
+};
+
+const toggleWatersheds = () => {
+    return (dispatch, getState) => {
+        const state = getState();
+        dispatch({
+            type: 'TOGGLE_WATERSHEDS',
+            layers: state.layers
+        });
+    };
+};
 
 module.exports = {
     FETCH_SWAMM_CONFIG, fetchSwammConfig,
     FETCH_SWAMM_CONFIG_ERROR, fetchSwammConfigError,
     FETCH_SWAMM_CONFIG_SUCCESS, fetchSwammConfigSuccess,
+    TOGGLE_BMP_TYPE, toggleBmpType,
     TOGGLE_OUTLETS, toggleOutlets,
     TOGGLE_FOOTPRINTS, toggleFootprints,
     TOGGLE_WATERSHEDS, toggleWatersheds

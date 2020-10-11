@@ -3,7 +3,8 @@ import { connect } from 'react-redux';
 const PropTypes = require('prop-types');
 const { mapIdSelector } = require('../../selectors/map');
 import { fetchSwammConfig, toggleOutlets, toggleFootprints, toggleWatersheds } from "../actions/swamm";
-import { SwammBmpToggler } from "../components/swammBmpToggler";
+import { SwammBmpToggler } from "./swammBmpToggler";
+import { changeLayerProperties } from "../../actions/layers";
 
 const panelStyle = {
     position: "absolute",
@@ -45,14 +46,17 @@ class SwammContainer extends React.Component {
         swammData: PropTypes.array,
         mapId: PropTypes.number,
         orgs: PropTypes.array,
+        bmpNames: PropTypes.array,
         bmpTypes: PropTypes.array,
-        toggleOutlets: PropTypes.func,
-        toggleFootprints: PropTypes.func,
-        toggleWatersheds: PropTypes.func,
+        toggleOutletStatus: PropTypes.func,
+        toggleFootprintStatus: PropTypes.func,
+        toggleWatershedStatus: PropTypes.func,
         showOutlets: PropTypes.bool,
         showFootprints: PropTypes.bool,
         showWatersheds: PropTypes.bool,
-        projectCode: PropTypes.string
+        projectCode: PropTypes.string,
+        layers: PropTypes.array,
+        toggleLayer: PropTypes.func
     };
 
     static defaultProps = {
@@ -86,12 +90,14 @@ class SwammContainer extends React.Component {
                         </tr>
                     </thead>
                     <tbody>
-                        {this.props.bmpTypes.map((bmpType) => (
-                            <tr key={bmpType.name}>
-                                <td className="h5">{bmpType.name}</td>
+                        {this.props.bmpNames?.map((bmpName) => (
+                            <tr key={bmpName.id}>
+                                <td className="h5">{bmpName.name}</td>
                                 {this.props.orgs.map((org) => (
                                     <td key={org.id}>
-                                        <SwammBmpToggler bmpCode={this.props.projectCode + '_' + org.code + '_' + bmpType.code}/>
+                                        <SwammBmpToggler
+                                            bmpCode={this.props.projectCode + '_' + org.code + '_' + bmpName.code.slice(bmpName.code.length - 3)}
+                                        />
                                     </td>
                                 ))}
                             </tr>
@@ -103,24 +109,39 @@ class SwammContainer extends React.Component {
                     <button
                         type="button"
                         className="btn btn-xs btn-info"
-                        style={this.props.showOutlets ? filterButtonStyle : {...filterButtonStyle, "background": "#093656"}}
-                        onClick={() => {this.props.toggleOutlets();}}
+                        style={this.props.showOutlets ? filterButtonStyle : {
+                            ...filterButtonStyle,
+                            "background": "#093656"
+                        }}
+                        onClick={() => {
+                            this.toggleOutlets();
+                        }}
                     >
                         Outlets
                     </button>
                     <button
                         type="button"
                         className="btn btn-xs btn-info"
-                        style={this.props.showFootprints ? filterButtonStyle : {...filterButtonStyle, "background": "#093656"}}
-                        onClick={() => {this.props.toggleFootprints();}}
+                        style={this.props.showFootprints ? filterButtonStyle : {
+                            ...filterButtonStyle,
+                            "background": "#093656"
+                        }}
+                        onClick={() => {
+                            this.toggleFootprints();
+                        }}
                     >
                         Footprints
                     </button>
                     <button
                         type="button"
                         className="btn btn-xs btn-info"
-                        style={this.props.showWatersheds ? filterButtonStyle : {...filterButtonStyle, "background": "#093656"}}
-                        onClick={() => {this.props.toggleWatersheds();}}
+                        style={this.props.showWatersheds ? filterButtonStyle : {
+                            ...filterButtonStyle,
+                            "background": "#093656"
+                        }}
+                        onClick={() => {
+                            this.toggleWatersheds();
+                        }}
                     >
                         Watersheds
                     </button>
@@ -129,27 +150,67 @@ class SwammContainer extends React.Component {
         );
     }
 
+    toggleOutlets = () => {
+        this.props.toggleOutletStatus();
+        const outletLayers = this.props?.layers?.flat.filter((layer) => layer.name.includes('_outlet'));
+        const visibleBmpTypes = this.props?.bmpTypes.filter((bmpType) => bmpType.visibility);
+        outletLayers.map((layer) => {
+            visibleBmpTypes.map((bmpType) => {
+                if (layer.name.indexOf(bmpType.code) > -1) {
+                    this.props.showOutlets ? this.props.toggleLayer(layer.id, false) : this.props.toggleLayer(layer.id, true);
+                }
+            });
+        });
+    }
+
+    toggleFootprints = () => {
+        this.props.toggleFootprintStatus();
+        const footprintLayers = this.props?.layers?.flat.filter((layer) => layer.name.includes('_footprint'));
+        const visibleBmpTypes = this.props?.bmpTypes.filter((bmpType) => bmpType.visibility);
+        footprintLayers.map((layer) => {
+            visibleBmpTypes.map((bmpType) => {
+                if (layer.name.indexOf(bmpType.code) > -1) {
+                    this.props.showFootprints ? this.props.toggleLayer(layer.id, false) : this.props.toggleLayer(layer.id, true);
+                }
+            });
+        });
+    }
+
+    toggleWatersheds = () => {
+        this.props.toggleWatershedStatus();
+        const watershedLayers = this.props?.layers?.flat.filter((layer) => layer.name.includes('_watershed'));
+        const visibleBmpTypes = this.props?.bmpTypes.filter((bmpType) => bmpType.visibility);
+        watershedLayers.map((layer) => {
+            visibleBmpTypes.map((bmpType) => {
+                if (layer.name.indexOf(bmpType.code) > -1) {
+                    this.props.showWatersheds ? this.props.toggleLayer(layer.id, false) : this.props.toggleLayer(layer.id, true);
+                }
+            });
+        });
+    }
 }
 
 const mapStateToProps = (state) => {
     return {
         mapId: mapIdSelector(state),
-        swammData: state?.swamm?.data || [],
-        orgs: state?.swamm?.data ? state?.swamm?.data.map(item => item?.organisation).filter((v, i, a)=>a.findIndex(t=>(t.id === v.id)) === i) : [],
-        bmpTypes: state?.swamm?.data ? state?.swamm?.data.filter((v, i, a)=>a.findIndex(t=>(t.code === v.code)) === i) : [],
+        orgs: state?.swamm?.bmpTypes ? state?.swamm?.bmpTypes.map(item => item?.organisation).filter((v, i, a)=>a.findIndex(t=>(t.id === v.id)) === i) : [],
+        bmpNames: state?.swamm?.bmpTypes ? state?.swamm?.bmpTypes.filter((v, i, a)=>a.findIndex(t=>(t.name === v.name)) === i) : [],
+        bmpTypes: state?.swamm?.bmpTypes,
         showOutlets: state?.swamm?.showOutlets,
         showFootprints: state?.swamm?.showFootprints,
         showWatersheds: state?.swamm?.showWatersheds,
-        projectCode: state?.projectManager?.data.code
+        projectCode: state?.projectManager?.data.code,
+        layers: state?.layers
     };
 };
 
 const mapDispatchToProps = ( dispatch ) => {
     return {
         fetchSwammConfig: fetchSwammConfig(dispatch),
-        toggleOutlets: () => dispatch(toggleOutlets()),
-        toggleFootprints: () => dispatch(toggleFootprints()),
-        toggleWatersheds: () => dispatch(toggleWatersheds())
+        toggleLayer: (layer, isVisible) => dispatch(changeLayerProperties(layer, {visibility: isVisible})),
+        toggleOutletStatus: () => dispatch(toggleOutlets()),
+        toggleFootprintStatus: () => dispatch(toggleFootprints()),
+        toggleWatershedStatus: () => dispatch(toggleWatersheds())
     };
 };
 
