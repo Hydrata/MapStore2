@@ -34,7 +34,7 @@ const tableHeaderStyleTypes = {
 
 const filterButtonStyle = {
     margin: "3px",
-    background: "#6a81a3",
+    background: "#6aa3789F",
     borderRadius: "4px",
     borderColor: "white",
     width: "100px"
@@ -111,7 +111,7 @@ class SwammContainer extends React.Component {
                         className="btn btn-xs btn-info"
                         style={this.props.showOutlets ? filterButtonStyle : {
                             ...filterButtonStyle,
-                            "background": "#093656"
+                            "background": "#5609189F"
                         }}
                         onClick={() => {
                             this.toggleOutlets();
@@ -124,7 +124,7 @@ class SwammContainer extends React.Component {
                         className="btn btn-xs btn-info"
                         style={this.props.showFootprints ? filterButtonStyle : {
                             ...filterButtonStyle,
-                            "background": "#093656"
+                            "background": "#5609189F"
                         }}
                         onClick={() => {
                             this.toggleFootprints();
@@ -137,7 +137,7 @@ class SwammContainer extends React.Component {
                         className="btn btn-xs btn-info"
                         style={this.props.showWatersheds ? filterButtonStyle : {
                             ...filterButtonStyle,
-                            "background": "#093656"
+                            "background": "#5609189F"
                         }}
                         onClick={() => {
                             this.toggleWatersheds();
