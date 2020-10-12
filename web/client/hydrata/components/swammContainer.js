@@ -55,7 +55,7 @@ class SwammContainer extends React.Component {
         showFootprints: PropTypes.bool,
         showWatersheds: PropTypes.bool,
         projectCode: PropTypes.string,
-        layers: PropTypes.array,
+        layers: PropTypes.object,
         toggleLayer: PropTypes.func
     };
 
