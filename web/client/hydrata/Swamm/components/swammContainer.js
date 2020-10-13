@@ -2,7 +2,7 @@ import React from 'react';
 import {connect} from 'react-redux';
 const PropTypes = require('prop-types');
 const {mapIdSelector} = require('../../../selectors/map');
-import {fetchSwammConfig, toggleOutlets, toggleFootprints, toggleWatersheds } from "../actionsSwamm";
+import {fetchSwammBmpTypes, toggleOutlets, toggleFootprints, toggleWatersheds } from "../actionsSwamm";
 import {SwammBmpToggler} from "./swammBmpToggler";
 import {changeLayerProperties} from "../../../actions/layers";
 
@@ -74,7 +74,7 @@ class SwammContainer extends React.Component {
     }
 
     componentDidMount() {
-        this.props.fetchSwammConfig(this.props.mapId);
+        this.props.fetchSwammBmpTypes(this.props.mapId);
     }
 
     render() {
@@ -206,7 +206,7 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = ( dispatch ) => {
     return {
-        fetchSwammConfig: fetchSwammConfig(dispatch),
+        fetchSwammBmpTypes: fetchSwammBmpTypes(dispatch),
         toggleLayer: (layer, isVisible) => dispatch(changeLayerProperties(layer, {visibility: isVisible})),
         toggleOutletStatus: () => dispatch(toggleOutlets()),
         toggleFootprintStatus: () => dispatch(toggleFootprints()),

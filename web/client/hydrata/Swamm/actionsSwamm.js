@@ -1,37 +1,37 @@
 const axios = require('../../libs/ajax');
 
-const FETCH_SWAMM_CONFIG = 'FETCH_SWAMM_CONFIG';
-const FETCH_SWAMM_CONFIG_ERROR = 'FETCH_SWAMM_CONFIG_ERROR';
-const FETCH_SWAMM_CONFIG_SUCCESS = 'FETCH_SWAMM_CONFIG_SUCCESS';
+const FETCH_SWAMM_BMPTYPES = 'FETCH_SWAMM_BMPTYPES';
+const FETCH_SWAMM_BMPTYPES_ERROR = 'FETCH_SWAMM_BMPTYPES_ERROR';
+const FETCH_SWAMM_BMPTYPES_SUCCESS = 'FETCH_SWAMM_BMPTYPES_SUCCESS';
 const TOGGLE_OUTLETS = 'TOGGLE_OUTLETS';
 const TOGGLE_FOOTPRINTS = 'TOGGLE_FOOTPRINTS';
 const TOGGLE_WATERSHEDS = 'TOGGLE_WATERSHEDS';
 const TOGGLE_BMP_TYPE = 'TOGGLE_BMP_TYPE';
 
-const fetchSwammConfigSuccess = (config) => {
+const fetchSwammBmpTypesSuccess = (config) => {
     return {
-        type: FETCH_SWAMM_CONFIG_SUCCESS,
+        type: FETCH_SWAMM_BMPTYPES_SUCCESS,
         bmpTypes: config
     };
 };
 
-function fetchSwammConfigError(e) {
+function fetchSwammBmpTypesError(e) {
     return {
-        type: FETCH_SWAMM_CONFIG_ERROR,
+        type: FETCH_SWAMM_BMPTYPES_ERROR,
         error: e
     };
 }
 
-const fetchSwammConfig = (dispatch) => {
+const fetchSwammBmpTypes = (dispatch) => {
     return (mapId) => {
         return axios.get(`/swamm/api/${mapId}/bmp-type/`
         ).then(
             response => {
-                dispatch(fetchSwammConfigSuccess(response.data));
+                dispatch(fetchSwammBmpTypesSuccess(response.data));
             }
         ).catch(
             e => {
-                dispatch(fetchSwammConfigError(e));
+                dispatch(fetchSwammBmpTypesError(e));
             }
         );
     };
@@ -77,9 +77,9 @@ const toggleWatersheds = () => {
 };
 
 module.exports = {
-    FETCH_SWAMM_CONFIG, fetchSwammConfig,
-    FETCH_SWAMM_CONFIG_ERROR, fetchSwammConfigError,
-    FETCH_SWAMM_CONFIG_SUCCESS, fetchSwammConfigSuccess,
+    FETCH_SWAMM_BMPTYPES, fetchSwammBmpTypes,
+    FETCH_SWAMM_BMPTYPES_ERROR, fetchSwammBmpTypesError,
+    FETCH_SWAMM_BMPTYPES_SUCCESS, fetchSwammBmpTypesSuccess,
     TOGGLE_BMP_TYPE, toggleBmpType,
     TOGGLE_OUTLETS, toggleOutlets,
     TOGGLE_FOOTPRINTS, toggleFootprints,
