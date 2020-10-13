@@ -1,6 +1,6 @@
 import React from "react";
 import {connect} from "react-redux";
-import {changeLayerProperties} from "../../actions/layers";
+import {changeLayerProperties} from "../../../actions/layers";
 
 const rowStyle = {
     borderBottom: "1px solid #ffffffad",

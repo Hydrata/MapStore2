@@ -1,5 +1,5 @@
 import React from "react";
-import {setMenuGroup} from "../actions/projectManager";
+import {setMenuGroup} from "../actionsProjectManager";
 import {connect} from "react-redux";
 import {MenuDatasetRow} from "./projectManagerMenuDatasetRow";
 

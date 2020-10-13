@@ -1,10 +1,10 @@
 import React from 'react';
-import { connect } from 'react-redux';
+import {connect} from 'react-redux';
 const PropTypes = require('prop-types');
-const { mapIdSelector } = require('../../selectors/map');
-import { fetchSwammConfig, toggleOutlets, toggleFootprints, toggleWatersheds } from "../actions/swamm";
-import { SwammBmpToggler } from "./swammBmpToggler";
-import { changeLayerProperties } from "../../actions/layers";
+const {mapIdSelector} = require('../../../selectors/map');
+import {fetchSwammConfig, toggleOutlets, toggleFootprints, toggleWatersheds } from "../actionsSwamm";
+import {SwammBmpToggler} from "./swammBmpToggler";
+import {changeLayerProperties} from "../../../actions/layers";
 
 const panelStyle = {
     position: "absolute",

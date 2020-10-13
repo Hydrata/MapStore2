@@ -1,8 +1,8 @@
 import React from "react";
 import {connect} from "react-redux";
 const PropTypes = require('prop-types');
-import {changeLayerProperties} from "../../actions/layers";
-import { toggleBmpType } from "../actions/swamm";
+import {changeLayerProperties} from "../../../actions/layers";
+import {toggleBmpType} from "../actionsSwamm";
 
 const glyphStyle = {
     background: "#ffffff",

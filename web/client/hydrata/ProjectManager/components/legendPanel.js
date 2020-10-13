@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import Legend from "../../components/TOC/fragments/legend/Legend";
+import Legend from "../../../components/TOC/fragments/legend/Legend";
 
 const legendPanelStyle = {
     position: "fixed",

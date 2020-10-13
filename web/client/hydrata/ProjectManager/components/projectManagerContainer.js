@@ -1,12 +1,12 @@
 import React from 'react';
 import { connect } from 'react-redux';
 const PropTypes = require('prop-types');
-const {mapIdSelector} = require('../../selectors/map');
-import { fetchProjectManagerConfig } from "../actions/projectManager";
+const {mapIdSelector} = require('../../../selectors/map');
+import { fetchProjectManagerConfig } from "../actionsProjectManager";
 import { MenuButtonList } from "./projectManagerMenus";
 import { MenuPanel } from "./projectMangerMenuPanel";
 import LegendPanel from "./legendPanel";
-import SwammContainer from "./swammContainer";
+import SwammContainer from "../../Swamm/components/swammContainer";
 
 // eslint-disable-next-line camelcase
 const menuGroupsSelector = (state) => state?.projectManager?.data?.map_store_menu_groups || [];

@@ -1,4 +1,4 @@
-import { FETCH_PROJECT_MANAGER_CONFIG_SUCCESS, FETCH_PROJECT_MANAGER_CONFIG, SET_MENU_GROUP } from "../actions/projectManager";
+import { FETCH_PROJECT_MANAGER_CONFIG_SUCCESS, FETCH_PROJECT_MANAGER_CONFIG, SET_MENU_GROUP } from "./actionsProjectManager";
 
 export default ( state = {}, action) => {
     switch (action.type) {
