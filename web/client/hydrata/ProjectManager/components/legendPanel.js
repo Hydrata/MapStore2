@@ -72,6 +72,7 @@ class legendPanel extends React.Component {
                         return layer.type === 'wms' ?
                             (
                                 <div
+                                    key={layer.id}
                                     className={"row"}
                                     style={{
                                         padding: "10px",
@@ -89,7 +90,6 @@ class legendPanel extends React.Component {
                                         }}
                                     >
                                         <Legend
-                                            key={layer.id}
                                             layer={layer}
                                             legendHeight={12}
                                             legendWidth={12}
