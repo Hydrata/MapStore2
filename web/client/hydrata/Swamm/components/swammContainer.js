@@ -2,7 +2,7 @@ import React from 'react';
 import {connect} from 'react-redux';
 const PropTypes = require('prop-types');
 const {mapIdSelector} = require('../../../selectors/map');
-import {fetchSwammBmpTypes, toggleOutlets, toggleFootprints, toggleWatersheds } from "../actionsSwamm";
+import {fetchSwammBmpTypes, fetchSwammAllBmps, toggleOutlets, toggleFootprints, toggleWatersheds } from "../actionsSwamm";
 import {SwammBmpToggler} from "./swammBmpToggler";
 import {changeLayerProperties} from "../../../actions/layers";
 
@@ -42,7 +42,8 @@ const filterButtonStyle = {
 
 class SwammContainer extends React.Component {
     static propTypes = {
-        fetchSwammConfig: PropTypes.func,
+        fetchSwammBmpTypes: PropTypes.func,
+        fetchSwammAllBmps: PropTypes.func,
         swammData: PropTypes.array,
         mapId: PropTypes.number,
         orgs: PropTypes.array,
@@ -59,9 +60,7 @@ class SwammContainer extends React.Component {
         toggleLayer: PropTypes.func
     };
 
-    static defaultProps = {
-        fetchSwammConfig: () => {}
-    }
+    static defaultProps = {}
 
     constructor(props) {
         super(props);
@@ -69,12 +68,14 @@ class SwammContainer extends React.Component {
             mapId: null,
             data: [],
             orgs: [],
-            bmpTypes: []
+            bmpTypes: [],
+            bmps: []
         };
     }
 
     componentDidMount() {
         this.props.fetchSwammBmpTypes(this.props.mapId);
+        this.props.fetchSwammAllBmps(this.props.mapId);
     }
 
     render() {
@@ -207,6 +208,7 @@ const mapStateToProps = (state) => {
 const mapDispatchToProps = ( dispatch ) => {
     return {
         fetchSwammBmpTypes: fetchSwammBmpTypes(dispatch),
+        fetchSwammAllBmps: fetchSwammAllBmps(dispatch),
         toggleLayer: (layer, isVisible) => dispatch(changeLayerProperties(layer, {visibility: isVisible})),
         toggleOutletStatus: () => dispatch(toggleOutlets()),
         toggleFootprintStatus: () => dispatch(toggleFootprints()),

@@ -1,4 +1,12 @@
-import { FETCH_SWAMM_BMPTYPES_SUCCESS, FETCH_SWAMM_BMPTYPES, TOGGLE_OUTLETS, TOGGLE_FOOTPRINTS, TOGGLE_WATERSHEDS, TOGGLE_BMP_TYPE } from "./actionsSwamm";
+import {
+    FETCH_SWAMM_BMPTYPES_SUCCESS,
+    FETCH_SWAMM_BMPTYPES,
+    FETCH_SWAMM_ALL_BMPS_SUCCESS,
+    TOGGLE_OUTLETS,
+    TOGGLE_FOOTPRINTS,
+    TOGGLE_WATERSHEDS,
+    TOGGLE_BMP_TYPE
+} from "./actionsSwamm";
 
 const initialState = {
     showOutlets: true,
@@ -22,8 +30,14 @@ export default ( state = initialState, action) => {
         });
         return {
             ...state,
-            fetching: null,
+            fetching: false,
             bmpTypes: newBmpTypes
+        };
+    case FETCH_SWAMM_ALL_BMPS_SUCCESS:
+        return {
+            ...state,
+            fetching: false,
+            allBmps: action.allBmps
         };
     case TOGGLE_BMP_TYPE:
         return {
