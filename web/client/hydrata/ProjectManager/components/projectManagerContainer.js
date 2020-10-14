@@ -62,9 +62,10 @@ class ProjectManagerContainer extends React.Component {
         return (
             <div style={{position: "absolute"}} id={"project-manager"}>
                 <MenuButtonList menuGroups={this.props.menuGroups} openMenuGroup={this.props.openMenuGroup}/>
-                { this.props.openMenuGroup?.id_label === 'swamm' ? <SwammContainer/> :
+                { this.props.openMenuGroup?.id_label === 'swamm' ? <SwammContainer showMenuGroup={true}/> :
                     this.props.openMenuGroup ? <MenuPanel menuGroup={this.props.openMenuGroup}/> : null }
                 <LegendPanel/>
+                <SwammContainer showMenuGroup={false}/>
             </div>
         );
     }
@@ -90,9 +91,4 @@ const mapDispatchToProps = ( dispatch ) => {
     };
 };
 
-const ConnectedProjectManagerContainer = connect(
-    mapStateToProps,
-    mapDispatchToProps
-)(ProjectManagerContainer);
-
-export default ConnectedProjectManagerContainer;
+export default connect(mapStateToProps, mapDispatchToProps)(ProjectManagerContainer);

@@ -1,0 +1,16 @@
+.project-manager-panel {
+    position: absolute;
+    z-index: 1021;
+    top: 50px;
+    left: 20px;
+    min-width: 400px;
+    background-color: rgba(0, 60, 136, 0.6);
+    border-color: rgba(255, 255, 255, 0.7);
+    border-width: 2px;
+    padding: 5px 10px;
+    font-size: 12px;
+    line-height: 1.5;
+    border-radius: 4px;
+    color: white;
+    text-align: center
+}

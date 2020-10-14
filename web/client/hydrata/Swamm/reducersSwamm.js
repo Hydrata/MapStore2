@@ -5,14 +5,17 @@ import {
     TOGGLE_OUTLETS,
     TOGGLE_FOOTPRINTS,
     TOGGLE_WATERSHEDS,
-    TOGGLE_BMP_TYPE
+    TOGGLE_BMP_TYPE,
+    SHOW_CREATE_BMP_FORM,
+    HIDE_CREATE_BMP_FORM
 } from "./actionsSwamm";
 
 const initialState = {
     showOutlets: true,
     showFootprints: true,
     showWatersheds: true,
-    bmpTypes: []
+    bmpTypes: [],
+    visibleBmpCreateForm: false
 };
 
 export default ( state = initialState, action) => {
@@ -93,6 +96,17 @@ export default ( state = initialState, action) => {
                 ...state.layers,
                 flat: updatedWaterSheds
             }
+        };
+    case SHOW_CREATE_BMP_FORM:
+        return {
+            ...state,
+            visibleBmpCreateForm: true,
+            BmpCreateFormBmpTypeId: action.bmpTypeId
+        };
+    case HIDE_CREATE_BMP_FORM:
+        return {
+            ...state,
+            visibleBmpCreateForm: false
         };
     default:
         return state;

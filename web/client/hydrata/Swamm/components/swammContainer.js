@@ -2,9 +2,18 @@ import React from 'react';
 import {connect} from 'react-redux';
 const PropTypes = require('prop-types');
 const {mapIdSelector} = require('../../../selectors/map');
-import {fetchSwammBmpTypes, fetchSwammAllBmps, toggleOutlets, toggleFootprints, toggleWatersheds } from "../actionsSwamm";
+import {
+    fetchSwammBmpTypes,
+    fetchSwammAllBmps,
+    toggleOutlets,
+    toggleFootprints,
+    toggleWatersheds,
+    showCreateBmpForm
+} from "../actionsSwamm";
 import {SwammBmpToggler} from "./swammBmpToggler";
+import {SwammCreateBmpForm} from "./swammCreateBmpForm";
 import {changeLayerProperties} from "../../../actions/layers";
+import {setMenuGroup} from "../../ProjectManager/actionsProjectManager";
 
 const panelStyle = {
     position: "absolute",
@@ -20,6 +29,17 @@ const panelStyle = {
     lineHeight: "1.5",
     borderRadius: "4px",
     color: "white"
+};
+
+const glyphStyle = {
+    background: "#6aa3789F",
+    borderRadius: "3px",
+    display: "inline",
+    marginRight: "5px",
+    color: "white",
+    borderColor: "white",
+    borderWidth: "1px",
+    fontSize: "10px"
 };
 
 const tableHeaderStyleOrgs = {
@@ -57,7 +77,11 @@ class SwammContainer extends React.Component {
         showWatersheds: PropTypes.bool,
         projectCode: PropTypes.string,
         layers: PropTypes.object,
-        toggleLayer: PropTypes.func
+        toggleLayer: PropTypes.func,
+        showCreateBmpForm: PropTypes.func,
+        visibleBmpCreateForm: PropTypes.bool,
+        showMenuGroup: PropTypes.bool,
+        setMenuGroup: PropTypes.func
     };
 
     static defaultProps = {}
@@ -80,73 +104,88 @@ class SwammContainer extends React.Component {
 
     render() {
         return (
-            <div style={{...panelStyle}} id="swamm">
-                <table className="table" style={{tableLayout: "fixed", marginBottom: "0"}}>
-                    <thead>
-                        <tr>
-                            <th style={tableHeaderStyleTypes}>BMP Type</th>
-                            {this.props.orgs.map((item) => (
-                                <th key={item.id} style={tableHeaderStyleOrgs}>{item.name}</th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {this.props.bmpNames?.map((bmpName) => (
-                            <tr key={bmpName.id}>
-                                <td className="h5">{bmpName.name}</td>
-                                {this.props.orgs.map((org) => (
-                                    <td key={org.id}>
-                                        <SwammBmpToggler
-                                            bmpCode={this.props.projectCode + '_' + org.code + '_' + bmpName.code.slice(bmpName.code.length - 3)}
-                                        />
-                                    </td>
+            <div id={"swamm-container"}>
+                {this.props.showMenuGroup ?
+                    <div style={{...panelStyle}} id="swamm-menu">
+                        <table className="table" style={{tableLayout: "fixed", marginBottom: "0"}}>
+                            <thead>
+                                <tr>
+                                    <th style={tableHeaderStyleTypes}>BMP Type</th>
+                                    {this.props.orgs.map((bmpType) => (
+                                        <th key={bmpType.id} style={tableHeaderStyleOrgs}>
+                                            {bmpType.name}
+                                        </th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {this.props.bmpNames?.map((bmpName) => (
+                                    <tr key={bmpName.id}>
+                                        <td className="h5">
+                                            {bmpName.name}
+                                            <button
+                                                className={"btn glyphicon glyphicon-plus pull-right"}
+                                                style={glyphStyle}
+                                                onClick={() => {
+                                                    this.props.showCreateBmpForm(bmpName.id);
+                                                    this.props.setMenuGroup(null);
+                                                }}
+                                            />
+                                        </td>
+                                        {this.props.orgs.map((org) => (
+                                            <td key={org.id}>
+                                                <SwammBmpToggler
+                                                    bmpCode={this.props.projectCode + '_' + org.code + '_' + bmpName.code.slice(bmpName.code.length - 3)}
+                                                />
+                                            </td>
+                                        ))}
+                                    </tr>
                                 ))}
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-                <hr style={{marginTop: "0"}}/>
-                <div className="btn-group" role="group" style={{display: "block", margin: "auto"}}>
-                    <button
-                        type="button"
-                        className="btn btn-xs btn-info"
-                        style={this.props.showOutlets ? filterButtonStyle : {
-                            ...filterButtonStyle,
-                            "background": "#5609189F"
-                        }}
-                        onClick={() => {
-                            this.toggleOutlets();
-                        }}
-                    >
-                        Outlets
-                    </button>
-                    <button
-                        type="button"
-                        className="btn btn-xs btn-info"
-                        style={this.props.showFootprints ? filterButtonStyle : {
-                            ...filterButtonStyle,
-                            "background": "#5609189F"
-                        }}
-                        onClick={() => {
-                            this.toggleFootprints();
-                        }}
-                    >
-                        Footprints
-                    </button>
-                    <button
-                        type="button"
-                        className="btn btn-xs btn-info"
-                        style={this.props.showWatersheds ? filterButtonStyle : {
-                            ...filterButtonStyle,
-                            "background": "#5609189F"
-                        }}
-                        onClick={() => {
-                            this.toggleWatersheds();
-                        }}
-                    >
-                        Watersheds
-                    </button>
-                </div>
+                            </tbody>
+                        </table>
+                        <hr style={{marginTop: "0"}}/>
+                        <div className="btn-group" role="group" style={{display: "block", margin: "auto"}}>
+                            <button
+                                type="button"
+                                className="btn btn-xs btn-info"
+                                style={this.props.showOutlets ? filterButtonStyle : {
+                                    ...filterButtonStyle,
+                                    "background": "#5609189F"
+                                }}
+                                onClick={() => this.toggleOutlets()}
+                            >
+                                Outlets
+                            </button>
+                            <button
+                                type="button"
+                                className="btn btn-xs btn-info"
+                                style={this.props.showFootprints ? filterButtonStyle : {
+                                    ...filterButtonStyle,
+                                    "background": "#5609189F"
+                                }}
+                                onClick={() => this.toggleFootprints()}
+                            >
+                                Footprints
+                            </button>
+                            <button
+                                type="button"
+                                className="btn btn-xs btn-info"
+                                style={this.props.showWatersheds ? filterButtonStyle : {
+                                    ...filterButtonStyle,
+                                    "background": "#5609189F"
+                                }}
+                                onClick={() => this.toggleWatersheds()}
+                            >
+                                Watersheds
+                            </button>
+                        </div>
+                    </div>
+                    : null
+                }
+                {this.props.visibleBmpCreateForm ?
+                    <SwammCreateBmpForm bmpTypeId={1}/>
+                    : null
+                }
             </div>
         );
     }
@@ -200,8 +239,9 @@ const mapStateToProps = (state) => {
         showOutlets: state?.swamm?.showOutlets,
         showFootprints: state?.swamm?.showFootprints,
         showWatersheds: state?.swamm?.showWatersheds,
-        projectCode: state?.projectManager?.data.code,
-        layers: state?.layers
+        projectCode: state?.projectManager?.data?.code,
+        layers: state?.layers,
+        visibleBmpCreateForm: state?.swamm?.visibleBmpCreateForm
     };
 };
 
@@ -212,7 +252,9 @@ const mapDispatchToProps = ( dispatch ) => {
         toggleLayer: (layer, isVisible) => dispatch(changeLayerProperties(layer, {visibility: isVisible})),
         toggleOutletStatus: () => dispatch(toggleOutlets()),
         toggleFootprintStatus: () => dispatch(toggleFootprints()),
-        toggleWatershedStatus: () => dispatch(toggleWatersheds())
+        toggleWatershedStatus: () => dispatch(toggleWatersheds()),
+        showCreateBmpForm: (bmpTypeId) => dispatch(showCreateBmpForm(bmpTypeId)),
+        setMenuGroup: (menuGroup) => dispatch(setMenuGroup(menuGroup))
     };
 };
 

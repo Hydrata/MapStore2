@@ -8,14 +8,12 @@ const FETCH_SWAMM_ALL_BMPS = 'FETCH_SWAMM_ALL_BMPS';
 const FETCH_SWAMM_ALL_BMPS_ERROR = 'FETCH_SWAMM_ALL_BMPS_ERROR';
 const FETCH_SWAMM_ALL_BMPS_SUCCESS = 'FETCH_SWAMM_ALL_BMPS_SUCCESS';
 
-const FETCH_SWAMM_BMP = 'FETCH_SWAMM_BMP';
-const FETCH_SWAMM_BMP_ERROR = 'FETCH_SWAMM_BMP_ERROR';
-const FETCH_SWAMM_BMP_SUCCESS = 'FETCH_SWAMM_BMP_SUCCESS';
-
 const TOGGLE_OUTLETS = 'TOGGLE_OUTLETS';
 const TOGGLE_FOOTPRINTS = 'TOGGLE_FOOTPRINTS';
 const TOGGLE_WATERSHEDS = 'TOGGLE_WATERSHEDS';
 const TOGGLE_BMP_TYPE = 'TOGGLE_BMP_TYPE';
+const SHOW_CREATE_BMP_FORM = 'SHOW_CREATE_BMP_FORM';
+const HIDE_CREATE_BMP_FORM = 'HIDE_CREATE_BMP_FORM';
 
 const fetchSwammBmpTypesSuccess = (config) => {
     return {
@@ -62,7 +60,7 @@ function fetchSwammAllBmpsError(e) {
 
 const fetchSwammAllBmps = (dispatch) => {
     return (mapId) => {
-        return axios.get(`/swamm/api/${mapId}/all-bmps/`
+        return axios.get(`/swamm/api/${mapId}/bmps/`
         ).then(
             response => {
                 dispatch(fetchSwammAllBmpsSuccess(response.data));
@@ -70,35 +68,6 @@ const fetchSwammAllBmps = (dispatch) => {
         ).catch(
             e => {
                 dispatch(fetchSwammAllBmpsError(e));
-            }
-        );
-    };
-};
-
-const fetchSwammBmpSuccess = (config) => {
-    return {
-        type: FETCH_SWAMM_BMP_SUCCESS,
-        bmpTypes: config
-    };
-};
-
-function fetchSwammBmpError(e) {
-    return {
-        type: FETCH_SWAMM_BMP_ERROR,
-        error: e
-    };
-}
-
-const fetchSwammBmp = (dispatch) => {
-    return (mapId, bmpTypeId) => {
-        return axios.get(`/swamm/api/${mapId}/bmp-type/${bmpTypeId}/bmp/`
-        ).then(
-            response => {
-                dispatch(fetchSwammBmpSuccess(response.data));
-            }
-        ).catch(
-            e => {
-                dispatch(fetchSwammBmpError(e));
             }
         );
     };
@@ -143,6 +112,19 @@ const toggleWatersheds = () => {
     };
 };
 
+const showCreateBmpForm = (bmpTypeId) => {
+    return {
+        type: SHOW_CREATE_BMP_FORM,
+        bmpTypeId: bmpTypeId
+    };
+};
+
+const hideCreateBmpForm = () => {
+    return {
+        type: HIDE_CREATE_BMP_FORM
+    };
+};
+
 module.exports = {
     FETCH_SWAMM_BMPTYPES, fetchSwammBmpTypes,
     FETCH_SWAMM_BMPTYPES_ERROR, fetchSwammBmpTypesError,
@@ -150,11 +132,10 @@ module.exports = {
     FETCH_SWAMM_ALL_BMPS, fetchSwammAllBmps,
     FETCH_SWAMM_ALL_BMPS_ERROR, fetchSwammAllBmpsError,
     FETCH_SWAMM_ALL_BMPS_SUCCESS, fetchSwammAllBmpsSuccess,
-    FETCH_SWAMM_BMP, fetchSwammBmp,
-    FETCH_SWAMM_BMP_ERROR, fetchSwammBmpError,
-    FETCH_SWAMM_BMP_SUCCESS, fetchSwammBmpSuccess,
     TOGGLE_BMP_TYPE, toggleBmpType,
     TOGGLE_OUTLETS, toggleOutlets,
     TOGGLE_FOOTPRINTS, toggleFootprints,
-    TOGGLE_WATERSHEDS, toggleWatersheds
+    TOGGLE_WATERSHEDS, toggleWatersheds,
+    SHOW_CREATE_BMP_FORM, showCreateBmpForm,
+    HIDE_CREATE_BMP_FORM, hideCreateBmpForm
 };
