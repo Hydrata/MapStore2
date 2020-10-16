@@ -12,8 +12,14 @@ const TOGGLE_OUTLETS = 'TOGGLE_OUTLETS';
 const TOGGLE_FOOTPRINTS = 'TOGGLE_FOOTPRINTS';
 const TOGGLE_WATERSHEDS = 'TOGGLE_WATERSHEDS';
 const TOGGLE_BMP_TYPE = 'TOGGLE_BMP_TYPE';
+
 const SHOW_CREATE_BMP_FORM = 'SHOW_CREATE_BMP_FORM';
 const HIDE_CREATE_BMP_FORM = 'HIDE_CREATE_BMP_FORM';
+const SUBMIT_CREATE_BMP_FORM = 'SUBMIT_CREATE_BMP_FORM';
+const MAKE_CREATE_BMP_FORM = 'MAKE_CREATE_BMP_FORM';
+const CLEAR_CREATE_BMP_FORM = 'CLEAR_CREATE_BMP_FORM';
+const MAKE_DEFAULTS_CREATE_BMP_FORM = 'MAKE_DEFAULTS_CREATE_BMP_FORM';
+const UPDATE_CREATE_BMP_FORM = 'UPDATE_CREATE_BMP_FORM';
 
 const fetchSwammBmpTypesSuccess = (config) => {
     return {
@@ -112,16 +118,58 @@ const toggleWatersheds = () => {
     };
 };
 
-const showCreateBmpForm = (bmpTypeId) => {
+const makeCreateBmpForm = (bmpTypeId) => {
     return {
-        type: SHOW_CREATE_BMP_FORM,
+        type: MAKE_CREATE_BMP_FORM,
         bmpTypeId: bmpTypeId
+    };
+};
+
+const showCreateBmpForm = () => {
+    return {
+        type: SHOW_CREATE_BMP_FORM
     };
 };
 
 const hideCreateBmpForm = () => {
     return {
         type: HIDE_CREATE_BMP_FORM
+    };
+};
+
+const makeDefaultsBmpCreateForm = (bmpType) => {
+    return {
+        type: MAKE_DEFAULTS_CREATE_BMP_FORM,
+        bmpType: bmpType
+    };
+};
+
+const clearCreateBmpForm = () => {
+    return {
+        type: CLEAR_CREATE_BMP_FORM
+    };
+};
+
+const updateCreateBmpForm = (kv) => {
+    return {
+        type: UPDATE_CREATE_BMP_FORM,
+        kv: kv
+    };
+};
+
+const submitCreateBmpForm = (newBmp, dispatch) => {
+    console.log('submitCreateBmpForm: ', newBmp);
+    return (mapId) => {
+        return axios.get(`/swamm/api/${mapId}/bmps/`
+        ).then(
+            response => {
+                dispatch(fetchSwammAllBmpsSuccess(response.data));
+            }
+        ).catch(
+            e => {
+                dispatch(fetchSwammAllBmpsError(e));
+            }
+        );
     };
 };
 
@@ -137,5 +185,10 @@ module.exports = {
     TOGGLE_FOOTPRINTS, toggleFootprints,
     TOGGLE_WATERSHEDS, toggleWatersheds,
     SHOW_CREATE_BMP_FORM, showCreateBmpForm,
-    HIDE_CREATE_BMP_FORM, hideCreateBmpForm
+    HIDE_CREATE_BMP_FORM, hideCreateBmpForm,
+    SUBMIT_CREATE_BMP_FORM, submitCreateBmpForm,
+    CLEAR_CREATE_BMP_FORM, clearCreateBmpForm,
+    MAKE_CREATE_BMP_FORM, makeCreateBmpForm,
+    MAKE_DEFAULTS_CREATE_BMP_FORM, makeDefaultsBmpCreateForm,
+    UPDATE_CREATE_BMP_FORM, updateCreateBmpForm
 };

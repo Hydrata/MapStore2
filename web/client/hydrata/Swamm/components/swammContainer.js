@@ -2,18 +2,21 @@ import React from 'react';
 import {connect} from 'react-redux';
 const PropTypes = require('prop-types');
 const {mapIdSelector} = require('../../../selectors/map');
+import {Button} from "react-bootstrap";
 import {
     fetchSwammBmpTypes,
     fetchSwammAllBmps,
     toggleOutlets,
     toggleFootprints,
     toggleWatersheds,
-    showCreateBmpForm
+    showCreateBmpForm,
+    makeCreateBmpForm
 } from "../actionsSwamm";
 import {SwammBmpToggler} from "./swammBmpToggler";
 import {SwammCreateBmpForm} from "./swammCreateBmpForm";
 import {changeLayerProperties} from "../../../actions/layers";
 import {setMenuGroup} from "../../ProjectManager/actionsProjectManager";
+import {orgSelector} from "../selectorsSwamm";
 
 const panelStyle = {
     position: "absolute",
@@ -80,6 +83,8 @@ class SwammContainer extends React.Component {
         toggleLayer: PropTypes.func,
         showCreateBmpForm: PropTypes.func,
         visibleBmpCreateForm: PropTypes.bool,
+        makeCreateBmpForm: PropTypes.func,
+        storedBmpCreateForm: PropTypes.object,
         showMenuGroup: PropTypes.bool,
         setMenuGroup: PropTypes.func
     };
@@ -127,7 +132,7 @@ class SwammContainer extends React.Component {
                                                 className={"btn glyphicon glyphicon-plus pull-right"}
                                                 style={glyphStyle}
                                                 onClick={() => {
-                                                    this.props.showCreateBmpForm(bmpName.id);
+                                                    this.props.makeCreateBmpForm(bmpName.id);
                                                     this.props.setMenuGroup(null);
                                                 }}
                                             />
@@ -183,7 +188,17 @@ class SwammContainer extends React.Component {
                     : null
                 }
                 {this.props.visibleBmpCreateForm ?
-                    <SwammCreateBmpForm bmpTypeId={1}/>
+                    <SwammCreateBmpForm />
+                    : null
+                }
+                {this.props.storedBmpCreateForm && !this.props.visibleBmpCreateForm ?
+                    <Button
+                        style={{marginTop: "50px", marginLeft: "20px", position: "absolute", opacity: "0.7", borderRadius: "4px"}}
+                        bsStyle={"success"}
+                        onClick={() => this.props.showCreateBmpForm()}
+                    >
+                        BMP in progress
+                    </Button>
                     : null
                 }
             </div>
@@ -233,7 +248,7 @@ class SwammContainer extends React.Component {
 const mapStateToProps = (state) => {
     return {
         mapId: mapIdSelector(state),
-        orgs: state?.swamm?.bmpTypes ? state?.swamm?.bmpTypes.map(item => item?.organisation).filter((v, i, a)=>a.findIndex(t=>(t.id === v.id)) === i) : [],
+        orgs: orgSelector(state),
         bmpNames: state?.swamm?.bmpTypes ? state?.swamm?.bmpTypes.filter((v, i, a)=>a.findIndex(t=>(t.name === v.name)) === i) : [],
         bmpTypes: state?.swamm?.bmpTypes,
         showOutlets: state?.swamm?.showOutlets,
@@ -241,7 +256,8 @@ const mapStateToProps = (state) => {
         showWatersheds: state?.swamm?.showWatersheds,
         projectCode: state?.projectManager?.data?.code,
         layers: state?.layers,
-        visibleBmpCreateForm: state?.swamm?.visibleBmpCreateForm
+        visibleBmpCreateForm: state?.swamm?.visibleBmpCreateForm,
+        storedBmpCreateForm: state?.swamm?.storedBmpCreateForm
     };
 };
 
@@ -253,8 +269,9 @@ const mapDispatchToProps = ( dispatch ) => {
         toggleOutletStatus: () => dispatch(toggleOutlets()),
         toggleFootprintStatus: () => dispatch(toggleFootprints()),
         toggleWatershedStatus: () => dispatch(toggleWatersheds()),
-        showCreateBmpForm: (bmpTypeId) => dispatch(showCreateBmpForm(bmpTypeId)),
-        setMenuGroup: (menuGroup) => dispatch(setMenuGroup(menuGroup))
+        showCreateBmpForm: () => dispatch(showCreateBmpForm()),
+        setMenuGroup: (menuGroup) => dispatch(setMenuGroup(menuGroup)),
+        makeCreateBmpForm: (bmpTypeId) => dispatch(makeCreateBmpForm(bmpTypeId))
     };
 };
 
