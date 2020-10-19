@@ -11,7 +11,8 @@ import {
     MAKE_CREATE_BMP_FORM,
     CLEAR_CREATE_BMP_FORM,
     MAKE_DEFAULTS_CREATE_BMP_FORM,
-    UPDATE_CREATE_BMP_FORM
+    UPDATE_CREATE_BMP_FORM,
+    TOGGLE_DRAWING_BMP
 } from "./actionsSwamm";
 
 const initialState = {
@@ -19,7 +20,8 @@ const initialState = {
     showFootprints: true,
     showWatersheds: true,
     bmpTypes: [],
-    visibleBmpCreateForm: false
+    visibleBmpCreateForm: false,
+    drawingBmp: false
 };
 
 export default ( state = initialState, action) => {
@@ -109,6 +111,11 @@ export default ( state = initialState, action) => {
                 ...state.storedBmpCreateForm,
                 ...action.kv
             }
+        };
+    case TOGGLE_DRAWING_BMP:
+        return {
+            ...state,
+            drawingBmp: !state.drawingBmp
         };
     default:
         return state;

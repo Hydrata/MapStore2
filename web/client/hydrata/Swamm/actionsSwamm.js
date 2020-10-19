@@ -20,6 +20,7 @@ const MAKE_CREATE_BMP_FORM = 'MAKE_CREATE_BMP_FORM';
 const CLEAR_CREATE_BMP_FORM = 'CLEAR_CREATE_BMP_FORM';
 const MAKE_DEFAULTS_CREATE_BMP_FORM = 'MAKE_DEFAULTS_CREATE_BMP_FORM';
 const UPDATE_CREATE_BMP_FORM = 'UPDATE_CREATE_BMP_FORM';
+const TOGGLE_DRAWING_BMP = 'TOGGLE_DRAWING_BMP';
 
 const fetchSwammBmpTypesSuccess = (config) => {
     return {
@@ -157,6 +158,12 @@ const updateCreateBmpForm = (kv) => {
     };
 };
 
+const toggleDrawingBmp = () => {
+    return {
+        type: TOGGLE_DRAWING_BMP
+    };
+};
+
 const submitCreateBmpForm = (newBmp, dispatch) => {
     console.log('submitCreateBmpForm: ', newBmp);
     return (mapId) => {
@@ -190,5 +197,6 @@ module.exports = {
     CLEAR_CREATE_BMP_FORM, clearCreateBmpForm,
     MAKE_CREATE_BMP_FORM, makeCreateBmpForm,
     MAKE_DEFAULTS_CREATE_BMP_FORM, makeDefaultsBmpCreateForm,
-    UPDATE_CREATE_BMP_FORM, updateCreateBmpForm
+    UPDATE_CREATE_BMP_FORM, updateCreateBmpForm,
+    TOGGLE_DRAWING_BMP, toggleDrawingBmp
 };

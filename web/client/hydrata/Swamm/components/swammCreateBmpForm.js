@@ -4,11 +4,24 @@ const PropTypes = require('prop-types');
 import {Modal, Button, ControlLabel, FormControl, FormGroup, Form, Col} from "react-bootstrap";
 import {
     hideCreateBmpForm,
+    showCreateBmpForm,
     clearCreateBmpForm,
     submitCreateBmpForm,
     makeDefaultsBmpCreateForm,
-    updateCreateBmpForm
+    updateCreateBmpForm,
+    toggleDrawingBmp
 } from "../actionsSwamm";
+import {
+    setLayer,
+    toggleEditMode,
+    createNewFeatures,
+    startDrawingFeature,
+    saveChanges
+} from "../../../actions/featuregrid";
+import {
+    changeDrawingStatus
+} from "../../../actions/draw";
+import {featureTypeSelected, createQuery} from "../../../actions/wfsquery";
 import "../../ProjectManager/projectManager.css";
 import {isInt} from "../../Utils/utils";
 import {orgSelector} from "../selectorsSwamm";
@@ -17,6 +30,7 @@ class SwammCreateBmpFormClass extends React.Component {
     static propTypes = {
         bmpTypeId: PropTypes.number,
         hideCreateBmpForm: PropTypes.func,
+        showCreateBmpForm: PropTypes.func,
         submitCreateBmpForm: PropTypes.func,
         storeCreateBmpForm: PropTypes.func,
         thisBmpType: PropTypes.object,
@@ -25,7 +39,17 @@ class SwammCreateBmpFormClass extends React.Component {
         clearCreateBmpForm: PropTypes.func,
         orgs: PropTypes.array,
         makeDefaultsBmpCreateForm: PropTypes.func,
-        updateCreateBmpForm: PropTypes.func
+        updateCreateBmpForm: PropTypes.func,
+        setLayer: PropTypes.func,
+        featureTypeSelected: PropTypes.func,
+        toggleEditMode: PropTypes.func,
+        createNewFeatures: PropTypes.func,
+        createQuery: PropTypes.func,
+        changeDrawingStatus: PropTypes.func,
+        startDrawingFeature: PropTypes.func,
+        saveChanges: PropTypes.func,
+        toggleDrawingBmp: PropTypes.func,
+        layers: PropTypes.array
     };
 
     static defaultProps = {
@@ -59,13 +83,6 @@ class SwammCreateBmpFormClass extends React.Component {
                 </Modal.Header>
                 <Modal.Body>
                     <Form horizontal>
-                        <FormGroup controlId="formControlsSelect">
-                            <ControlLabel>Select</ControlLabel>
-                            <FormControl componentClass="select" placeholder="select">
-                                <option value="select">select</option>
-                                <option value="other">...</option>
-                            </FormControl>
-                        </FormGroup>
                         <FormGroup controlId="formControlsSelect">
                             <Col componentClass={ControlLabel} sm={6}>
                               Organisation
@@ -206,14 +223,15 @@ class SwammCreateBmpFormClass extends React.Component {
                                         />
                                         <FormControl.Feedback/>
                                     </React.Fragment> :
-                                    <Button
-                                        bsStyle="success"
-                                        style={{opacity: "0.7"}}
-                                        onClick={() => {
-                                            this.props.hideCreateBmpForm();
-                                        }}>
-                                    Locate Outlet
-                                    </Button>}
+                                    <React.Fragment>
+                                        <Button
+                                            bsStyle="success"
+                                            style={{opacity: "0.7"}}
+                                            onClick={() => this.drawBmpStep1(this.props.thisBmpType.code + '_outlet')}>
+                                        Locate Outlet
+                                        </Button>
+                                    </React.Fragment>
+                                }
                             </Col>
                         </FormGroup>
                         <FormGroup controlId="footprint_fid" validationState={this.validateFid("footprint_fid")}>
@@ -234,14 +252,15 @@ class SwammCreateBmpFormClass extends React.Component {
                                         />
                                         <FormControl.Feedback/>
                                     </React.Fragment> :
-                                    <Button
-                                        bsStyle="success"
-                                        style={{opacity: "0.7"}}
-                                        onClick={() => {
-                                            this.props.hideCreateBmpForm();
-                                        }}>
-                                    Draw footprint
-                                    </Button>}
+                                    <React.Fragment>
+                                        <Button
+                                            bsStyle="success"
+                                            style={{opacity: "0.7"}}
+                                            onClick={() => this.drawBmpStep1(this.props.thisBmpType.code + '_footprint')}>
+                                        Draw footprint
+                                        </Button>
+                                    </React.Fragment>
+                                }
                             </Col>
                         </FormGroup>
                         <FormGroup controlId="watershed_fid" validationState={this.validateFid("watershed_fid")}>
@@ -249,27 +268,28 @@ class SwammCreateBmpFormClass extends React.Component {
                                 Watershed:
                             </Col>
                             <Col sm={5}>
-                                {this.props.storedBmpCreateForm?.outlet_fid ?
+                                {this.props.storedBmpCreateForm?.watershed_fid ?
                                     <React.Fragment>
                                         <FormControl
                                             inline="true"
                                             type={"number"}
                                             step={1}
                                             precision={0}
-                                            name="outlet_fid"
-                                            value={this.props.storedBmpCreateForm?.outlet_fid}
+                                            name="watershed_fid"
+                                            value={this.props.storedBmpCreateForm?.watershed_fid}
                                             onChange={this.handleChange}
                                         />
                                         <FormControl.Feedback/>
                                     </React.Fragment> :
-                                    <Button
-                                        bsStyle="success"
-                                        style={{opacity: "0.7"}}
-                                        onClick={() => {
-                                            this.props.hideCreateBmpForm();
-                                        }}>
-                                    Draw watershed
-                                    </Button>}
+                                    <React.Fragment>
+                                        <Button
+                                            bsStyle="success"
+                                            style={{opacity: "0.7"}}
+                                            onClick={() => this.drawBmpStep1(this.props.thisBmpType.code + '_watershed')}>
+                                        Draw watershed
+                                        </Button>
+                                    </React.Fragment>
+                                }
                             </Col>
                         </FormGroup>
                     </Form>
@@ -315,13 +335,39 @@ class SwammCreateBmpFormClass extends React.Component {
         if (id < 0) return 'error';
         return null;
     }
-
     handleChange(event) {
         const fieldName = event.target.name;
         let fieldValue = event.target.value;
         if (event.target.type === 'number')  {fieldValue = parseFloat(fieldValue);}
         if (event.target.outerHTML.includes('organisation'))  {fieldValue = JSON.parse(fieldValue);}
         this.props.updateCreateBmpForm({[fieldName]: fieldValue});
+    }
+    drawBmpStep1(layerName) {
+        const target_layer = this.props.layers.flat.filter(layer => layer.name === layerName)[0];
+        console.log('target_layer.id: ', target_layer.id);
+        this.props.setLayer(target_layer.id);
+        this.props.featureTypeSelected('http://localhost:8080/geoserver/wfs', layerName);
+        const filterObj =  {
+            featureTypeName: layerName,
+            filterType: 'OGC',
+            ogcVersion: '1.1.0'
+        };
+        this.props.createQuery('http://localhost:8080/geoserver/wfs', filterObj);
+        setTimeout(
+            () => this.drawBmpStep2(),
+            1000
+        );
+    }
+    drawBmpStep2() {
+        // edit mode
+        this.props.toggleEditMode();
+        this.props.changeDrawingStatus();
+        // add new feature
+        this.props.createNewFeatures([{}]);
+        this.props.hideCreateBmpForm();
+        this.props.toggleDrawingBmp();
+        // draw feature
+        this.props.startDrawingFeature();
     }
 }
 
@@ -330,17 +376,28 @@ const mapStateToProps = (state) => {
         bmpTypes: state?.swamm?.bmpTypes,
         thisBmpType: state?.swamm?.bmpTypes.filter((bmpType) => bmpType.id === state?.swamm?.BmpCreateFormBmpTypeId)[0],
         storedBmpCreateForm: state?.swamm?.storedBmpCreateForm || {},
-        orgs: orgSelector(state)
+        orgs: orgSelector(state),
+        layers: state?.layers
     };
 };
 
 const mapDispatchToProps = ( dispatch ) => {
     return {
         hideCreateBmpForm: () => dispatch(hideCreateBmpForm()),
+        showCreateBmpForm: () => dispatch(showCreateBmpForm()),
         submitCreateBmpForm: (newBmp) => dispatch(submitCreateBmpForm(newBmp)),
         updateCreateBmpForm: (kv) => dispatch(updateCreateBmpForm(kv)),
         clearCreateBmpForm: () => dispatch(clearCreateBmpForm()),
-        makeDefaultsBmpCreateForm: (bmpType) => dispatch(makeDefaultsBmpCreateForm(bmpType))
+        makeDefaultsBmpCreateForm: (bmpType) => dispatch(makeDefaultsBmpCreateForm(bmpType)),
+        setLayer: (id) => dispatch(setLayer(id)),
+        featureTypeSelected: (url, typeName) => dispatch(featureTypeSelected(url, typeName)),
+        toggleEditMode: () => dispatch(toggleEditMode()),
+        createNewFeatures: (features) => dispatch(createNewFeatures(features)),
+        createQuery: (searchUrl, filterObj) => dispatch(createQuery(searchUrl, filterObj)),
+        changeDrawingStatus: () => dispatch(changeDrawingStatus()),
+        startDrawingFeature: () => dispatch(startDrawingFeature()),
+        saveChanges: () => dispatch(saveChanges()),
+        toggleDrawingBmp: () => dispatch(toggleDrawingBmp())
     };
 };
 

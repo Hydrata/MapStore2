@@ -10,13 +10,15 @@ import {
     toggleFootprints,
     toggleWatersheds,
     showCreateBmpForm,
-    makeCreateBmpForm
+    makeCreateBmpForm,
+    toggleDrawingBmp
 } from "../actionsSwamm";
 import {SwammBmpToggler} from "./swammBmpToggler";
 import {SwammCreateBmpForm} from "./swammCreateBmpForm";
 import {changeLayerProperties} from "../../../actions/layers";
 import {setMenuGroup} from "../../ProjectManager/actionsProjectManager";
 import {orgSelector} from "../selectorsSwamm";
+import {saveChanges} from "../../../actions/featuregrid";
 
 const panelStyle = {
     position: "absolute",
@@ -63,6 +65,14 @@ const filterButtonStyle = {
     width: "100px"
 };
 
+const bmpProgressButtonStyle = {
+    marginTop: "50px",
+    marginLeft: "20px",
+    position: "absolute",
+    opacity: "0.7",
+    borderRadius: "4px"
+};
+
 class SwammContainer extends React.Component {
     static propTypes = {
         fetchSwammBmpTypes: PropTypes.func,
@@ -86,7 +96,10 @@ class SwammContainer extends React.Component {
         makeCreateBmpForm: PropTypes.func,
         storedBmpCreateForm: PropTypes.object,
         showMenuGroup: PropTypes.bool,
-        setMenuGroup: PropTypes.func
+        setMenuGroup: PropTypes.func,
+        saveChanges: PropTypes.func,
+        toggleDrawingBmp: PropTypes.func,
+        drawingBmp: PropTypes.bool
     };
 
     static defaultProps = {}
@@ -191,18 +204,33 @@ class SwammContainer extends React.Component {
                     <SwammCreateBmpForm />
                     : null
                 }
-                {this.props.storedBmpCreateForm && !this.props.visibleBmpCreateForm ?
+                {this.props.storedBmpCreateForm && !this.props.visibleBmpCreateForm && !this.props.drawingBmp ?
                     <Button
-                        style={{marginTop: "50px", marginLeft: "20px", position: "absolute", opacity: "0.7", borderRadius: "4px"}}
+                        style={bmpProgressButtonStyle}
                         bsStyle={"success"}
                         onClick={() => this.props.showCreateBmpForm()}
                     >
                         BMP in progress
                     </Button>
-                    : null
+                    : this.props.drawingBmp ?
+                        <Button
+                            bsStyle="success"
+                            style={bmpProgressButtonStyle}
+                            onClick={() => this.drawBmpStep5()}
+                        >
+                            Save
+                        </Button>
+                        : null
                 }
             </div>
         );
+    }
+
+    drawBmpStep5() {
+        // save feature
+        this.props.saveChanges();
+        this.props.showCreateBmpForm();
+        this.props.toggleDrawingBmp();
     }
 
     toggleOutlets = () => {
@@ -257,7 +285,8 @@ const mapStateToProps = (state) => {
         projectCode: state?.projectManager?.data?.code,
         layers: state?.layers,
         visibleBmpCreateForm: state?.swamm?.visibleBmpCreateForm,
-        storedBmpCreateForm: state?.swamm?.storedBmpCreateForm
+        storedBmpCreateForm: state?.swamm?.storedBmpCreateForm,
+        drawingBmp: state?.swamm?.drawingBmp
     };
 };
 
@@ -271,7 +300,9 @@ const mapDispatchToProps = ( dispatch ) => {
         toggleWatershedStatus: () => dispatch(toggleWatersheds()),
         showCreateBmpForm: () => dispatch(showCreateBmpForm()),
         setMenuGroup: (menuGroup) => dispatch(setMenuGroup(menuGroup)),
-        makeCreateBmpForm: (bmpTypeId) => dispatch(makeCreateBmpForm(bmpTypeId))
+        makeCreateBmpForm: (bmpTypeId) => dispatch(makeCreateBmpForm(bmpTypeId)),
+        saveChanges: () => dispatch(saveChanges()),
+        toggleDrawingBmp: () => dispatch(toggleDrawingBmp())
     };
 };
 
