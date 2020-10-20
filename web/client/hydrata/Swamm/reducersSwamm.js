@@ -138,13 +138,13 @@ export default ( state = initialState, action) => {
             console.log('queryGetNewBmpId', queryGetNewBmpId);
             switch (queryGetNewBmpId.split("_")[3].split(".")[0]) {
             case "outlet":
-                shapeId = {outlet_fid: parseInt(queryGetNewBmpId.split("_")[3].split(".")[1], 10)};
+                shapeId = {outlet_fid: queryGetNewBmpId};
                 break;
             case "footprint":
-                shapeId = {footprint_fid: parseInt(queryGetNewBmpId.split("_")[3].split(".")[1], 10)};
+                shapeId = {footprint_fid: queryGetNewBmpId};
                 break;
             case "watershed":
-                shapeId = {watershed_fid: parseInt(queryGetNewBmpId.split("_")[3].split(".")[1], 10)};
+                shapeId = {watershed_fid: queryGetNewBmpId};
                 break;
             default:
                 shapeId = {};

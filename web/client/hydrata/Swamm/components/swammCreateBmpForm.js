@@ -115,7 +115,7 @@ class SwammCreateBmpFormClass extends React.Component {
                                     type="number"
                                     step={0.01}
                                     precision={2}
-                                    name="n_redratio"
+                                    name="override_n_redratio"
                                     value={this.props.storedBmpCreateForm?.override_n_redratio}
                                     onChange={this.handleChange}
                                 />
@@ -132,7 +132,7 @@ class SwammCreateBmpFormClass extends React.Component {
                                     type="number"
                                     step={0.01}
                                     precision={2}
-                                    name="p_redratio"
+                                    name="override_p_redratio"
                                     value={this.props.storedBmpCreateForm?.override_p_redratio}
                                     onChange={this.handleChange}
                                 />
@@ -149,7 +149,7 @@ class SwammCreateBmpFormClass extends React.Component {
                                     type="number"
                                     step={0.01}
                                     precision={2}
-                                    name="s_redratio"
+                                    name="override_s_redratio"
                                     value={this.props.storedBmpCreateForm?.override_s_redratio}
                                     onChange={this.handleChange}
                                 />
@@ -166,7 +166,7 @@ class SwammCreateBmpFormClass extends React.Component {
                                     type={"number"}
                                     step={0.01}
                                     precision={2}
-                                    name="cost_base"
+                                    name="override_cost_base"
                                     value={this.props.storedBmpCreateForm?.override_cost_base}
                                     onChange={this.handleChange}
                                 />
@@ -183,7 +183,7 @@ class SwammCreateBmpFormClass extends React.Component {
                                     type={"number"}
                                     step={0.01}
                                     precision={2}
-                                    name="cost_rate_per_footprint_area"
+                                    name="override_cost_rate_per_footprint_area"
                                     value={this.props.storedBmpCreateForm?.override_cost_rate_per_footprint_area}
                                     onChange={this.handleChange}
                                 />
@@ -200,7 +200,7 @@ class SwammCreateBmpFormClass extends React.Component {
                                     type={"number"}
                                     step={0.01}
                                     precision={2}
-                                    name="cost_rate_per_watershed_area"
+                                    name="override_cost_rate_per_watershed_area"
                                     value={this.props.storedBmpCreateForm?.override_cost_rate_per_watershed_area}
                                     onChange={this.handleChange}
                                 />
@@ -217,7 +217,7 @@ class SwammCreateBmpFormClass extends React.Component {
                                         <FormControl
                                             inline="true"
                                             readOnly="true"
-                                            type={"number"}
+                                            type={"string"}
                                             step={1}
                                             precision={0}
                                             name="outlet_fid"
@@ -247,7 +247,7 @@ class SwammCreateBmpFormClass extends React.Component {
                                         <FormControl
                                             inline="true"
                                             readOnly="true"
-                                            type={"number"}
+                                            type={"string"}
                                             step={1}
                                             precision={0}
                                             name="footprint_fid"
@@ -277,7 +277,7 @@ class SwammCreateBmpFormClass extends React.Component {
                                         <FormControl
                                             inline="true"
                                             readOnly="true"
-                                            type={"number"}
+                                            type={"string"}
                                             step={1}
                                             precision={0}
                                             name="watershed_fid"
@@ -348,18 +348,22 @@ class SwammCreateBmpFormClass extends React.Component {
         this.props.updateCreateBmpForm({[fieldName]: fieldValue});
     }
     drawBmpStep1(layerName) {
-        const targetLayer = this.props.layers.flat.filter(layer => layer.name === layerName)[0];
+        const orgCode = this.props.storedBmpCreateForm.organisation.code;
+        const bits = layerName.split("_");
+        bits[1] = orgCode;
+        const layerNameWithCorrectOrg = bits.join('_');
+        const targetLayer = this.props.layers.flat.filter(layer => layer.name === layerNameWithCorrectOrg)[0];
         this.props.setLayer(targetLayer.id);
-        this.props.featureTypeSelected('http://localhost:8080/geoserver/wfs', layerName);
+        this.props.featureTypeSelected('http://localhost:8080/geoserver/wfs', layerNameWithCorrectOrg);
         const filterObj =  {
-            featureTypeName: layerName,
+            featureTypeName: layerNameWithCorrectOrg,
             filterType: 'OGC',
             ogcVersion: '1.1.0'
         };
         this.props.createQuery('http://localhost:8080/geoserver/wfs', filterObj);
         // TODO: move this to the observables, once I figure out how they work
         setTimeout(
-            () => this.drawBmpStep2(layerName),
+            () => this.drawBmpStep2(layerNameWithCorrectOrg),
             1000
         );
     }
