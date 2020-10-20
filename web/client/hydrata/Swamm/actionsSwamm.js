@@ -20,7 +20,7 @@ const MAKE_CREATE_BMP_FORM = 'MAKE_CREATE_BMP_FORM';
 const CLEAR_CREATE_BMP_FORM = 'CLEAR_CREATE_BMP_FORM';
 const MAKE_DEFAULTS_CREATE_BMP_FORM = 'MAKE_DEFAULTS_CREATE_BMP_FORM';
 const UPDATE_CREATE_BMP_FORM = 'UPDATE_CREATE_BMP_FORM';
-const TOGGLE_DRAWING_BMP = 'TOGGLE_DRAWING_BMP';
+const SET_DRAWING_BMP = 'SET_DRAWING_BMP';
 
 const fetchSwammBmpTypesSuccess = (config) => {
     return {
@@ -158,16 +158,18 @@ const updateCreateBmpForm = (kv) => {
     };
 };
 
-const toggleDrawingBmp = () => {
+const setDrawingBmp = (layerName) => {
     return {
-        type: TOGGLE_DRAWING_BMP
+        type: SET_DRAWING_BMP,
+        layerName: layerName
     };
 };
 
-const submitCreateBmpForm = (newBmp, dispatch) => {
+const submitCreateBmpForm = (newBmp, mapId) => {
     console.log('submitCreateBmpForm: ', newBmp);
-    return (mapId) => {
-        return axios.get(`/swamm/api/${mapId}/bmps/`
+    return (dispatch) => {
+        console.log('post: ', `/swamm/api/${mapId}/bmps/`);
+        return axios.post(`/swamm/api/${mapId}/bmps/`, newBmp
         ).then(
             response => {
                 dispatch(fetchSwammAllBmpsSuccess(response.data));
@@ -198,5 +200,5 @@ module.exports = {
     MAKE_CREATE_BMP_FORM, makeCreateBmpForm,
     MAKE_DEFAULTS_CREATE_BMP_FORM, makeDefaultsBmpCreateForm,
     UPDATE_CREATE_BMP_FORM, updateCreateBmpForm,
-    TOGGLE_DRAWING_BMP, toggleDrawingBmp
+    SET_DRAWING_BMP, setDrawingBmp
 };

@@ -9,7 +9,7 @@ import {
     submitCreateBmpForm,
     makeDefaultsBmpCreateForm,
     updateCreateBmpForm,
-    toggleDrawingBmp
+    setDrawingBmp
 } from "../actionsSwamm";
 import {
     setLayer,
@@ -48,8 +48,10 @@ class SwammCreateBmpFormClass extends React.Component {
         changeDrawingStatus: PropTypes.func,
         startDrawingFeature: PropTypes.func,
         saveChanges: PropTypes.func,
-        toggleDrawingBmp: PropTypes.func,
-        layers: PropTypes.array
+        setDrawingBmp: PropTypes.func,
+        layers: PropTypes.array,
+        query: PropTypes.func,
+        mapId: PropTypes.number
     };
 
     static defaultProps = {
@@ -114,7 +116,7 @@ class SwammCreateBmpFormClass extends React.Component {
                                     step={0.01}
                                     precision={2}
                                     name="n_redratio"
-                                    value={this.props.storedBmpCreateForm?.n_redratio}
+                                    value={this.props.storedBmpCreateForm?.override_n_redratio}
                                     onChange={this.handleChange}
                                 />
                                 <FormControl.Feedback />
@@ -131,7 +133,7 @@ class SwammCreateBmpFormClass extends React.Component {
                                     step={0.01}
                                     precision={2}
                                     name="p_redratio"
-                                    value={this.props.storedBmpCreateForm?.p_redratio}
+                                    value={this.props.storedBmpCreateForm?.override_p_redratio}
                                     onChange={this.handleChange}
                                 />
                                 <FormControl.Feedback />
@@ -148,7 +150,7 @@ class SwammCreateBmpFormClass extends React.Component {
                                     step={0.01}
                                     precision={2}
                                     name="s_redratio"
-                                    value={this.props.storedBmpCreateForm?.s_redratio}
+                                    value={this.props.storedBmpCreateForm?.override_s_redratio}
                                     onChange={this.handleChange}
                                 />
                                 <FormControl.Feedback />
@@ -165,7 +167,7 @@ class SwammCreateBmpFormClass extends React.Component {
                                     step={0.01}
                                     precision={2}
                                     name="cost_base"
-                                    value={this.props.storedBmpCreateForm?.cost_base}
+                                    value={this.props.storedBmpCreateForm?.override_cost_base}
                                     onChange={this.handleChange}
                                 />
                                 <FormControl.Feedback />
@@ -182,7 +184,7 @@ class SwammCreateBmpFormClass extends React.Component {
                                     step={0.01}
                                     precision={2}
                                     name="cost_rate_per_footprint_area"
-                                    value={this.props.storedBmpCreateForm?.cost_rate_per_footprint_area}
+                                    value={this.props.storedBmpCreateForm?.override_cost_rate_per_footprint_area}
                                     onChange={this.handleChange}
                                 />
                                 <FormControl.Feedback />
@@ -199,7 +201,7 @@ class SwammCreateBmpFormClass extends React.Component {
                                     step={0.01}
                                     precision={2}
                                     name="cost_rate_per_watershed_area"
-                                    value={this.props.storedBmpCreateForm?.cost_rate_per_watershed_area}
+                                    value={this.props.storedBmpCreateForm?.override_cost_rate_per_watershed_area}
                                     onChange={this.handleChange}
                                 />
                                 <FormControl.Feedback />
@@ -214,6 +216,7 @@ class SwammCreateBmpFormClass extends React.Component {
                                     <React.Fragment>
                                         <FormControl
                                             inline="true"
+                                            readOnly="true"
                                             type={"number"}
                                             step={1}
                                             precision={0}
@@ -243,6 +246,7 @@ class SwammCreateBmpFormClass extends React.Component {
                                     <React.Fragment>
                                         <FormControl
                                             inline="true"
+                                            readOnly="true"
                                             type={"number"}
                                             step={1}
                                             precision={0}
@@ -272,6 +276,7 @@ class SwammCreateBmpFormClass extends React.Component {
                                     <React.Fragment>
                                         <FormControl
                                             inline="true"
+                                            readOnly="true"
                                             type={"number"}
                                             step={1}
                                             precision={0}
@@ -307,7 +312,7 @@ class SwammCreateBmpFormClass extends React.Component {
                         bsSize="small"
                         style={{opacity: "0.7"}}
                         onClick={() => {
-                            this.props.submitCreateBmpForm(this.props.storedBmpCreateForm);
+                            this.props.submitCreateBmpForm(this.props.storedBmpCreateForm, this.props.mapId);
                             this.props.clearCreateBmpForm();
                         }}>
                         Save
@@ -343,9 +348,8 @@ class SwammCreateBmpFormClass extends React.Component {
         this.props.updateCreateBmpForm({[fieldName]: fieldValue});
     }
     drawBmpStep1(layerName) {
-        const target_layer = this.props.layers.flat.filter(layer => layer.name === layerName)[0];
-        console.log('target_layer.id: ', target_layer.id);
-        this.props.setLayer(target_layer.id);
+        const targetLayer = this.props.layers.flat.filter(layer => layer.name === layerName)[0];
+        this.props.setLayer(targetLayer.id);
         this.props.featureTypeSelected('http://localhost:8080/geoserver/wfs', layerName);
         const filterObj =  {
             featureTypeName: layerName,
@@ -353,19 +357,20 @@ class SwammCreateBmpFormClass extends React.Component {
             ogcVersion: '1.1.0'
         };
         this.props.createQuery('http://localhost:8080/geoserver/wfs', filterObj);
+        // TODO: move this to the observables, once I figure out how they work
         setTimeout(
-            () => this.drawBmpStep2(),
+            () => this.drawBmpStep2(layerName),
             1000
         );
     }
-    drawBmpStep2() {
+    drawBmpStep2(layerName) {
         // edit mode
         this.props.toggleEditMode();
         this.props.changeDrawingStatus();
         // add new feature
         this.props.createNewFeatures([{}]);
         this.props.hideCreateBmpForm();
-        this.props.toggleDrawingBmp();
+        this.props.setDrawingBmp(layerName);
         // draw feature
         this.props.startDrawingFeature();
     }
@@ -373,11 +378,13 @@ class SwammCreateBmpFormClass extends React.Component {
 
 const mapStateToProps = (state) => {
     return {
+        mapId: state?.projectManager?.data?.base_map,
         bmpTypes: state?.swamm?.bmpTypes,
         thisBmpType: state?.swamm?.bmpTypes.filter((bmpType) => bmpType.id === state?.swamm?.BmpCreateFormBmpTypeId)[0],
         storedBmpCreateForm: state?.swamm?.storedBmpCreateForm || {},
         orgs: orgSelector(state),
-        layers: state?.layers
+        layers: state?.layers,
+        query: state?.query
     };
 };
 
@@ -385,7 +392,7 @@ const mapDispatchToProps = ( dispatch ) => {
     return {
         hideCreateBmpForm: () => dispatch(hideCreateBmpForm()),
         showCreateBmpForm: () => dispatch(showCreateBmpForm()),
-        submitCreateBmpForm: (newBmp) => dispatch(submitCreateBmpForm(newBmp)),
+        submitCreateBmpForm: (newBmp, mapId) => dispatch(submitCreateBmpForm(newBmp, mapId)),
         updateCreateBmpForm: (kv) => dispatch(updateCreateBmpForm(kv)),
         clearCreateBmpForm: () => dispatch(clearCreateBmpForm()),
         makeDefaultsBmpCreateForm: (bmpType) => dispatch(makeDefaultsBmpCreateForm(bmpType)),
@@ -397,7 +404,7 @@ const mapDispatchToProps = ( dispatch ) => {
         changeDrawingStatus: () => dispatch(changeDrawingStatus()),
         startDrawingFeature: () => dispatch(startDrawingFeature()),
         saveChanges: () => dispatch(saveChanges()),
-        toggleDrawingBmp: () => dispatch(toggleDrawingBmp())
+        setDrawingBmp: (layerName) => dispatch(setDrawingBmp(layerName))
     };
 };
 

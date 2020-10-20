@@ -11,7 +11,7 @@ import {
     toggleWatersheds,
     showCreateBmpForm,
     makeCreateBmpForm,
-    toggleDrawingBmp
+    setDrawingBmp
 } from "../actionsSwamm";
 import {SwammBmpToggler} from "./swammBmpToggler";
 import {SwammCreateBmpForm} from "./swammCreateBmpForm";
@@ -19,6 +19,7 @@ import {changeLayerProperties} from "../../../actions/layers";
 import {setMenuGroup} from "../../ProjectManager/actionsProjectManager";
 import {orgSelector} from "../selectorsSwamm";
 import {saveChanges} from "../../../actions/featuregrid";
+import {query} from "../../../actions/wfsquery";
 
 const panelStyle = {
     position: "absolute",
@@ -98,8 +99,10 @@ class SwammContainer extends React.Component {
         showMenuGroup: PropTypes.bool,
         setMenuGroup: PropTypes.func,
         saveChanges: PropTypes.func,
-        toggleDrawingBmp: PropTypes.func,
-        drawingBmp: PropTypes.bool
+        setDrawingBmp: PropTypes.func,
+        drawingBmp: PropTypes.bool,
+        query: PropTypes.func,
+        queryStore: PropTypes.func
     };
 
     static defaultProps = {}
@@ -204,34 +207,46 @@ class SwammContainer extends React.Component {
                     <SwammCreateBmpForm />
                     : null
                 }
-                {this.props.storedBmpCreateForm && !this.props.visibleBmpCreateForm && !this.props.drawingBmp ?
-                    <Button
-                        style={bmpProgressButtonStyle}
-                        bsStyle={"success"}
-                        onClick={() => this.props.showCreateBmpForm()}
-                    >
-                        BMP in progress
-                    </Button>
-                    : this.props.drawingBmp ?
+                {
+                    this.props.storedBmpCreateForm && !this.props.visibleBmpCreateForm && !this.props.drawingBmp ?
                         <Button
-                            bsStyle="success"
                             style={bmpProgressButtonStyle}
-                            onClick={() => this.drawBmpStep5()}
+                            bsStyle={"success"}
+                            onClick={() => this.props.showCreateBmpForm()}
                         >
-                            Save
+                            BMP in progress
                         </Button>
-                        : null
+                        : this.props.drawingBmp ?
+                            <Button
+                                bsStyle="success"
+                                style={bmpProgressButtonStyle}
+                                onClick={() => this.drawBmpStep5()}
+                            >
+                                Save
+                            </Button>
+                            : null
                 }
             </div>
         );
     }
 
     drawBmpStep5() {
-        // save feature
+        const filterObj =  {
+            featureTypeName: this.props.drawingBmp,
+            filterType: 'OGC',
+            ogcVersion: '1.1.0',
+            pagination: {
+                maxFeatures: 2000000
+            }
+        };
         this.props.saveChanges();
         this.props.showCreateBmpForm();
-        this.props.toggleDrawingBmp();
+        this.props.setDrawingBmp(null);
+        setTimeout(() => {
+            this.props.query('http://localhost:8080/geoserver/wfs', filterObj, {}, 'queryGetNewBmpId');
+        }, 1000);
     }
+
 
     toggleOutlets = () => {
         this.props.toggleOutletStatus();
@@ -286,7 +301,8 @@ const mapStateToProps = (state) => {
         layers: state?.layers,
         visibleBmpCreateForm: state?.swamm?.visibleBmpCreateForm,
         storedBmpCreateForm: state?.swamm?.storedBmpCreateForm,
-        drawingBmp: state?.swamm?.drawingBmp
+        drawingBmp: state?.swamm?.drawingBmp,
+        queryStore: state?.query
     };
 };
 
@@ -302,7 +318,8 @@ const mapDispatchToProps = ( dispatch ) => {
         setMenuGroup: (menuGroup) => dispatch(setMenuGroup(menuGroup)),
         makeCreateBmpForm: (bmpTypeId) => dispatch(makeCreateBmpForm(bmpTypeId)),
         saveChanges: () => dispatch(saveChanges()),
-        toggleDrawingBmp: () => dispatch(toggleDrawingBmp())
+        setDrawingBmp: (layerName) => dispatch(setDrawingBmp(layerName)),
+        query: (url, filterObj, queryOptions, reason) => dispatch(query(url, filterObj, queryOptions, reason))
     };
 };
 

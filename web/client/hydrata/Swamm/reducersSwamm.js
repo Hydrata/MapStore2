@@ -12,8 +12,10 @@ import {
     CLEAR_CREATE_BMP_FORM,
     MAKE_DEFAULTS_CREATE_BMP_FORM,
     UPDATE_CREATE_BMP_FORM,
-    TOGGLE_DRAWING_BMP
+    SET_DRAWING_BMP
 } from "./actionsSwamm";
+
+import {QUERY_RESULT} from "../../actions/wfsquery";
 
 const initialState = {
     showOutlets: true,
@@ -88,9 +90,22 @@ export default ( state = initialState, action) => {
             BmpCreateFormBmpTypeId: action.bmpTypeId
         };
     case MAKE_DEFAULTS_CREATE_BMP_FORM:
+        const form = {
+            ...action.bmpType,
+            type: action.bmpType.id,
+            project: action.bmpType.project.id,
+            organisation: action.bmpType.organisation.id,
+            override_n_redratio: action.bmpType.n_redratio,
+            override_p_redratio: action.bmpType.p_redratio,
+            override_s_redratio: action.bmpType.s_redratio,
+            override_cost_base: action.bmpType.cost_base,
+            override_cost_rate_per_watershed_area: action.bmpType.cost_rate_per_watershed_area,
+            override_cost_rate_per_footprint_area: action.bmpType.cost_rate_per_footprint_area,
+            notes: ''
+        };
         return {
             ...state,
-            storedBmpCreateForm: action.bmpType
+            storedBmpCreateForm: form
         };
     case HIDE_CREATE_BMP_FORM:
         return {
@@ -112,10 +127,44 @@ export default ( state = initialState, action) => {
                 ...action.kv
             }
         };
-    case TOGGLE_DRAWING_BMP:
+    case QUERY_RESULT:
+        let queryGetNewBmpId = null;
+        let shapeId = null;
+        if (action.reason === 'queryGetNewBmpId') {
+            const ids = action.result.features.map(feature => feature.id);
+            // TODO: It would be much better to get this Id from the WFS response XML,
+            //  rather than assume it's the largest one.
+            queryGetNewBmpId = ids.pop();
+            console.log('queryGetNewBmpId', queryGetNewBmpId);
+            switch (queryGetNewBmpId.split("_")[3].split(".")[0]) {
+            case "outlet":
+                shapeId = {outlet_fid: parseInt(queryGetNewBmpId.split("_")[3].split(".")[1], 10)};
+                break;
+            case "footprint":
+                shapeId = {footprint_fid: parseInt(queryGetNewBmpId.split("_")[3].split(".")[1], 10)};
+                break;
+            case "watershed":
+                shapeId = {watershed_fid: parseInt(queryGetNewBmpId.split("_")[3].split(".")[1], 10)};
+                break;
+            default:
+                shapeId = {};
+            }
+        }
         return {
             ...state,
-            drawingBmp: !state.drawingBmp
+            storedBmpCreateForm: {
+                ...state.storedBmpCreateForm,
+                ...shapeId
+            }
+        };
+    case SET_DRAWING_BMP:
+        let newState = false;
+        if (action.layerName !== state.drawingBmp) {
+            newState = action.layerName;
+        }
+        return {
+            ...state,
+            drawingBmp: newState
         };
     default:
         return state;
