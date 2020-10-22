@@ -11,7 +11,8 @@ import {
     toggleWatersheds,
     showCreateBmpForm,
     makeCreateBmpForm,
-    setDrawingBmp
+    setDrawingBmp,
+    toggleBmpType
 } from "../actionsSwamm";
 import {SwammBmpToggler} from "./swammBmpToggler";
 import {SwammCreateBmpForm} from "./swammCreateBmpForm";
@@ -102,7 +103,9 @@ class SwammContainer extends React.Component {
         setDrawingBmp: PropTypes.func,
         drawingBmp: PropTypes.bool,
         query: PropTypes.func,
-        queryStore: PropTypes.func
+        queryStore: PropTypes.func,
+        toggleBmpType: PropTypes.func,
+        filters: PropTypes.object
     };
 
     static defaultProps = {}
@@ -148,6 +151,7 @@ class SwammContainer extends React.Component {
                                                 className={"btn glyphicon glyphicon-plus pull-right"}
                                                 style={glyphStyle}
                                                 onClick={() => {
+                                                    this.setBmpTypesVisibility(bmpName.name, true);
                                                     this.props.makeCreateBmpForm(bmpName.id);
                                                     this.props.setMenuGroup(null);
                                                 }}
@@ -286,6 +290,44 @@ class SwammContainer extends React.Component {
             });
         });
     }
+
+    setBmpTypesVisibility = (bmpTypeName, visible) => {
+        this.props.bmpTypes.filter((bmpTypeToTest) => bmpTypeName === bmpTypeToTest.name).map((bmpTypeToSet) => {
+            const outletLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpTypeToSet.code + '_outlet';})[0];
+            const footprintLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpTypeToSet.code + '_footprint';})[0];
+            const watershedLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpTypeToSet.code + '_watershed';})[0];
+            this.props.toggleBmpType(bmpTypeToSet, visible);
+            // if the BMP Type is "not visible", make sure none of it's layers are visible either:
+            if (bmpTypeToSet.visibility) {
+                this.props.toggleLayer(outletLayer.id, false);
+                this.props.toggleLayer(footprintLayer.id, false);
+                this.props.toggleLayer(watershedLayer.id, false);
+            // otherwise, set the layer visibility based on the filters:
+            } else {
+                this.props.filters.showOutlets ? this.props.toggleLayer(outletLayer.id, true) : this.props.toggleLayer(outletLayer.id, false);
+                this.props.filters.showFootprints ? this.props.toggleLayer(footprintLayer.id, true) : this.props.toggleLayer(footprintLayer.id, false);
+                this.props.filters.showWatersheds ? this.props.toggleLayer(watershedLayer.id, true) : this.props.toggleLayer(watershedLayer.id, false);
+            }
+        });
+    }
+    // bmpToggle = (bmpCode) => {
+    //     const outletLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpCode + '_outlet';})[0];
+    //     const footprintLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpCode + '_footprint';})[0];
+    //     const watershedLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpCode + '_watershed';})[0];
+    //     // set the global state for the BMP Type:
+    //     this.props.toggleBmpType(this.props.bmpType, !this.props.bmpType.visibility);
+    //     // if the BMP Type is "not visible", make sure none of it's layers are visible either:
+    //     if (this.props.bmpType.visibility) {
+    //         this.props.toggleLayer(outletLayer.id, false);
+    //         this.props.toggleLayer(footprintLayer.id, false);
+    //         this.props.toggleLayer(watershedLayer.id, false);
+    //     // otherwise, set the layer visibility based on the filters:
+    //     } else {
+    //         this.props.filters.showOutlets ? this.props.toggleLayer(outletLayer.id, true) : this.props.toggleLayer(outletLayer.id, false);
+    //         this.props.filters.showFootprints ? this.props.toggleLayer(footprintLayer.id, true) : this.props.toggleLayer(footprintLayer.id, false);
+    //         this.props.filters.showWatersheds ? this.props.toggleLayer(watershedLayer.id, true) : this.props.toggleLayer(watershedLayer.id, false);
+    //     }
+    // }
 }
 
 const mapStateToProps = (state) => {
@@ -302,7 +344,12 @@ const mapStateToProps = (state) => {
         visibleBmpCreateForm: state?.swamm?.visibleBmpCreateForm,
         storedBmpCreateForm: state?.swamm?.storedBmpCreateForm,
         drawingBmp: state?.swamm?.drawingBmp,
-        queryStore: state?.query
+        queryStore: state?.query,
+        filters: {
+            showOutlets: state.swamm?.showOutlets,
+            showFootprints: state.swamm?.showFootprints,
+            showWatersheds: state.swamm?.showWatersheds
+        }
     };
 };
 
@@ -319,7 +366,8 @@ const mapDispatchToProps = ( dispatch ) => {
         makeCreateBmpForm: (bmpTypeId) => dispatch(makeCreateBmpForm(bmpTypeId)),
         saveChanges: () => dispatch(saveChanges()),
         setDrawingBmp: (layerName) => dispatch(setDrawingBmp(layerName)),
-        query: (url, filterObj, queryOptions, reason) => dispatch(query(url, filterObj, queryOptions, reason))
+        query: (url, filterObj, queryOptions, reason) => dispatch(query(url, filterObj, queryOptions, reason)),
+        toggleBmpType: (bmpType, isVisible) => dispatch(toggleBmpType(bmpType, {visibility: isVisible}))
     };
 };
 
