@@ -14,13 +14,13 @@ const TOGGLE_WATERSHEDS = 'TOGGLE_WATERSHEDS';
 const TOGGLE_BMP_TYPE = 'TOGGLE_BMP_TYPE';
 const SET_BMP_TYPE = 'SET_BMP_TYPE';
 
-const SHOW_CREATE_BMP_FORM = 'SHOW_CREATE_BMP_FORM';
-const HIDE_CREATE_BMP_FORM = 'HIDE_CREATE_BMP_FORM';
-const SUBMIT_CREATE_BMP_FORM = 'SUBMIT_CREATE_BMP_FORM';
-const MAKE_CREATE_BMP_FORM = 'MAKE_CREATE_BMP_FORM';
-const CLEAR_CREATE_BMP_FORM = 'CLEAR_CREATE_BMP_FORM';
-const MAKE_DEFAULTS_CREATE_BMP_FORM = 'MAKE_DEFAULTS_CREATE_BMP_FORM';
-const UPDATE_CREATE_BMP_FORM = 'UPDATE_CREATE_BMP_FORM';
+const SHOW_BMP_FORM = 'SHOW_BMP_FORM';
+const HIDE_BMP_FORM = 'HIDE_BMP_FORM';
+const SUBMIT_BMP_FORM = 'SUBMIT_BMP_FORM';
+const MAKE_BMP_FORM = 'MAKE_BMP_FORM';
+const CLEAR_BMP_FORM = 'CLEAR_BMP_FORM';
+const MAKE_DEFAULTS_BMP_FORM = 'MAKE_DEFAULTS_BMP_FORM';
+const UPDATE_BMP_FORM = 'UPDATE_BMP_FORM';
 const SET_DRAWING_BMP = 'SET_DRAWING_BMP';
 
 const fetchSwammBmpTypesSuccess = (config) => {
@@ -130,41 +130,41 @@ const toggleWatersheds = () => {
     };
 };
 
-const makeCreateBmpForm = (bmpTypeId) => {
+const makeBmpForm = (bmpTypeId) => {
     return {
-        type: MAKE_CREATE_BMP_FORM,
+        type: MAKE_BMP_FORM,
         bmpTypeId: bmpTypeId
     };
 };
 
-const showCreateBmpForm = () => {
+const showBmpForm = () => {
     return {
-        type: SHOW_CREATE_BMP_FORM
+        type: SHOW_BMP_FORM
     };
 };
 
-const hideCreateBmpForm = () => {
+const hideBmpForm = () => {
     return {
-        type: HIDE_CREATE_BMP_FORM
+        type: HIDE_BMP_FORM
     };
 };
 
-const makeDefaultsBmpCreateForm = (bmpType) => {
+const makeDefaultsBmpForm = (bmpType) => {
     return {
-        type: MAKE_DEFAULTS_CREATE_BMP_FORM,
+        type: MAKE_DEFAULTS_BMP_FORM,
         bmpType: bmpType
     };
 };
 
-const clearCreateBmpForm = () => {
+const clearBmpForm = () => {
     return {
-        type: CLEAR_CREATE_BMP_FORM
+        type: CLEAR_BMP_FORM
     };
 };
 
-const updateCreateBmpForm = (kv) => {
+const updateBmpForm = (kv) => {
     return {
-        type: UPDATE_CREATE_BMP_FORM,
+        type: UPDATE_BMP_FORM,
         kv: kv
     };
 };
@@ -176,8 +176,8 @@ const setDrawingBmp = (layerName) => {
     };
 };
 
-const submitCreateBmpForm = (newBmp, mapId) => {
-    console.log('submitCreateBmpForm: ', newBmp);
+const submitBmpForm = (newBmp, mapId) => {
+    console.log('submitBmpForm: ', newBmp);
     return (dispatch) => {
         console.log('post: ', `/swamm/api/${mapId}/bmps/`);
         return axios.post(`/swamm/api/${mapId}/bmps/`, newBmp
@@ -205,12 +205,12 @@ module.exports = {
     TOGGLE_OUTLETS, toggleOutlets,
     TOGGLE_FOOTPRINTS, toggleFootprints,
     TOGGLE_WATERSHEDS, toggleWatersheds,
-    SHOW_CREATE_BMP_FORM, showCreateBmpForm,
-    HIDE_CREATE_BMP_FORM, hideCreateBmpForm,
-    SUBMIT_CREATE_BMP_FORM, submitCreateBmpForm,
-    CLEAR_CREATE_BMP_FORM, clearCreateBmpForm,
-    MAKE_CREATE_BMP_FORM, makeCreateBmpForm,
-    MAKE_DEFAULTS_CREATE_BMP_FORM, makeDefaultsBmpCreateForm,
-    UPDATE_CREATE_BMP_FORM, updateCreateBmpForm,
+    SHOW_BMP_FORM, showBmpForm,
+    HIDE_BMP_FORM, hideBmpForm,
+    SUBMIT_BMP_FORM, submitBmpForm,
+    CLEAR_BMP_FORM, clearBmpForm,
+    MAKE_BMP_FORM, makeBmpForm,
+    MAKE_DEFAULTS_BMP_FORM, makeDefaultsBmpForm,
+    UPDATE_BMP_FORM, updateBmpForm,
     SET_DRAWING_BMP, setDrawingBmp
 };

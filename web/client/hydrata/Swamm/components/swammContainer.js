@@ -9,14 +9,14 @@ import {
     toggleOutlets,
     toggleFootprints,
     toggleWatersheds,
-    showCreateBmpForm,
-    makeCreateBmpForm,
+    showBmpForm,
+    makeBmpForm,
     setDrawingBmp,
     toggleBmpType,
     setBmpType
 } from "../actionsSwamm";
 import {SwammBmpToggler} from "./swammBmpToggler";
-import {SwammCreateBmpForm} from "./swammCreateBmpForm";
+import {SwammBmpForm} from "./swammBmpForm";
 import {changeLayerProperties} from "../../../actions/layers";
 import {setMenuGroup} from "../../ProjectManager/actionsProjectManager";
 import {orgSelector} from "../selectorsSwamm";
@@ -95,10 +95,10 @@ class SwammContainer extends React.Component {
         projectCode: PropTypes.string,
         layers: PropTypes.object,
         toggleLayer: PropTypes.func,
-        showCreateBmpForm: PropTypes.func,
-        visibleBmpCreateForm: PropTypes.bool,
-        makeCreateBmpForm: PropTypes.func,
-        storedBmpCreateForm: PropTypes.object,
+        showBmpForm: PropTypes.func,
+        visibleBmpForm: PropTypes.bool,
+        makeBmpForm: PropTypes.func,
+        storedBmpForm: PropTypes.object,
         showMenuGroup: PropTypes.bool,
         setMenuGroup: PropTypes.func,
         saveChanges: PropTypes.func,
@@ -108,7 +108,8 @@ class SwammContainer extends React.Component {
         queryStore: PropTypes.func,
         toggleBmpType: PropTypes.func,
         setBmpType: PropTypes.func,
-        filters: PropTypes.object
+        filters: PropTypes.object,
+        fetchingBmps: PropTypes.bool
     };
 
     static defaultProps = {}
@@ -118,13 +119,25 @@ class SwammContainer extends React.Component {
     }
 
     componentDidUpdate() {
-        if (this.props.mapId) {
-            if (!Array.isArray(this.props.bmpTypes) || !this.props.bmpTypes.length) {
-                this.props.fetchSwammBmpTypes(this.props.mapId);
-            }
-            if (!Array.isArray(this.props.allBmps) || !this.props.allBmps.length) {
-                this.props.fetchSwammAllBmps(this.props.mapId);
-            }
+        if (!this.props.mapId && !this.fetchingBmpTypes) {
+            this.fetchingBmpTypes = false;
+        }
+        if (this.props.mapId && (this.props.bmpTypes.length === 0) && !this.fetchingBmpTypes) {
+            this.fetchingBmpTypes = true;
+            this.props.fetchSwammBmpTypes(this.props.mapId);
+        }
+        if (this.props.mapId && (this.props.bmpTypes.length > 0)) {
+            this.fetchingBmpTypes = false;
+        }
+        if (!this.props.mapId && !this.fetchingBmps) {
+            this.fetchingBmps = false;
+        }
+        if (this.props.mapId && (this.props.allBmps.length === 0) && !this.fetchingBmps) {
+            this.fetchingBmps = true;
+            this.props.fetchSwammAllBmps(this.props.mapId);
+        }
+        if (this.props.mapId && (this.props.allBmps.length > 0)) {
+            this.fetchingBmps = false;
         }
     }
 
@@ -154,7 +167,7 @@ class SwammContainer extends React.Component {
                                                 style={glyphStyle}
                                                 onClick={() => {
                                                     this.setBmpTypesVisibility(bmpName.name, true);
-                                                    this.props.makeCreateBmpForm(bmpName.id);
+                                                    this.props.makeBmpForm(bmpName.id);
                                                     this.props.setMenuGroup(null);
                                                 }}
                                             />
@@ -209,16 +222,16 @@ class SwammContainer extends React.Component {
                     </div>
                     : null
                 }
-                {this.props.visibleBmpCreateForm ?
-                    <SwammCreateBmpForm />
+                {this.props.visibleBmpForm ?
+                    <SwammBmpForm />
                     : null
                 }
                 {
-                    this.props.storedBmpCreateForm && !this.props.visibleBmpCreateForm && !this.props.drawingBmp ?
+                    this.props.storedBmpForm && !this.props.visibleBmpForm && !this.props.drawingBmp ?
                         <Button
                             style={bmpProgressButtonStyle}
                             bsStyle={"success"}
-                            onClick={() => this.props.showCreateBmpForm()}
+                            onClick={() => this.props.showBmpForm()}
                         >
                             BMP in progress
                         </Button>
@@ -246,7 +259,7 @@ class SwammContainer extends React.Component {
             }
         };
         this.props.saveChanges();
-        this.props.showCreateBmpForm();
+        this.props.showBmpForm();
         this.props.setDrawingBmp(null);
         setTimeout(() => {
             this.props.query('http://localhost:8080/geoserver/wfs', filterObj, {}, 'queryGetNewBmpId');
@@ -329,8 +342,8 @@ const mapStateToProps = (state) => {
         showWatersheds: state?.swamm?.showWatersheds,
         projectCode: state?.projectManager?.data?.code,
         layers: state?.layers,
-        visibleBmpCreateForm: state?.swamm?.visibleBmpCreateForm,
-        storedBmpCreateForm: state?.swamm?.storedBmpCreateForm,
+        visibleBmpForm: state?.swamm?.visibleBmpForm,
+        storedBmpForm: state?.swamm?.storedBmpForm,
         drawingBmp: state?.swamm?.drawingBmp,
         queryStore: state?.query,
         filters: {
@@ -349,9 +362,9 @@ const mapDispatchToProps = ( dispatch ) => {
         toggleOutlets: () => dispatch(toggleOutlets()),
         toggleFootprints: () => dispatch(toggleFootprints()),
         toggleWatersheds: () => dispatch(toggleWatersheds()),
-        showCreateBmpForm: () => dispatch(showCreateBmpForm()),
+        showBmpForm: () => dispatch(showBmpForm()),
         setMenuGroup: (menuGroup) => dispatch(setMenuGroup(menuGroup)),
-        makeCreateBmpForm: (bmpTypeId) => dispatch(makeCreateBmpForm(bmpTypeId)),
+        makeBmpForm: (bmpTypeId) => dispatch(makeBmpForm(bmpTypeId)),
         saveChanges: () => dispatch(saveChanges()),
         setDrawingBmp: (layerName) => dispatch(setDrawingBmp(layerName)),
         query: (url, filterObj, queryOptions, reason) => dispatch(query(url, filterObj, queryOptions, reason)),

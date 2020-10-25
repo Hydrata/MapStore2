@@ -7,14 +7,15 @@ import {
     TOGGLE_WATERSHEDS,
     TOGGLE_BMP_TYPE,
     SET_BMP_TYPE,
-    SHOW_CREATE_BMP_FORM,
-    HIDE_CREATE_BMP_FORM,
-    MAKE_CREATE_BMP_FORM,
-    CLEAR_CREATE_BMP_FORM,
-    MAKE_DEFAULTS_CREATE_BMP_FORM,
-    UPDATE_CREATE_BMP_FORM,
+    SHOW_BMP_FORM,
+    HIDE_BMP_FORM,
+    MAKE_BMP_FORM,
+    CLEAR_BMP_FORM,
+    MAKE_DEFAULTS_BMP_FORM,
+    UPDATE_BMP_FORM,
     SET_DRAWING_BMP
 } from "./actionsSwamm";
+import { LOAD_FEATURE_INFO } from "../../actions/mapInfo";
 
 import {QUERY_RESULT} from "../../actions/wfsquery";
 
@@ -24,12 +25,37 @@ const initialState = {
     showWatersheds: true,
     bmpTypes: [],
     allBmps: [],
-    visibleBmpCreateForm: false,
+    visibleBmpForm: false,
+    creatingNewBmp: false,
+    updatingBmpId: null,
     drawingBmp: false
 };
 
 export default ( state = initialState, action) => {
     switch (action.type) {
+    case LOAD_FEATURE_INFO:
+        const bmpFeature = action?.data?.features.map((feature) => {
+            if (['outlet', 'watershed', 'footprint'].some(item => feature.id.includes(item))) {return feature;}
+            return null;
+        });
+        if (bmpFeature.length > 0) {
+            let bmp;
+            if (state.allBmps.filter((bmpToCheck) => bmpToCheck.watershed_fid === bmpFeature[0].id)[0]) {
+                bmp = state.allBmps.filter((bmpToCheck) => bmpToCheck.watershed_fid === bmpFeature[0].id)[0];
+            }
+            if (state.allBmps.filter((bmpToCheck) => bmpToCheck.footprint_fid === bmpFeature[0].id)[0]) {
+                bmp = state.allBmps.filter((bmpToCheck) => bmpToCheck.footprint_fid === bmpFeature[0].id)[0];
+            }
+            if (state.allBmps.filter((bmpToCheck) => bmpToCheck.outlet_fid === bmpFeature[0].id)[0]) {
+                bmp = state.allBmps.filter((bmpToCheck) => bmpToCheck.outlet_fid === bmpFeature[0].id)[0];
+            }
+            return {
+                ...state,
+                visibleBmpForm: true,
+                updatingBmp: bmp
+            };
+        }
+        return state;
     case FETCH_SWAMM_BMPTYPES:
         return {
             ...state,
@@ -93,18 +119,19 @@ export default ( state = initialState, action) => {
             ...state,
             showWatersheds: !state.showWatersheds
         };
-    case SHOW_CREATE_BMP_FORM:
+    case SHOW_BMP_FORM:
         return {
             ...state,
-            visibleBmpCreateForm: true
+            visibleBmpForm: true
         };
-    case MAKE_CREATE_BMP_FORM:
+    case MAKE_BMP_FORM:
         return {
             ...state,
-            visibleBmpCreateForm: true,
-            BmpCreateFormBmpTypeId: action.bmpTypeId
+            creatingNewBmp: true,
+            visibleBmpForm: true,
+            BmpFormBmpTypeId: action.bmpTypeId
         };
-    case MAKE_DEFAULTS_CREATE_BMP_FORM:
+    case MAKE_DEFAULTS_BMP_FORM:
         const form = {
             ...action.bmpType,
             type: action.bmpType.id,
@@ -120,25 +147,26 @@ export default ( state = initialState, action) => {
         };
         return {
             ...state,
-            storedBmpCreateForm: form
+            storedBmpForm: form
         };
-    case HIDE_CREATE_BMP_FORM:
+    case HIDE_BMP_FORM:
         return {
             ...state,
-            visibleBmpCreateForm: false
+            visibleBmpForm: false
         };
-    case CLEAR_CREATE_BMP_FORM:
+    case CLEAR_BMP_FORM:
         return {
             ...state,
-            storedBmpCreateForm: null,
-            BmpCreateFormBmpTypeId: null,
-            visibleBmpCreateForm: false
+            creatingNewBmp: false,
+            storedBmpForm: null,
+            BmpFormBmpTypeId: null,
+            visibleBmpForm: false
         };
-    case UPDATE_CREATE_BMP_FORM:
+    case UPDATE_BMP_FORM:
         return {
             ...state,
-            storedBmpCreateForm: {
-                ...state.storedBmpCreateForm,
+            storedBmpForm: {
+                ...state.storedBmpForm,
                 ...action.kv
             }
         };
@@ -167,8 +195,8 @@ export default ( state = initialState, action) => {
         }
         return {
             ...state,
-            storedBmpCreateForm: {
-                ...state.storedBmpCreateForm,
+            storedBmpForm: {
+                ...state.storedBmpForm,
                 ...shapeId
             }
         };
