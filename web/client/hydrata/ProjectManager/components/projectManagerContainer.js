@@ -19,7 +19,8 @@ class ProjectManagerContainer extends React.Component {
         layers: PropTypes.array,
         projectTitle: PropTypes.string,
         isFetching: PropTypes.bool,
-        hasPmData: PropTypes.object
+        hasPmData: PropTypes.object,
+        openMenuGroup: PropTypes.object
     };
 
     static defaultProps = {
@@ -62,7 +63,8 @@ class ProjectManagerContainer extends React.Component {
         return (
             <div style={{position: "absolute"}} id={"project-manager"}>
                 <MenuButtonList menuGroups={this.props.menuGroups} openMenuGroup={this.props.openMenuGroup}/>
-                { this.props.openMenuGroup?.id_label === 'swamm' ? <SwammContainer showMenuGroup={true}/> :
+                { this.props.openMenuGroup?.id_label === 'swamm' ?
+                    <SwammContainer showMenuGroup={true}/> :
                     this.props.openMenuGroup ? <MenuPanel menuGroup={this.props.openMenuGroup}/> : null }
                 <LegendPanel/>
                 <SwammContainer showMenuGroup={false}/>

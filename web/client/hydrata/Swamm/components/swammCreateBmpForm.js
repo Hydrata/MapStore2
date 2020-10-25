@@ -228,7 +228,8 @@ class SwammCreateBmpFormClass extends React.Component {
                                     </React.Fragment> :
                                     <React.Fragment>
                                         <Button
-                                            bsStyle="success"
+                                            disabled={ !this.props.storedBmpCreateForm?.organisation}
+                                            bsStyle={ this.props.storedBmpCreateForm?.organisation ? "success" : "disabled"}
                                             style={{opacity: "0.7"}}
                                             onClick={() => this.drawBmpStep1(this.props.thisBmpType.code + '_outlet')}>
                                         Locate Outlet
@@ -258,7 +259,8 @@ class SwammCreateBmpFormClass extends React.Component {
                                     </React.Fragment> :
                                     <React.Fragment>
                                         <Button
-                                            bsStyle="success"
+                                            disabled={ !this.props.storedBmpCreateForm?.organisation}
+                                            bsStyle={ this.props.storedBmpCreateForm?.organisation ? "success" : "disabled"}
                                             style={{opacity: "0.7"}}
                                             onClick={() => this.drawBmpStep1(this.props.thisBmpType.code + '_footprint')}>
                                         Draw footprint
@@ -288,7 +290,8 @@ class SwammCreateBmpFormClass extends React.Component {
                                     </React.Fragment> :
                                     <React.Fragment>
                                         <Button
-                                            bsStyle="success"
+                                            disabled={ !this.props.storedBmpCreateForm?.organisation}
+                                            bsStyle={ this.props.storedBmpCreateForm?.organisation ? "success" : "disabled"}
                                             style={{opacity: "0.7"}}
                                             onClick={() => this.drawBmpStep1(this.props.thisBmpType.code + '_watershed')}>
                                         Draw watershed
@@ -308,12 +311,18 @@ class SwammCreateBmpFormClass extends React.Component {
                         Cancel
                     </Button>
                     <Button
+                        bsStyle="warning"
+                        bsSize="small"
+                        style={{opacity: "0.7"}}
+                        onClick={() => this.props.hideCreateBmpForm()}>
+                        Close
+                    </Button>
+                    <Button
                         bsStyle="success"
                         bsSize="small"
                         style={{opacity: "0.7"}}
                         onClick={() => {
                             this.props.submitCreateBmpForm(this.props.storedBmpCreateForm, this.props.mapId);
-                            this.props.clearCreateBmpForm();
                         }}>
                         Save
                     </Button>

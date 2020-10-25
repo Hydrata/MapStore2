@@ -85,9 +85,10 @@ class SwammContainer extends React.Component {
         orgs: PropTypes.array,
         bmpNames: PropTypes.array,
         bmpTypes: PropTypes.array,
-        toggleOutletStatus: PropTypes.func,
-        toggleFootprintStatus: PropTypes.func,
-        toggleWatershedStatus: PropTypes.func,
+        allBmps: PropTypes.array,
+        toggleOutlets: PropTypes.func,
+        toggleFootprints: PropTypes.func,
+        toggleWatersheds: PropTypes.func,
         showOutlets: PropTypes.bool,
         showFootprints: PropTypes.bool,
         showWatersheds: PropTypes.bool,
@@ -114,20 +115,17 @@ class SwammContainer extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {
-            mapId: null,
-            data: [],
-            orgs: [],
-            bmpTypes: [],
-            bmps: []
-        };
     }
 
-    componentDidMount() {
-        if (!Array.isArray(this.props.bmpTypes) || !this.props.bmpTypes.length) {
-            this.props.fetchSwammBmpTypes(this.props.mapId);
+    componentDidUpdate() {
+        if (this.props.mapId) {
+            if (!Array.isArray(this.props.bmpTypes) || !this.props.bmpTypes.length) {
+                this.props.fetchSwammBmpTypes(this.props.mapId);
+            }
+            if (!Array.isArray(this.props.allBmps) || !this.props.allBmps.length) {
+                this.props.fetchSwammAllBmps(this.props.mapId);
+            }
         }
-        this.props.fetchSwammAllBmps(this.props.mapId);
     }
 
     render() {
@@ -257,7 +255,7 @@ class SwammContainer extends React.Component {
 
 
     toggleOutlets = () => {
-        this.props.toggleOutletStatus();
+        this.props.toggleOutlets();
         const outletLayers = this.props?.layers?.flat.filter((layer) => layer.name.includes('_outlet'));
         const visibleBmpTypes = this.props?.bmpTypes.filter((bmpType) => bmpType.visibility);
         outletLayers.map((layer) => {
@@ -270,7 +268,7 @@ class SwammContainer extends React.Component {
     }
 
     toggleFootprints = () => {
-        this.props.toggleFootprintStatus();
+        this.props.toggleFootprints();
         const footprintLayers = this.props?.layers?.flat.filter((layer) => layer.name.includes('_footprint'));
         const visibleBmpTypes = this.props?.bmpTypes.filter((bmpType) => bmpType.visibility);
         footprintLayers.map((layer) => {
@@ -283,7 +281,7 @@ class SwammContainer extends React.Component {
     }
 
     toggleWatersheds = () => {
-        this.props.toggleWatershedStatus();
+        this.props.toggleWatersheds();
         const watershedLayers = this.props?.layers?.flat.filter((layer) => layer.name.includes('_watershed'));
         const visibleBmpTypes = this.props?.bmpTypes.filter((bmpType) => bmpType.visibility);
         watershedLayers.map((layer) => {
@@ -296,6 +294,9 @@ class SwammContainer extends React.Component {
     }
 
     setBmpTypesVisibility = (bmpTypeName, visible) => {
+        if (!this.props.showOutlets) {this.toggleOutlets();}
+        if (!this.props.showFootprints) {this.toggleFootprints();}
+        if (!this.props.showWatersheds) {this.toggleWatersheds();}
         this.props.bmpTypes.filter((bmpTypeToTest) => bmpTypeName === bmpTypeToTest.name).map((bmpTypeToSet) => {
             const outletLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpTypeToSet.code + '_outlet';})[0];
             const footprintLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpTypeToSet.code + '_footprint';})[0];
@@ -314,24 +315,6 @@ class SwammContainer extends React.Component {
             }
         });
     }
-    // bmpToggle = (bmpCode) => {
-    //     const outletLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpCode + '_outlet';})[0];
-    //     const footprintLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpCode + '_footprint';})[0];
-    //     const watershedLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpCode + '_watershed';})[0];
-    //     // set the global state for the BMP Type:
-    //     this.props.toggleBmpType(this.props.bmpType, !this.props.bmpType.visibility);
-    //     // if the BMP Type is "not visible", make sure none of it's layers are visible either:
-    //     if (this.props.bmpType.visibility) {
-    //         this.props.toggleLayer(outletLayer.id, false);
-    //         this.props.toggleLayer(footprintLayer.id, false);
-    //         this.props.toggleLayer(watershedLayer.id, false);
-    //     // otherwise, set the layer visibility based on the filters:
-    //     } else {
-    //         this.props.filters.showOutlets ? this.props.toggleLayer(outletLayer.id, true) : this.props.toggleLayer(outletLayer.id, false);
-    //         this.props.filters.showFootprints ? this.props.toggleLayer(footprintLayer.id, true) : this.props.toggleLayer(footprintLayer.id, false);
-    //         this.props.filters.showWatersheds ? this.props.toggleLayer(watershedLayer.id, true) : this.props.toggleLayer(watershedLayer.id, false);
-    //     }
-    // }
 }
 
 const mapStateToProps = (state) => {
@@ -340,6 +323,7 @@ const mapStateToProps = (state) => {
         orgs: orgSelector(state),
         bmpNames: state?.swamm?.bmpTypes ? state?.swamm?.bmpTypes.filter((v, i, a)=>a.findIndex(t=>(t.name === v.name)) === i) : [],
         bmpTypes: state?.swamm?.bmpTypes,
+        allBmps: state?.swamm?.allBmps,
         showOutlets: state?.swamm?.showOutlets,
         showFootprints: state?.swamm?.showFootprints,
         showWatersheds: state?.swamm?.showWatersheds,
@@ -362,9 +346,9 @@ const mapDispatchToProps = ( dispatch ) => {
         fetchSwammBmpTypes: fetchSwammBmpTypes(dispatch),
         fetchSwammAllBmps: fetchSwammAllBmps(dispatch),
         toggleLayer: (layer, isVisible) => dispatch(changeLayerProperties(layer, {visibility: isVisible})),
-        toggleOutletStatus: () => dispatch(toggleOutlets()),
-        toggleFootprintStatus: () => dispatch(toggleFootprints()),
-        toggleWatershedStatus: () => dispatch(toggleWatersheds()),
+        toggleOutlets: () => dispatch(toggleOutlets()),
+        toggleFootprints: () => dispatch(toggleFootprints()),
+        toggleWatersheds: () => dispatch(toggleWatersheds()),
         showCreateBmpForm: () => dispatch(showCreateBmpForm()),
         setMenuGroup: (menuGroup) => dispatch(setMenuGroup(menuGroup)),
         makeCreateBmpForm: (bmpTypeId) => dispatch(makeCreateBmpForm(bmpTypeId)),

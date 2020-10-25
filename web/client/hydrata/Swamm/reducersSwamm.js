@@ -23,6 +23,7 @@ const initialState = {
     showFootprints: true,
     showWatersheds: true,
     bmpTypes: [],
+    allBmps: [],
     visibleBmpCreateForm: false,
     drawingBmp: false
 };
@@ -108,7 +109,7 @@ export default ( state = initialState, action) => {
             ...action.bmpType,
             type: action.bmpType.id,
             project: action.bmpType.project.id,
-            organisation: action.bmpType.organisation.id,
+            organisation: null,
             override_n_redratio: action.bmpType.n_redratio,
             override_p_redratio: action.bmpType.p_redratio,
             override_s_redratio: action.bmpType.s_redratio,
