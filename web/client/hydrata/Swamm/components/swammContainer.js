@@ -12,7 +12,8 @@ import {
     showCreateBmpForm,
     makeCreateBmpForm,
     setDrawingBmp,
-    toggleBmpType
+    toggleBmpType,
+    setBmpType
 } from "../actionsSwamm";
 import {SwammBmpToggler} from "./swammBmpToggler";
 import {SwammCreateBmpForm} from "./swammCreateBmpForm";
@@ -105,6 +106,7 @@ class SwammContainer extends React.Component {
         query: PropTypes.func,
         queryStore: PropTypes.func,
         toggleBmpType: PropTypes.func,
+        setBmpType: PropTypes.func,
         filters: PropTypes.object
     };
 
@@ -122,7 +124,9 @@ class SwammContainer extends React.Component {
     }
 
     componentDidMount() {
-        this.props.fetchSwammBmpTypes(this.props.mapId);
+        if (!Array.isArray(this.props.bmpTypes) || !this.props.bmpTypes.length) {
+            this.props.fetchSwammBmpTypes(this.props.mapId);
+        }
         this.props.fetchSwammAllBmps(this.props.mapId);
     }
 
@@ -296,9 +300,9 @@ class SwammContainer extends React.Component {
             const outletLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpTypeToSet.code + '_outlet';})[0];
             const footprintLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpTypeToSet.code + '_footprint';})[0];
             const watershedLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpTypeToSet.code + '_watershed';})[0];
-            this.props.toggleBmpType(bmpTypeToSet, visible);
+            this.props.setBmpType(bmpTypeToSet, visible);
             // if the BMP Type is "not visible", make sure none of it's layers are visible either:
-            if (bmpTypeToSet.visibility) {
+            if (!visible) {
                 this.props.toggleLayer(outletLayer.id, false);
                 this.props.toggleLayer(footprintLayer.id, false);
                 this.props.toggleLayer(watershedLayer.id, false);
@@ -367,7 +371,8 @@ const mapDispatchToProps = ( dispatch ) => {
         saveChanges: () => dispatch(saveChanges()),
         setDrawingBmp: (layerName) => dispatch(setDrawingBmp(layerName)),
         query: (url, filterObj, queryOptions, reason) => dispatch(query(url, filterObj, queryOptions, reason)),
-        toggleBmpType: (bmpType, isVisible) => dispatch(toggleBmpType(bmpType, {visibility: isVisible}))
+        toggleBmpType: (bmpType) => dispatch(toggleBmpType(bmpType)),
+        setBmpType: (bmpType, isVisible) => dispatch(setBmpType(bmpType, isVisible))
     };
 };
 

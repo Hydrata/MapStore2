@@ -12,6 +12,7 @@ const TOGGLE_OUTLETS = 'TOGGLE_OUTLETS';
 const TOGGLE_FOOTPRINTS = 'TOGGLE_FOOTPRINTS';
 const TOGGLE_WATERSHEDS = 'TOGGLE_WATERSHEDS';
 const TOGGLE_BMP_TYPE = 'TOGGLE_BMP_TYPE';
+const SET_BMP_TYPE = 'SET_BMP_TYPE';
 
 const SHOW_CREATE_BMP_FORM = 'SHOW_CREATE_BMP_FORM';
 const HIDE_CREATE_BMP_FORM = 'HIDE_CREATE_BMP_FORM';
@@ -85,6 +86,16 @@ const toggleBmpType = (bmpType) => {
         dispatch({
             type: 'TOGGLE_BMP_TYPE',
             bmpType: bmpType
+        });
+    };
+};
+
+const setBmpType = (bmpType, isVisible) => {
+    return (dispatch) => {
+        dispatch({
+            type: 'SET_BMP_TYPE',
+            bmpType: bmpType,
+            isVisible: isVisible
         });
     };
 };
@@ -190,6 +201,7 @@ module.exports = {
     FETCH_SWAMM_ALL_BMPS_ERROR, fetchSwammAllBmpsError,
     FETCH_SWAMM_ALL_BMPS_SUCCESS, fetchSwammAllBmpsSuccess,
     TOGGLE_BMP_TYPE, toggleBmpType,
+    SET_BMP_TYPE, setBmpType,
     TOGGLE_OUTLETS, toggleOutlets,
     TOGGLE_FOOTPRINTS, toggleFootprints,
     TOGGLE_WATERSHEDS, toggleWatersheds,

@@ -6,6 +6,7 @@ import {
     TOGGLE_FOOTPRINTS,
     TOGGLE_WATERSHEDS,
     TOGGLE_BMP_TYPE,
+    SET_BMP_TYPE,
     SHOW_CREATE_BMP_FORM,
     HIDE_CREATE_BMP_FORM,
     MAKE_CREATE_BMP_FORM,
@@ -35,7 +36,7 @@ export default ( state = initialState, action) => {
         };
     case FETCH_SWAMM_BMPTYPES_SUCCESS:
         const newBmpTypes = action.bmpTypes.map(function(bmpType) {
-            bmpType.visibility = false;
+            if (!bmpType.visibility) {bmpType.visibilty = false;}
             bmpType.code = bmpType.project.code + '_' + bmpType.organisation.code + '_' + bmpType.code;
             return bmpType;
         });
@@ -58,6 +59,19 @@ export default ( state = initialState, action) => {
                     return {
                         ...bmpType,
                         visibility: !action.bmpType.visibility
+                    };
+                }
+                return bmpType;
+            })
+        };
+    case SET_BMP_TYPE:
+        return {
+            ...state,
+            bmpTypes: state.bmpTypes.map(bmpType => {
+                if (bmpType.id === action.bmpType.id) {
+                    return {
+                        ...bmpType,
+                        visibility: action.isVisible
                     };
                 }
                 return bmpType;
