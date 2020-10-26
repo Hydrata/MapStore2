@@ -12,7 +12,9 @@ import {
     MAKE_BMP_FORM,
     CLEAR_BMP_FORM,
     MAKE_DEFAULTS_BMP_FORM,
+    MAKE_EXISTING_BMP_FORM,
     UPDATE_BMP_FORM,
+    SUBMIT_BMP_FORM_SUCCESS,
     SET_DRAWING_BMP
 } from "./actionsSwamm";
 import { LOAD_FEATURE_INFO } from "../../actions/mapInfo";
@@ -27,7 +29,6 @@ const initialState = {
     allBmps: [],
     visibleBmpForm: false,
     creatingNewBmp: false,
-    updatingBmpId: null,
     drawingBmp: false
 };
 
@@ -132,8 +133,9 @@ export default ( state = initialState, action) => {
             BmpFormBmpTypeId: action.bmpTypeId
         };
     case MAKE_DEFAULTS_BMP_FORM:
-        const form = {
+        const defaultsForm = {
             ...action.bmpType,
+            id: null,
             type: action.bmpType.id,
             project: action.bmpType.project.id,
             organisation: null,
@@ -147,7 +149,27 @@ export default ( state = initialState, action) => {
         };
         return {
             ...state,
-            storedBmpForm: form
+            storedBmpForm: defaultsForm
+        };
+    case MAKE_EXISTING_BMP_FORM:
+        const existingForm = {
+            ...action.bmp,
+            id: action.bmp.id,
+            type: action.bmp.type_data.id,
+            project: action.bmp.project,
+            organisation: action.bmp.type_data.organisation,
+            override_n_redratio: action.bmp.override_n_redratio,
+            override_p_redratio: action.bmp.override_p_redratio,
+            override_s_redratio: action.bmp.override_s_redratio,
+            override_cost_base: action.bmp.override_cost_base,
+            override_cost_rate_per_watershed_area: action.bmp.override_cost_rate_per_watershed_area,
+            override_cost_rate_per_footprint_area: action.bmp.override_cost_rate_per_footprint_area,
+            notes: ''
+        };
+        return {
+            ...state,
+            storedBmpForm: existingForm,
+            updatingBmp: null
         };
     case HIDE_BMP_FORM:
         return {
@@ -160,7 +182,17 @@ export default ( state = initialState, action) => {
             creatingNewBmp: false,
             storedBmpForm: null,
             BmpFormBmpTypeId: null,
-            visibleBmpForm: false
+            visibleBmpForm: false,
+            updatingBmp: null
+        };
+    case SUBMIT_BMP_FORM_SUCCESS:
+        return {
+            ...state,
+            creatingNewBmp: false,
+            storedBmpForm: null,
+            BmpFormBmpTypeId: null,
+            visibleBmpForm: false,
+            updatingBmp: null
         };
     case UPDATE_BMP_FORM:
         return {

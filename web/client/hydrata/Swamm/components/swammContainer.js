@@ -356,8 +356,8 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = ( dispatch ) => {
     return {
-        fetchSwammBmpTypes: fetchSwammBmpTypes(dispatch),
-        fetchSwammAllBmps: fetchSwammAllBmps(dispatch),
+        fetchSwammBmpTypes: (mapId) => dispatch(fetchSwammBmpTypes(mapId)),
+        fetchSwammAllBmps: (mapId) => dispatch(fetchSwammAllBmps(mapId)),
         toggleLayer: (layer, isVisible) => dispatch(changeLayerProperties(layer, {visibility: isVisible})),
         toggleOutlets: () => dispatch(toggleOutlets()),
         toggleFootprints: () => dispatch(toggleFootprints()),

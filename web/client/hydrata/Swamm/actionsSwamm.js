@@ -17,9 +17,12 @@ const SET_BMP_TYPE = 'SET_BMP_TYPE';
 const SHOW_BMP_FORM = 'SHOW_BMP_FORM';
 const HIDE_BMP_FORM = 'HIDE_BMP_FORM';
 const SUBMIT_BMP_FORM = 'SUBMIT_BMP_FORM';
+const SUBMIT_BMP_FORM_SUCCESS = 'SUBMIT_BMP_FORM_SUCCESS';
+const SUBMIT_BMP_FORM_ERROR = 'SUBMIT_BMP_FORM_ERROR';
 const MAKE_BMP_FORM = 'MAKE_BMP_FORM';
 const CLEAR_BMP_FORM = 'CLEAR_BMP_FORM';
 const MAKE_DEFAULTS_BMP_FORM = 'MAKE_DEFAULTS_BMP_FORM';
+const MAKE_EXISTING_BMP_FORM = 'MAKE_EXISTING_BMP_FORM';
 const UPDATE_BMP_FORM = 'UPDATE_BMP_FORM';
 const SET_DRAWING_BMP = 'SET_DRAWING_BMP';
 
@@ -37,8 +40,8 @@ function fetchSwammBmpTypesError(e) {
     };
 }
 
-const fetchSwammBmpTypes = (dispatch) => {
-    return (mapId) => {
+const fetchSwammBmpTypes = (mapId) => {
+    return (dispatch) => {
         return axios.get(`/swamm/api/${mapId}/bmp-type/`
         ).then(
             response => {
@@ -66,8 +69,8 @@ function fetchSwammAllBmpsError(e) {
     };
 }
 
-const fetchSwammAllBmps = (dispatch) => {
-    return (mapId) => {
+const fetchSwammAllBmps = (mapId) => {
+    return (dispatch) => {
         return axios.get(`/swamm/api/${mapId}/bmps/`
         ).then(
             response => {
@@ -156,6 +159,13 @@ const makeDefaultsBmpForm = (bmpType) => {
     };
 };
 
+const makeExistingBmpForm = (bmp) => {
+    return {
+        type: MAKE_EXISTING_BMP_FORM,
+        bmp: bmp
+    };
+};
+
 const clearBmpForm = () => {
     return {
         type: CLEAR_BMP_FORM
@@ -176,18 +186,51 @@ const setDrawingBmp = (layerName) => {
     };
 };
 
+const submitBmpFormSuccess = (bmp) => {
+    return {
+        type: SUBMIT_BMP_FORM_SUCCESS,
+        bmp: bmp
+    };
+};
+
+function submitBmpFormError(e) {
+    return {
+        type: SUBMIT_BMP_FORM_ERROR,
+        error: e
+    };
+}
+
 const submitBmpForm = (newBmp, mapId) => {
-    console.log('submitBmpForm: ', newBmp);
+    console.log("newBmp: ", newBmp);
+    if (newBmp.id) {
+        console.log("newBmp patching: ", newBmp);
+        return (dispatch) => {
+            return axios.patch(`/swamm/api/${mapId}/bmps/${newBmp.id}/`, newBmp
+            ).then(
+                response => {
+                    console.log('dispatching: submitBmpFormSuccess');
+                    dispatch(submitBmpFormSuccess(response.data));
+                    console.log('dispatching: fetchSwammAllBmps');
+                    dispatch(fetchSwammAllBmps(mapId));
+                }
+            ).catch(
+                e => {
+                    dispatch(submitBmpFormError(e));
+                }
+            );
+        };
+    }
     return (dispatch) => {
-        console.log('post: ', `/swamm/api/${mapId}/bmps/`);
+        console.log("newBmp posting: ", newBmp);
         return axios.post(`/swamm/api/${mapId}/bmps/`, newBmp
         ).then(
             response => {
-                dispatch(fetchSwammAllBmpsSuccess(response.data));
+                dispatch(submitBmpFormSuccess(response.data));
+                dispatch(fetchSwammAllBmps(mapId));
             }
         ).catch(
             e => {
-                dispatch(fetchSwammAllBmpsError(e));
+                dispatch(submitBmpFormError(e));
             }
         );
     };
@@ -200,6 +243,9 @@ module.exports = {
     FETCH_SWAMM_ALL_BMPS, fetchSwammAllBmps,
     FETCH_SWAMM_ALL_BMPS_ERROR, fetchSwammAllBmpsError,
     FETCH_SWAMM_ALL_BMPS_SUCCESS, fetchSwammAllBmpsSuccess,
+    SUBMIT_BMP_FORM, submitBmpForm,
+    SUBMIT_BMP_FORM_ERROR, submitBmpFormError,
+    SUBMIT_BMP_FORM_SUCCESS, submitBmpFormSuccess,
     TOGGLE_BMP_TYPE, toggleBmpType,
     SET_BMP_TYPE, setBmpType,
     TOGGLE_OUTLETS, toggleOutlets,
@@ -207,10 +253,10 @@ module.exports = {
     TOGGLE_WATERSHEDS, toggleWatersheds,
     SHOW_BMP_FORM, showBmpForm,
     HIDE_BMP_FORM, hideBmpForm,
-    SUBMIT_BMP_FORM, submitBmpForm,
     CLEAR_BMP_FORM, clearBmpForm,
     MAKE_BMP_FORM, makeBmpForm,
     MAKE_DEFAULTS_BMP_FORM, makeDefaultsBmpForm,
+    MAKE_EXISTING_BMP_FORM, makeExistingBmpForm,
     UPDATE_BMP_FORM, updateBmpForm,
     SET_DRAWING_BMP, setDrawingBmp
 };
