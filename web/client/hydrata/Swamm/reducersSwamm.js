@@ -64,7 +64,7 @@ export default ( state = initialState, action) => {
         };
     case FETCH_SWAMM_BMPTYPES_SUCCESS:
         const newBmpTypes = action.bmpTypes.map(function(bmpType) {
-            if (!bmpType.visibility) {bmpType.visibilty = false;}
+            if (!bmpType.visibility) {bmpType.visibility = false;}
             bmpType.code = bmpType.project.code + '_' + bmpType.organisation.code + '_' + bmpType.code;
             return bmpType;
         });
@@ -134,9 +134,10 @@ export default ( state = initialState, action) => {
         };
     case MAKE_DEFAULTS_BMP_FORM:
         const defaultsForm = {
-            ...action.bmpType,
+            // ...action.bmpType,
             id: null,
             type: action.bmpType.id,
+            type_data: action.bmpType,
             project: action.bmpType.project.id,
             organisation: null,
             override_n_redratio: action.bmpType.n_redratio,
@@ -187,12 +188,7 @@ export default ( state = initialState, action) => {
         };
     case SUBMIT_BMP_FORM_SUCCESS:
         return {
-            ...state,
-            creatingNewBmp: false,
-            storedBmpForm: null,
-            BmpFormBmpTypeId: null,
-            visibleBmpForm: false,
-            updatingBmp: null
+            ...state
         };
     case UPDATE_BMP_FORM:
         return {

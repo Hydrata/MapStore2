@@ -1,7 +1,7 @@
 import React from "react";
 import {connect} from "react-redux";
 const PropTypes = require('prop-types');
-import {Modal, Button, ControlLabel, FormControl, FormGroup, Form, Col} from "react-bootstrap";
+import {Modal, Button, Table, ControlLabel, FormControl, FormGroup, Form, Col} from "react-bootstrap";
 import {
     hideBmpForm,
     showBmpForm,
@@ -59,7 +59,8 @@ class SwammBmpFormClass extends React.Component {
         layers: PropTypes.array,
         query: PropTypes.func,
         mapId: PropTypes.number,
-        purgeMapInfoResults: PropTypes.func
+        purgeMapInfoResults: PropTypes.func,
+        thisBmpCode: PropTypes.string
     };
 
     static defaultProps = {
@@ -99,7 +100,9 @@ class SwammBmpFormClass extends React.Component {
             >
                 <Modal.Header>
                     <Modal.Title>
-                        Create a new {this.props?.thisBmpType?.name}
+                        {this.props.storedBmpForm.id ?
+                            "Edit BMP: " + this.props.storedBmpForm?.type_data?.name + " " + this.props.storedBmpForm.id :
+                            "Create a new " + this.props?.storedBmpForm?.type_data?.name}
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
@@ -108,21 +111,31 @@ class SwammBmpFormClass extends React.Component {
                             <Col componentClass={ControlLabel} sm={6}>
                               Organisation
                             </Col>
-                            <Col sm={5}>
-                                <FormControl
-                                    inline="true"
-                                    componentClass="select"
-                                    name="organisation"
-                                    value={JSON.stringify(this.props.storedBmpForm?.organisation)}
-                                    onChange={this.handleChange}
-                                >
-                                    <option key="1" value="select">Select Organisation</option>
-                                    {this.props.orgs.map((org) => {
-                                        return <option key={org.id} value={JSON.stringify(org)}>{org.name}</option>;
-                                    })}
-                                </FormControl>
-                                <FormControl.Feedback />
-                            </Col>
+                            {this.props.storedBmpForm.id ?
+                                <Col sm={5}>
+                                    <FormControl
+                                        inline="true"
+                                        readOnly="true"
+                                        type={"string"}
+                                        value={this.props.storedBmpForm?.organisation?.name}
+                                    />
+                                </Col> :
+                                <Col sm={5}>
+                                    <FormControl
+                                        inline="true"
+                                        componentClass="select"
+                                        name="organisation"
+                                        value={JSON.stringify(this.props.storedBmpForm?.organisation)}
+                                        onChange={this.handleChange}
+                                    >
+                                        <option key="1" value="select">Select Organisation</option>
+                                        {this.props.orgs.map((org) => {
+                                            return <option key={org.id} value={JSON.stringify(org)}>{org.name}</option>;
+                                        })}
+                                    </FormControl>
+                                    <FormControl.Feedback />
+                                </Col>
+                            }
                         </FormGroup>
                         <FormGroup controlId="n_redratio" validationState={this.validateRatio("n_redratio")} >
                             <Col componentClass={ControlLabel} sm={6}>
@@ -230,100 +243,202 @@ class SwammBmpFormClass extends React.Component {
                             <Col componentClass={ControlLabel} sm={6}>
                                 Outlet Point:
                             </Col>
-                            <Col sm={5}>
-                                {this.props.storedBmpForm?.outlet_fid ?
-                                    <React.Fragment>
+                            {this.props.storedBmpForm?.outlet_fid ?
+                                <React.Fragment>
+                                    <Col sm={4}>
                                         <FormControl
                                             inline="true"
                                             readOnly="true"
                                             type={"string"}
-                                            step={1}
-                                            precision={0}
-                                            name="outlet_fid"
                                             value={this.props.storedBmpForm?.outlet_fid}
-                                            onChange={this.handleChange}
                                         />
-                                        <FormControl.Feedback/>
-                                    </React.Fragment> :
-                                    <React.Fragment>
+                                    </Col>
+                                    <Col sm={1}>
+                                        <Button
+                                            className={"pull-right"}
+                                            bsStyle={"info"}
+                                            style={{opacity: "0.7"}}
+                                            onClick={() => window.alert('not implemented yet')}>
+                                        Edit
+                                        </Button>
+                                    </Col>
+                                </React.Fragment> :
+                                <React.Fragment>
+                                    <Col sm={5}>
                                         <Button
                                             disabled={ !this.props.storedBmpForm?.organisation}
                                             bsStyle={ this.props.storedBmpForm?.organisation ? "success" : "default"}
                                             style={{opacity: "0.7"}}
-                                            onClick={() => this.drawBmpStep1(this.props.thisBmpType.code + '_outlet')}>
+                                            onClick={() => this.drawBmpStep1(this.props?.thisBmpCode + '_outlet')}>
                                         Locate Outlet
                                         </Button>
-                                    </React.Fragment>
-                                }
-                            </Col>
+                                    </Col>
+                                </React.Fragment>
+                            }
                         </FormGroup>
                         <FormGroup controlId="footprint_fid" validationState={this.validateFid("footprint_fid")}>
                             <Col componentClass={ControlLabel} sm={6}>
                                 Footprint:
                             </Col>
-                            <Col sm={5}>
-                                {this.props.storedBmpForm?.footprint_fid ?
-                                    <React.Fragment>
+                            {this.props.storedBmpForm?.footprint_fid ?
+                                <React.Fragment>
+                                    <Col sm={3}>
                                         <FormControl
                                             inline="true"
                                             readOnly="true"
                                             type={"string"}
-                                            step={1}
-                                            precision={0}
-                                            name="footprint_fid"
-                                            value={this.props.storedBmpForm?.footprint_fid}
-                                            onChange={this.handleChange}
+                                            value={this.props.storedBmpForm?.calculated_footprint_area ?
+                                                this.props.storedBmpForm?.calculated_footprint_area?.toFixed(2) + " acres" :
+                                                ''}
                                         />
-                                        <FormControl.Feedback/>
-                                    </React.Fragment> :
-                                    <React.Fragment>
+                                    </Col>
+                                    <Col sm={2}>
+                                        <Button
+                                            className={"pull-right"}
+                                            bsStyle={"info"}
+                                            style={{opacity: "0.7"}}
+                                            onClick={() => window.alert('not implemented yet')}>
+                                        Edit
+                                        </Button>
+                                    </Col>
+                                </React.Fragment> :
+                                <React.Fragment>
+                                    <Col sm={5}>
                                         <Button
                                             disabled={ !this.props.storedBmpForm?.organisation}
                                             bsStyle={ this.props.storedBmpForm?.organisation ? "success" : "default"}
                                             style={{opacity: "0.7"}}
-                                            onClick={() => this.drawBmpStep1(this.props.thisBmpType.code + '_footprint')}>
+                                            onClick={() => this.drawBmpStep1(this.props?.thisBmpCode + '_footprint')}>
                                         Draw footprint
                                         </Button>
-                                    </React.Fragment>
-                                }
-                            </Col>
+                                    </Col>
+                                </React.Fragment>
+                            }
                         </FormGroup>
                         <FormGroup controlId="watershed_fid" validationState={this.validateFid("watershed_fid")}>
                             <Col componentClass={ControlLabel} sm={6}>
                                 Watershed:
                             </Col>
-                            <Col sm={5}>
-                                {this.props.storedBmpForm?.watershed_fid ?
-                                    <React.Fragment>
+                            {this.props.storedBmpForm?.watershed_fid ?
+                                <React.Fragment>
+                                    <Col sm={3}>
                                         <FormControl
                                             inline="true"
                                             readOnly="true"
                                             type={"string"}
-                                            step={1}
-                                            precision={0}
-                                            name="watershed_fid"
-                                            value={this.props.storedBmpForm?.watershed_fid}
-                                            onChange={this.handleChange}
+                                            value={this.props.storedBmpForm?.calculated_watershed_area ?
+                                                this.props.storedBmpForm?.calculated_watershed_area?.toFixed(2) + " acres" :
+                                                ''}
                                         />
-                                        <FormControl.Feedback/>
-                                    </React.Fragment> :
-                                    <React.Fragment>
+                                    </Col>
+                                    <Col sm={2}>
+                                        <Button
+                                            className={"pull-right"}
+                                            bsStyle={"info"}
+                                            style={{opacity: "0.7"}}
+                                            onClick={() => window.alert('not implemented yet')}>
+                                        Edit
+                                        </Button>
+                                    </Col>
+                                </React.Fragment> :
+                                <React.Fragment>
+                                    <Col sm={5}>
                                         <Button
                                             disabled={ !this.props.storedBmpForm?.organisation}
                                             bsStyle={ this.props.storedBmpForm?.organisation ? "success" : "default"}
                                             style={{opacity: "0.7"}}
-                                            onClick={() => this.drawBmpStep1(this.props.thisBmpType.code + '_watershed')}>
+                                            onClick={() => this.drawBmpStep1(this.props?.thisBmpCode + '_watershed')}>
                                         Draw watershed
                                         </Button>
-                                    </React.Fragment>
-                                }
-                            </Col>
+                                    </Col>
+                                </React.Fragment>
+                            }
                         </FormGroup>
                     </Form>
-                    <div>more content</div>
-                    <div>{JSON.stringify(this.props.storedBmpForm)}</div>
-                    <div>{JSON.stringify(this.props.storedBmpForm?.cost_base)}</div>
-                    <div>{JSON.stringify(this.props.storedBmpForm?.cost_per_lbs_p_reduced)}</div>
+                    <Table bordered condensed hover className={"text-right"}>
+                        <thead>
+                            <tr>
+                                <th>Results</th>
+                                <th/>
+                                <th/>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Previous nitrogen load: </td>
+                                <td>{this.props.storedBmpForm?.previous_n_load?.toFixed(1)}</td>
+                                <td className={"text-left"}>lbs/acre/year</td>
+                            </tr>
+                            <tr>
+                                <td>Nitrogen load reduction: </td>
+                                <td>{this.props.storedBmpForm?.n_load_reduction?.toFixed(1)}</td>
+                                <td className={"text-left"}>lbs/acre/year</td>
+                            </tr>
+                            <tr>
+                                <td>New nitrogen load: </td>
+                                <td>{this.props.storedBmpForm?.new_n_load?.toFixed(1)}</td>
+                                <td className={"text-left"}>lbs/acre/year</td>
+                            </tr>
+                            <tr>
+                                <td>Previous phosphorus load: </td>
+                                <td>{this.props.storedBmpForm?.previous_p_load?.toFixed(3)}</td>
+                                <td className={"text-left"}>lbs/acre/year</td>
+                            </tr>
+                            <tr>
+                                <td>Phosphorus load reduction: </td>
+                                <td>{this.props.storedBmpForm?.p_load_reduction?.toFixed(3)}</td>
+                                <td className={"text-left"}>lbs/acre/year</td>
+                            </tr>
+                            <tr>
+                                <td>New phosphorus load: </td>
+                                <td>{this.props.storedBmpForm?.new_p_load?.toFixed(3)}</td>
+                                <td className={"text-left"}>lbs/acre/year</td>
+                            </tr>
+                            <tr>
+                                <td>Previous sediment load: </td>
+                                <td>{this.props.storedBmpForm?.previous_s_load?.toFixed(1)}</td>
+                                <td className={"text-left"}>tons/acre/year</td>
+                            </tr>
+                            <tr>
+                                <td>Sediment load reduction: </td>
+                                <td>{this.props.storedBmpForm?.s_load_reduction?.toFixed(1)}</td>
+                                <td className={"text-left"}>tons/acre/year</td>
+                            </tr>
+                            <tr>
+                                <td>New sediment load: </td>
+                                <td>{this.props.storedBmpForm?.new_s_load?.toFixed(1)}</td>
+                                <td className={"text-left"}>tons/acre/year</td>
+                            </tr>
+                            <tr>
+                                <td>Calculated total cost: </td>
+                                {this.props.storedBmpForm?.calculated_total_cost ?
+                                    <td>${Number(this.props.storedBmpForm?.calculated_total_cost?.toFixed(0)).toLocaleString()}</td> :
+                                    <td/>}
+                                <td/>
+                            </tr>
+                            <tr>
+                                <td>Nitrogen reduction value: </td>
+                                {this.props.storedBmpForm?.cost_per_lbs_n_reduced ?
+                                    <td>${Number(this.props.storedBmpForm?.cost_per_lbs_n_reduced?.toFixed(0)).toLocaleString()}</td> :
+                                    <td/>}
+                                <td className={"text-left"}>$/lbs/year</td>
+                            </tr>
+                            <tr>
+                                <td>Phosphorus reduction value: </td>
+                                {this.props.storedBmpForm?.cost_per_lbs_p_reduced ?
+                                    <td>${Number(this.props.storedBmpForm?.cost_per_lbs_p_reduced?.toFixed(0)).toLocaleString()}</td> :
+                                    <td/>}
+                                <td className={"text-left"}>$/lbs/year</td>
+                            </tr>
+                            <tr>
+                                <td>Sediment reduction value: </td>
+                                {this.props.storedBmpForm?.cost_per_ton_s_reduced ?
+                                    <td>${Number(this.props.storedBmpForm?.cost_per_ton_s_reduced?.toFixed(0)).toLocaleString()}</td> :
+                                    <td/>}
+                                <td className={"text-left"}>$/ton/year</td>
+                            </tr>
+                        </tbody>
+                    </Table>
                 </Modal.Body>
                 <Modal.Footer>
                     <Button
@@ -331,7 +446,7 @@ class SwammBmpFormClass extends React.Component {
                         bsSize="small"
                         style={{opacity: "0.7"}}
                         onClick={() => this.props.clearBmpForm()}>
-                        Cancel
+                        Close
                     </Button>
                     <Button
                         bsStyle="info"
@@ -346,7 +461,6 @@ class SwammBmpFormClass extends React.Component {
                         style={{opacity: "0.7"}}
                         onClick={() => {
                             this.props.submitBmpForm(this.props.storedBmpForm, this.props.mapId);
-                            this.props.clearBmpForm();
                         }}>
                         Save
                     </Button>
@@ -419,6 +533,7 @@ const mapStateToProps = (state) => {
         bmpTypes: state?.swamm?.bmpTypes,
         thisBmpType: state?.swamm?.bmpTypes.filter((bmpType) => bmpType.id === state?.swamm?.BmpFormBmpTypeId)[0],
         storedBmpForm: state?.swamm?.storedBmpForm || {},
+        thisBmpCode: state?.swamm?.storedBmpForm?.type_data?.code,
         creatingNewBmp: state?.swamm?.creatingNewBmp,
         updatingBmp: state?.swamm?.updatingBmp,
         orgs: orgSelector(state),

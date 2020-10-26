@@ -208,10 +208,9 @@ const submitBmpForm = (newBmp, mapId) => {
             return axios.patch(`/swamm/api/${mapId}/bmps/${newBmp.id}/`, newBmp
             ).then(
                 response => {
-                    console.log('dispatching: submitBmpFormSuccess');
                     dispatch(submitBmpFormSuccess(response.data));
-                    console.log('dispatching: fetchSwammAllBmps');
                     dispatch(fetchSwammAllBmps(mapId));
+                    dispatch(makeExistingBmpForm(response.data));
                 }
             ).catch(
                 e => {
