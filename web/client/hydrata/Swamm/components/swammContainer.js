@@ -263,7 +263,7 @@ class SwammContainer extends React.Component {
         this.props.setDrawingBmp(null);
         setTimeout(() => {
             this.props.query('http://localhost:8080/geoserver/wfs', filterObj, {}, 'queryGetNewBmpId');
-        }, 1000);
+        }, 5000);
     }
 
 
