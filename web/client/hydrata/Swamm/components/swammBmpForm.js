@@ -24,7 +24,7 @@ import {
     changeDrawingStatus
 } from "../../../actions/draw";
 import { purgeMapInfoResults } from "../../../actions/mapInfo";
-import {featureTypeSelected, createQuery} from "../../../actions/wfsquery";
+import {featureTypeSelected, createQuery, query} from "../../../actions/wfsquery";
 import "../../ProjectManager/projectManager.css";
 import {isInt} from "../../Utils/utils";
 import {orgSelector} from "../selectorsSwamm";
@@ -84,7 +84,6 @@ class SwammBmpFormClass extends React.Component {
 
     componentDidUpdate() {
         if (Object.keys(this.props.storedBmpForm).length === 0 && !this.props.creatingNewBmp && this.props.updatingBmp) {
-            console.log('populate form with this.props.updatingBmp: ', this.props.updatingBmp);
             this.props.makeExistingBmpForm(this.props.updatingBmp);
         }
     }
@@ -507,40 +506,7 @@ class SwammBmpFormClass extends React.Component {
             filterType: 'OGC',
             ogcVersion: '1.1.0'
         };
-        this.props.createQuery('http://localhost:8080/geoserver/wfs', filterObj);
-        // // TODO: move this to the observables, once I figure out how they work
-        setTimeout(
-            () => this.drawBmpStep2(layerNameWithCorrectOrg),
-            5000
-        );
-    }
-    drawBmpStep2(layerName) {
-        // edit mode
-        this.props.toggleEditMode();  // so this helps with highlighting but isn't 100% necessary apparently
-        // const status = 'drawOrEdit';
-        // const method = 'Point';
-        // const owner = 'featureGrid';
-        // const features = [
-        //     {
-        //         _new: true,
-        //         id: uuidv1(),
-        //         type: 'Feature',
-        //         geometry: null
-        //     }
-        // ];
-        // const options = {
-        //     featureProjection: 'EPSG:4326',
-        //     stopAfterDrawing: true,
-        //     editEnabled: false,
-        //     drawEnabled: true
-        // };
-        // this.props.changeDrawingStatus(status, method, owner, features, options);
-        // add new feature
-        this.props.createNewFeatures([{}]);
-        this.props.hideBmpForm();
-        this.props.setDrawingBmp(layerName);
-        // draw feature
-        this.props.startDrawingFeature();
+        this.props.query('http://localhost:8080/geoserver/wfs', filterObj, {}, 'querySetNewBmpLayer');
     }
 }
 
@@ -573,6 +539,7 @@ const mapDispatchToProps = ( dispatch ) => {
         toggleEditMode: () => dispatch(toggleEditMode()),
         createNewFeatures: (features) => dispatch(createNewFeatures(features)),
         createQuery: (searchUrl, filterObj) => dispatch(createQuery(searchUrl, filterObj)),
+        query: (url, filterObj, queryOptions, reason) => dispatch(query(url, filterObj, queryOptions, reason)),
         changeDrawingStatus: () => dispatch(changeDrawingStatus()),
         startDrawingFeature: () => dispatch(startDrawingFeature()),
         saveChanges: () => dispatch(saveChanges()),

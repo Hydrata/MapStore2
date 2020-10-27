@@ -199,14 +199,13 @@ export default ( state = initialState, action) => {
             }
         };
     case QUERY_RESULT:
-        let queryGetNewBmpId = null;
-        let shapeId = null;
         if (action.reason === 'queryGetNewBmpId') {
+            let queryGetNewBmpId = null;
+            let shapeId = null;
             const ids = action.result.features.map(feature => feature.id);
             // TODO: It would be much better to get this Id from the WFS response XML,
             //  rather than assume it's the largest one.
             queryGetNewBmpId = ids.pop();
-            console.log('queryGetNewBmpId', queryGetNewBmpId);
             switch (queryGetNewBmpId.split("_")[3].split(".")[0]) {
             case "outlet":
                 shapeId = {outlet_fid: queryGetNewBmpId};
@@ -220,22 +219,23 @@ export default ( state = initialState, action) => {
             default:
                 shapeId = {};
             }
+            return {
+                ...state,
+                storedBmpForm: {
+                    ...state.storedBmpForm,
+                    ...shapeId
+                }
+            };
         }
-        return {
-            ...state,
-            storedBmpForm: {
-                ...state.storedBmpForm,
-                ...shapeId
-            }
-        };
+        return state;
     case SET_DRAWING_BMP:
-        let newState = false;
+        let drawingBmp = false;
         if (action.layerName !== state.drawingBmp) {
-            newState = action.layerName;
+            drawingBmp = action.layerName;
         }
         return {
             ...state,
-            drawingBmp: newState
+            drawingBmp: drawingBmp
         };
     default:
         return state;
