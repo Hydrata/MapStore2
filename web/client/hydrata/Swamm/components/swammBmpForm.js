@@ -417,23 +417,23 @@ class SwammBmpFormClass extends React.Component {
                                 <td/>
                             </tr>
                             <tr>
-                                <td>Nitrogen reduction value: </td>
+                                <td>Nitrogen reduction cost: </td>
                                 {this.props.storedBmpForm?.cost_per_lbs_n_reduced ?
-                                    <td>${Number(this.props.storedBmpForm?.cost_per_lbs_n_reduced?.toFixed(0)).toLocaleString()}</td> :
+                                    <td>{Number(this.props.storedBmpForm?.cost_per_lbs_n_reduced?.toFixed(0)).toLocaleString()}</td> :
                                     <td/>}
                                 <td className={"text-left"}>$/lbs/year</td>
                             </tr>
                             <tr>
-                                <td>Phosphorus reduction value: </td>
+                                <td>Phosphorus reduction cost: </td>
                                 {this.props.storedBmpForm?.cost_per_lbs_p_reduced ?
-                                    <td>${Number(this.props.storedBmpForm?.cost_per_lbs_p_reduced?.toFixed(0)).toLocaleString()}</td> :
+                                    <td>{Number(this.props.storedBmpForm?.cost_per_lbs_p_reduced?.toFixed(0)).toLocaleString()}</td> :
                                     <td/>}
                                 <td className={"text-left"}>$/lbs/year</td>
                             </tr>
                             <tr>
-                                <td>Sediment reduction value: </td>
+                                <td>Sediment reduction cost: </td>
                                 {this.props.storedBmpForm?.cost_per_ton_s_reduced ?
-                                    <td>${Number(this.props.storedBmpForm?.cost_per_ton_s_reduced?.toFixed(0)).toLocaleString()}</td> :
+                                    <td>{Number(this.props.storedBmpForm?.cost_per_ton_s_reduced?.toFixed(0)).toLocaleString()}</td> :
                                     <td/>}
                                 <td className={"text-left"}>$/ton/year</td>
                             </tr>
@@ -508,16 +508,33 @@ class SwammBmpFormClass extends React.Component {
             ogcVersion: '1.1.0'
         };
         this.props.createQuery('http://localhost:8080/geoserver/wfs', filterObj);
-        // TODO: move this to the observables, once I figure out how they work
+        // // TODO: move this to the observables, once I figure out how they work
         setTimeout(
             () => this.drawBmpStep2(layerNameWithCorrectOrg),
-            1000
+            5000
         );
     }
     drawBmpStep2(layerName) {
         // edit mode
-        this.props.toggleEditMode();
-        this.props.changeDrawingStatus();
+        this.props.toggleEditMode();  // so this helps with highlighting but isn't 100% necessary apparently
+        // const status = 'drawOrEdit';
+        // const method = 'Point';
+        // const owner = 'featureGrid';
+        // const features = [
+        //     {
+        //         _new: true,
+        //         id: uuidv1(),
+        //         type: 'Feature',
+        //         geometry: null
+        //     }
+        // ];
+        // const options = {
+        //     featureProjection: 'EPSG:4326',
+        //     stopAfterDrawing: true,
+        //     editEnabled: false,
+        //     drawEnabled: true
+        // };
+        // this.props.changeDrawingStatus(status, method, owner, features, options);
         // add new feature
         this.props.createNewFeatures([{}]);
         this.props.hideBmpForm();
