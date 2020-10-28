@@ -239,31 +239,17 @@ class SwammContainer extends React.Component {
                             <Button
                                 bsStyle="success"
                                 style={bmpProgressButtonStyle}
-                                onClick={() => this.drawBmpStep5()}
+                                onClick={() => {
+                                    this.props.saveChanges();
+                                    this.props.showBmpForm();
+                                }}
                             >
-                                Save
+                                Save Feature
                             </Button>
                             : null
                 }
             </div>
         );
-    }
-
-    drawBmpStep5() {
-        const filterObj =  {
-            featureTypeName: this.props.drawingBmp,
-            filterType: 'OGC',
-            ogcVersion: '1.1.0',
-            pagination: {
-                maxFeatures: 2000000
-            }
-        };
-        this.props.saveChanges();
-        this.props.showBmpForm();
-        this.props.setDrawingBmp(null);
-        setTimeout(() => {
-            this.props.query('http://localhost:8080/geoserver/wfs', filterObj, {}, 'queryGetNewBmpId');
-        }, 5000);
     }
 
 
