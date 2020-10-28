@@ -48,7 +48,7 @@ export default ( state = initialState, action) => {
             return null;
         });
         console.log('*** bmpFeature: ', possibleBmpFeatures);
-        if (possibleBmpFeatures.length > 0) {
+        if (possibleBmpFeatures[0]) {
             let bmp;
             if (state.allBmps.filter((bmpToCheck) => bmpToCheck.watershed_fid === possibleBmpFeatures[0].id)[0]) {
                 bmp = state.allBmps.filter((bmpToCheck) => bmpToCheck.watershed_fid === possibleBmpFeatures[0].id)[0];
