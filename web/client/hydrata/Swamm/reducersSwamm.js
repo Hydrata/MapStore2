@@ -200,12 +200,14 @@ export default ( state = initialState, action) => {
         };
     case QUERY_RESULT:
         if (action.reason === 'queryGetNewBmpId') {
+            console.log('reducer queryGetNewBmpId got action: ', action);
             let queryGetNewBmpId = null;
             let shapeId = null;
             const ids = action.result.features.map(feature => feature.id);
             // TODO: It would be much better to get this Id from the WFS response XML,
             //  rather than assume it's the largest one.
             queryGetNewBmpId = ids.pop();
+            console.log('reducer queryGetNewBmpId: ', queryGetNewBmpId);
             switch (queryGetNewBmpId.split("_")[3].split(".")[0]) {
             case "outlet":
                 shapeId = {outlet_fid: queryGetNewBmpId};
@@ -219,6 +221,7 @@ export default ( state = initialState, action) => {
             default:
                 shapeId = {};
             }
+            console.log('reducer shapeId: ', shapeId);
             return {
                 ...state,
                 storedBmpForm: {

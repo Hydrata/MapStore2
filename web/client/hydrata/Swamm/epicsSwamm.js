@@ -15,6 +15,8 @@ export const setBmpDrawingLayer = (action$, store) =>
     action$.ofType(FEATURE_TYPE_LOADED)
         .filter(action => {
             const state = store.getState();
+            console.log('FEATURE_TYPE_LOADED', action, state);
+            console.log('FEATURE_TYPE_LOADED passing filter: ', action?.typeName.includes(state?.swamm?.storedBmpForm?.type_data?.code));
             return action?.typeName.includes(state?.swamm?.storedBmpForm?.type_data?.code);
         })
         .flatMap((action) => Rx.Observable.of(
@@ -24,6 +26,7 @@ export const setBmpDrawingLayer = (action$, store) =>
 export const setBmpDrawingFeature = (action$) =>
     action$.ofType(QUERY_RESULT)
         .filter(action => {
+            console.log('setBmpDrawingFeature got: ', action);
             return action?.reason === 'querySetNewBmpLayer';
         })
         .flatMap((action) => Rx.Observable.of(

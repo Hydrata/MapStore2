@@ -498,6 +498,7 @@ class SwammBmpFormClass extends React.Component {
         layerNameElements[1] = this.props.storedBmpForm.organisation.code;
         const layerNameWithCorrectOrg = layerNameElements.join('_');
         const targetLayer = this.props.layers.flat.filter(layer => layer.name === layerNameWithCorrectOrg)[0];
+        console.log('targetLayer', targetLayer);
         this.props.setLayer(targetLayer?.id);
         this.props.featureTypeSelected('http://localhost:8080/geoserver/wfs', targetLayer?.name);
     }
