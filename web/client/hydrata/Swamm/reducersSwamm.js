@@ -35,21 +35,31 @@ const initialState = {
 export default ( state = initialState, action) => {
     switch (action.type) {
     case LOAD_FEATURE_INFO:
-        const bmpFeature = action?.data?.features.map((feature) => {
-            if (['outlet', 'watershed', 'footprint'].some(item => feature.id.includes(item))) {return feature;}
+        console.log('*** features: ', action?.data?.features);
+        const possibleBmpFeatures = action?.data?.features.map((feature) => {
+            if (
+                /([a-zA-Z0-9]{3}_){3}outlet/.test(feature.id) ||
+                /([a-zA-Z0-9]{3}_){3}footprint/.test(feature.id) ||
+                /([a-zA-Z0-9]{3}_){3}watershed/.test(feature.id)
+            ) {
+                console.log('*** returning: ', feature);
+                return feature;
+            }
             return null;
         });
-        if (bmpFeature.length > 0) {
+        console.log('*** bmpFeature: ', possibleBmpFeatures);
+        if (possibleBmpFeatures.length > 0) {
             let bmp;
-            if (state.allBmps.filter((bmpToCheck) => bmpToCheck.watershed_fid === bmpFeature[0].id)[0]) {
-                bmp = state.allBmps.filter((bmpToCheck) => bmpToCheck.watershed_fid === bmpFeature[0].id)[0];
+            if (state.allBmps.filter((bmpToCheck) => bmpToCheck.watershed_fid === possibleBmpFeatures[0].id)[0]) {
+                bmp = state.allBmps.filter((bmpToCheck) => bmpToCheck.watershed_fid === possibleBmpFeatures[0].id)[0];
             }
-            if (state.allBmps.filter((bmpToCheck) => bmpToCheck.footprint_fid === bmpFeature[0].id)[0]) {
-                bmp = state.allBmps.filter((bmpToCheck) => bmpToCheck.footprint_fid === bmpFeature[0].id)[0];
+            if (state.allBmps.filter((bmpToCheck) => bmpToCheck.footprint_fid === possibleBmpFeatures[0].id)[0]) {
+                bmp = state.allBmps.filter((bmpToCheck) => bmpToCheck.footprint_fid === possibleBmpFeatures[0].id)[0];
             }
-            if (state.allBmps.filter((bmpToCheck) => bmpToCheck.outlet_fid === bmpFeature[0].id)[0]) {
-                bmp = state.allBmps.filter((bmpToCheck) => bmpToCheck.outlet_fid === bmpFeature[0].id)[0];
+            if (state.allBmps.filter((bmpToCheck) => bmpToCheck.outlet_fid === possibleBmpFeatures[0].id)[0]) {
+                bmp = state.allBmps.filter((bmpToCheck) => bmpToCheck.outlet_fid === possibleBmpFeatures[0].id)[0];
             }
+            console.log('*** updatingBmp: ', bmp);
             return {
                 ...state,
                 visibleBmpForm: true,
@@ -191,13 +201,15 @@ export default ( state = initialState, action) => {
             ...state
         };
     case UPDATE_BMP_FORM:
-        return {
-            ...state,
-            storedBmpForm: {
-                ...state.storedBmpForm,
-                ...action.kv
-            }
+        const newState = {...state};
+        if (action?.kv?.type_data?.id) {
+            newState.BmpFormBmpTypeId = action.kv.type_data.id;
+        }
+        newState.storedBmpForm = {
+            ...state.storedBmpForm,
+            ...action.kv
         };
+        return newState;
     case QUERY_RESULT:
         if (action.reason === 'queryGetNewBmpId') {
             console.log('reducer queryGetNewBmpId got action: ', action);

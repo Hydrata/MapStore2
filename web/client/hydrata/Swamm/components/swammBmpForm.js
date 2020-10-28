@@ -32,6 +32,7 @@ import {orgSelector} from "../selectorsSwamm";
 class SwammBmpFormClass extends React.Component {
     static propTypes = {
         bmpTypeId: PropTypes.number,
+        bmpTypes: PropTypes.array,
         setMenuGroup: PropTypes.func,
         creatingNewBmp: PropTypes.bool,
         updatingBmp: PropTypes.object,
@@ -366,47 +367,47 @@ class SwammBmpFormClass extends React.Component {
                             <tr>
                                 <td>Previous nitrogen load: </td>
                                 <td>{this.props.storedBmpForm?.previous_n_load?.toFixed(1)}</td>
-                                <td className={"text-left"}>lbs/acre/year</td>
+                                <td className={"text-left"}>lbs/year</td>
                             </tr>
                             <tr>
                                 <td>Nitrogen load reduction: </td>
                                 <td>{this.props.storedBmpForm?.n_load_reduction?.toFixed(1)}</td>
-                                <td className={"text-left"}>lbs/acre/year</td>
+                                <td className={"text-left"}>lbs/year</td>
                             </tr>
                             <tr>
                                 <td>New nitrogen load: </td>
                                 <td>{this.props.storedBmpForm?.new_n_load?.toFixed(1)}</td>
-                                <td className={"text-left"}>lbs/acre/year</td>
+                                <td className={"text-left"}>lbs/year</td>
                             </tr>
                             <tr>
                                 <td>Previous phosphorus load: </td>
                                 <td>{this.props.storedBmpForm?.previous_p_load?.toFixed(3)}</td>
-                                <td className={"text-left"}>lbs/acre/year</td>
+                                <td className={"text-left"}>lbs/year</td>
                             </tr>
                             <tr>
                                 <td>Phosphorus load reduction: </td>
                                 <td>{this.props.storedBmpForm?.p_load_reduction?.toFixed(3)}</td>
-                                <td className={"text-left"}>lbs/acre/year</td>
+                                <td className={"text-left"}>lbs/year</td>
                             </tr>
                             <tr>
                                 <td>New phosphorus load: </td>
                                 <td>{this.props.storedBmpForm?.new_p_load?.toFixed(3)}</td>
-                                <td className={"text-left"}>lbs/acre/year</td>
+                                <td className={"text-left"}>lbs/year</td>
                             </tr>
                             <tr>
                                 <td>Previous sediment load: </td>
                                 <td>{this.props.storedBmpForm?.previous_s_load?.toFixed(1)}</td>
-                                <td className={"text-left"}>tons/acre/year</td>
+                                <td className={"text-left"}>tons/year</td>
                             </tr>
                             <tr>
                                 <td>Sediment load reduction: </td>
                                 <td>{this.props.storedBmpForm?.s_load_reduction?.toFixed(1)}</td>
-                                <td className={"text-left"}>tons/acre/year</td>
+                                <td className={"text-left"}>tons/year</td>
                             </tr>
                             <tr>
                                 <td>New sediment load: </td>
                                 <td>{this.props.storedBmpForm?.new_s_load?.toFixed(1)}</td>
-                                <td className={"text-left"}>tons/acre/year</td>
+                                <td className={"text-left"}>tons/year</td>
                             </tr>
                             <tr>
                                 <td>Calculated total cost: </td>
@@ -489,15 +490,23 @@ class SwammBmpFormClass extends React.Component {
     handleChange(event) {
         const fieldName = event.target.name;
         let fieldValue = event.target.value;
-        if (event.target.type === 'number')  {fieldValue = parseFloat(fieldValue);}
-        if (event.target.outerHTML.includes('organisation'))  {fieldValue = JSON.parse(fieldValue);}
-        this.props.updateBmpForm({[fieldName]: fieldValue});
+        let kv = {[fieldName]: fieldValue};
+        if (event.target.type === 'number')  {
+            kv = {[fieldName]: parseFloat(fieldValue)};
+        }
+        if (event.target.outerHTML.includes('organisation'))  {
+            kv = {[fieldName]: JSON.parse(fieldValue)};
+            const bmpCodeNameElements = this.props.thisBmpCode.split("_");
+            bmpCodeNameElements[1] = JSON.parse(fieldValue).code;
+            const updatedBmpCode = bmpCodeNameElements.join('_');
+            kv.thisBmpCode = updatedBmpCode;
+            kv.type_data = this.props.bmpTypes.filter((bmpType) => bmpType.code === updatedBmpCode)[0];
+            kv.type = kv.type_data.id;
+        }
+        this.props.updateBmpForm(kv);
     }
     drawBmpStep1(layerName) {
-        const layerNameElements = layerName.split("_");
-        layerNameElements[1] = this.props.storedBmpForm.organisation.code;
-        const layerNameWithCorrectOrg = layerNameElements.join('_');
-        const targetLayer = this.props.layers.flat.filter(layer => layer.name === layerNameWithCorrectOrg)[0];
+        const targetLayer = this.props.layers.flat.filter(layer => layer.name === layerName)[0];
         console.log('targetLayer', targetLayer);
         this.props.setLayer(targetLayer?.id);
         this.props.featureTypeSelected('http://localhost:8080/geoserver/wfs', targetLayer?.name);
