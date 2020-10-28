@@ -1,5 +1,5 @@
 import Rx from "rxjs";
-import {QUERY_RESULT, query} from "../../actions/wfsquery";
+import {QUERY_RESULT, query, FEATURE_TYPE_LOADED} from "../../actions/wfsquery";
 import {
     setDrawingBmp, SET_DRAWING_BMP,
     hideBmpForm
@@ -10,6 +10,16 @@ import {
     startDrawingFeature,
     SAVE_SUCCESS
 } from "../../actions/featuregrid";
+
+export const setBmpDrawingLayer = (action$, store) =>
+    action$.ofType(FEATURE_TYPE_LOADED)
+        .filter(action => {
+            const state = store.getState();
+            return action?.typeName.includes(state?.swamm?.storedBmpForm?.type_data?.code);
+        })
+        .flatMap((action) => Rx.Observable.of(
+            query('http://localhost:8080/geoserver/wfs', {featureTypeName: action?.typeName, filterType: 'OGC', ogcVersion: '1.1.0'}, {}, 'querySetNewBmpLayer')
+        ));
 
 export const setBmpDrawingFeature = (action$) =>
     action$.ofType(QUERY_RESULT)
