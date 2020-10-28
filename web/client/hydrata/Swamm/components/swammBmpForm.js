@@ -366,47 +366,47 @@ class SwammBmpFormClass extends React.Component {
                         <tbody>
                             <tr>
                                 <td>Previous nitrogen load: </td>
-                                <td>{this.props.storedBmpForm?.previous_n_load?.toFixed(1)}</td>
+                                <td>{this.props.storedBmpForm?.previous_n_load?.toFixed(0)}</td>
                                 <td className={"text-left"}>lbs/year</td>
                             </tr>
                             <tr>
                                 <td>Nitrogen load reduction: </td>
-                                <td>{this.props.storedBmpForm?.n_load_reduction?.toFixed(1)}</td>
+                                <td>{this.props.storedBmpForm?.n_load_reduction?.toFixed(0)}</td>
                                 <td className={"text-left"}>lbs/year</td>
                             </tr>
                             <tr>
                                 <td>New nitrogen load: </td>
-                                <td>{this.props.storedBmpForm?.new_n_load?.toFixed(1)}</td>
+                                <td>{this.props.storedBmpForm?.new_n_load?.toFixed(0)}</td>
                                 <td className={"text-left"}>lbs/year</td>
                             </tr>
                             <tr>
                                 <td>Previous phosphorus load: </td>
-                                <td>{this.props.storedBmpForm?.previous_p_load?.toFixed(3)}</td>
+                                <td>{this.props.storedBmpForm?.previous_p_load?.toFixed(0)}</td>
                                 <td className={"text-left"}>lbs/year</td>
                             </tr>
                             <tr>
                                 <td>Phosphorus load reduction: </td>
-                                <td>{this.props.storedBmpForm?.p_load_reduction?.toFixed(3)}</td>
+                                <td>{this.props.storedBmpForm?.p_load_reduction?.toFixed(0)}</td>
                                 <td className={"text-left"}>lbs/year</td>
                             </tr>
                             <tr>
                                 <td>New phosphorus load: </td>
-                                <td>{this.props.storedBmpForm?.new_p_load?.toFixed(3)}</td>
+                                <td>{this.props.storedBmpForm?.new_p_load?.toFixed(0)}</td>
                                 <td className={"text-left"}>lbs/year</td>
                             </tr>
                             <tr>
                                 <td>Previous sediment load: </td>
-                                <td>{this.props.storedBmpForm?.previous_s_load?.toFixed(1)}</td>
+                                <td>{this.props.storedBmpForm?.previous_s_load?.toFixed(0)}</td>
                                 <td className={"text-left"}>tons/year</td>
                             </tr>
                             <tr>
                                 <td>Sediment load reduction: </td>
-                                <td>{this.props.storedBmpForm?.s_load_reduction?.toFixed(1)}</td>
+                                <td>{this.props.storedBmpForm?.s_load_reduction?.toFixed(0)}</td>
                                 <td className={"text-left"}>tons/year</td>
                             </tr>
                             <tr>
                                 <td>New sediment load: </td>
-                                <td>{this.props.storedBmpForm?.new_s_load?.toFixed(1)}</td>
+                                <td>{this.props.storedBmpForm?.new_s_load?.toFixed(0)}</td>
                                 <td className={"text-left"}>tons/year</td>
                             </tr>
                             <tr>
@@ -421,14 +421,14 @@ class SwammBmpFormClass extends React.Component {
                                 {this.props.storedBmpForm?.cost_per_lbs_n_reduced ?
                                     <td>{Number(this.props.storedBmpForm?.cost_per_lbs_n_reduced?.toFixed(0)).toLocaleString()}</td> :
                                     <td/>}
-                                <td className={"text-left"}>$/lbs/year</td>
+                                <td className={"text-left"}>$/lb/year</td>
                             </tr>
                             <tr>
                                 <td>Phosphorus reduction cost: </td>
                                 {this.props.storedBmpForm?.cost_per_lbs_p_reduced ?
                                     <td>{Number(this.props.storedBmpForm?.cost_per_lbs_p_reduced?.toFixed(0)).toLocaleString()}</td> :
                                     <td/>}
-                                <td className={"text-left"}>$/lbs/year</td>
+                                <td className={"text-left"}>$/lb/year</td>
                             </tr>
                             <tr>
                                 <td>Sediment reduction cost: </td>

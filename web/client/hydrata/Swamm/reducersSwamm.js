@@ -35,19 +35,14 @@ const initialState = {
 export default ( state = initialState, action) => {
     switch (action.type) {
     case LOAD_FEATURE_INFO:
-        console.log('*** features: ', action?.data?.features);
         const possibleBmpFeatures = action?.data?.features.map((feature) => {
             if (
                 /([a-zA-Z0-9]{3}_){3}outlet/.test(feature.id) ||
                 /([a-zA-Z0-9]{3}_){3}footprint/.test(feature.id) ||
                 /([a-zA-Z0-9]{3}_){3}watershed/.test(feature.id)
-            ) {
-                console.log('*** returning: ', feature);
-                return feature;
-            }
+            ) { return feature;}
             return null;
         });
-        console.log('*** bmpFeature: ', possibleBmpFeatures);
         if (possibleBmpFeatures[0]) {
             let bmp;
             if (state.allBmps.filter((bmpToCheck) => bmpToCheck.watershed_fid === possibleBmpFeatures[0].id)[0]) {
@@ -59,7 +54,6 @@ export default ( state = initialState, action) => {
             if (state.allBmps.filter((bmpToCheck) => bmpToCheck.outlet_fid === possibleBmpFeatures[0].id)[0]) {
                 bmp = state.allBmps.filter((bmpToCheck) => bmpToCheck.outlet_fid === possibleBmpFeatures[0].id)[0];
             }
-            console.log('*** updatingBmp: ', bmp);
             return {
                 ...state,
                 visibleBmpForm: true,
