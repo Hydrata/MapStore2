@@ -29,6 +29,7 @@ const panelStyle = {
     top: "50px",
     left: "20px",
     minWidth: "400px",
+    maxHeight: "80vh",
     backgroundColor: "rgba(0,60,136,0.6)",
     borderColor: "rgb(255 255 255 / 70%)",
     borderWidth: "2px",
@@ -36,7 +37,9 @@ const panelStyle = {
     fontSize: "12px",
     lineHeight: "1.5",
     borderRadius: "4px",
-    color: "white"
+    color: "white",
+    overflowY: "auto",
+    overflowX: "hidden"
 };
 
 const glyphStyle = {
@@ -57,7 +60,7 @@ const tableHeaderStyleOrgs = {
 
 const tableHeaderStyleTypes = {
     textAlign: "left",
-    width: "200px"
+    width: "300px"
 };
 
 const filterButtonStyle = {
@@ -160,7 +163,7 @@ class SwammContainer extends React.Component {
                             <tbody>
                                 {this.props.bmpNames?.map((bmpName) => (
                                     <tr key={bmpName.id}>
-                                        <td className="h5">
+                                        <td className="h5" style={{"padding": "3px"}}>
                                             {bmpName.name}
                                             <button
                                                 className={"btn glyphicon glyphicon-plus pull-right"}

@@ -133,6 +133,7 @@ class legendPanel extends React.Component {
 }
 
 const mapStateToProps = (state) => {
+    console.log('visibleLayers:', state?.layers?.flat.filter(layer => layer.visibility === true));
     return {
         visibleLayers: state?.layers?.flat.filter(layer => layer.visibility === true),
         openLegendPanel: state?.projectManager?.openLegendPanel
