@@ -1,15 +1,14 @@
 import Rx from "rxjs";
-import {QUERY_RESULT, query, FEATURE_TYPE_LOADED} from "../../actions/wfsquery";
+import { LOAD_FEATURE_INFO } from "../../actions/mapInfo";
 
 
 export const setBmpDrawingLayer = (action$, store) =>
-    action$.ofType(FEATURE_TYPE_LOADED)
+    action$.ofType(LOAD_FEATURE_INFO)
         .filter(action => {
             const state = store.getState();
-            console.log('FEATURE_TYPE_LOADED', action, state);
-            console.log('FEATURE_TYPE_LOADED passing filter: ', action?.typeName.includes(state?.swamm?.storedBmpForm?.type_data?.code));
-            return action?.typeName.includes(state?.swamm?.storedBmpForm?.type_data?.code);
+            console.log('epic LOAD_FEATURE_INFO', action, state);
+            return action;
         })
         .flatMap((action) => Rx.Observable.of(
-            query('http://localhost:8080/geoserver/wfs', {featureTypeName: action?.typeName, filterType: 'OGC', ogcVersion: '1.1.0'}, {}, 'querySetNewBmpLayer')
+            console.log('Rx observable:', action)
         ));
