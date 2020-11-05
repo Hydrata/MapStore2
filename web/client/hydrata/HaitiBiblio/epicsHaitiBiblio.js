@@ -2,7 +2,7 @@ import Rx from "rxjs";
 import { LOAD_FEATURE_INFO } from "../../actions/mapInfo";
 
 
-export const setBmpDrawingLayer = (action$, store) =>
+export const catchBiblioLayerClick = (action$, store) =>
     action$.ofType(LOAD_FEATURE_INFO)
         .filter(action => {
             const state = store.getState();
