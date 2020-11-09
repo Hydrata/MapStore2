@@ -4,9 +4,7 @@ const PropTypes = require('prop-types');
 const {mapIdSelector} = require('../../../selectors/map');
 import { fetchProjectManagerConfig } from "../actionsProjectManager";
 import { MenuButtonList } from "./projectManagerMenus";
-import { MenuPanel } from "./projectMangerMenuPanel";
 import LegendPanel from "./legendPanel";
-import SwammContainer from "../../Swamm/components/swammContainer";
 
 // eslint-disable-next-line camelcase
 const menuGroupsSelector = (state) => state?.projectManager?.data?.map_store_menu_groups || [];
@@ -63,11 +61,7 @@ class ProjectManagerContainer extends React.Component {
         return (
             <div style={{position: "absolute"}} id={"project-manager"}>
                 <MenuButtonList menuGroups={this.props.menuGroups} openMenuGroup={this.props.openMenuGroup}/>
-                { this.props.openMenuGroup?.id_label === 'swamm' ?
-                    <SwammContainer showMenuGroup={true}/> :
-                    this.props.openMenuGroup ? <MenuPanel menuGroup={this.props.openMenuGroup}/> : null }
                 <LegendPanel/>
-                <SwammContainer showMenuGroup={false}/>
             </div>
         );
     }
