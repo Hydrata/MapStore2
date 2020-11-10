@@ -1,13 +1,29 @@
 import React from 'react';
 import { connect } from 'react-redux';
 const PropTypes = require('prop-types');
-const {mapIdSelector} = require('../../../selectors/map');
-import { fetchProjectManagerConfig } from "../actionsProjectManager";
-import { MenuButtonList } from "./projectManagerMenus";
+const { mapIdSelector } = require('../../../selectors/map');
+import {fetchProjectManagerConfig, setMenuGroup} from "../actionsProjectManager";
+import { MenuPanel } from "../components/projectMangerMenuPanel";
 import LegendPanel from "./legendPanel";
 
 // eslint-disable-next-line camelcase
 const menuGroupsSelector = (state) => state?.projectManager?.data?.map_store_menu_groups || [];
+
+const buttonStyle = {
+    position: "absolute",
+    zIndex: 1021,
+    top: 11,
+    minWidth: "135px",
+    backgroundColor: "rgba(0,60,136,0.5)",
+    borderColor: "rgb(255 255 255 / 70%)",
+    borderWidth: "2px",
+    padding: "5px 10px",
+    fontSize: "12px",
+    lineHeight: "1.5",
+    borderRadius: "4px",
+    color: "white",
+    textAlign: "center"
+};
 
 class ProjectManagerContainer extends React.Component {
     static propTypes = {
@@ -18,7 +34,9 @@ class ProjectManagerContainer extends React.Component {
         projectTitle: PropTypes.string,
         isFetching: PropTypes.bool,
         hasPmData: PropTypes.object,
-        openMenuGroup: PropTypes.object
+        openMenuGroup: PropTypes.object,
+        setMenuGroup: PropTypes.func,
+        menu: PropTypes.object
     };
 
     static defaultProps = {
@@ -27,21 +45,6 @@ class ProjectManagerContainer extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {
-            mapId: null,
-            projectTitle: null,
-            projectManager: {
-                fetching: null,
-                data: {
-                    mapstoremenugroup_set: [
-                        {
-                            title: 'default'
-                        }
-                    ]
-                },
-                openMenuGroup: null
-            }
-        };
     }
 
     componentDidUpdate() {
@@ -59,8 +62,24 @@ class ProjectManagerContainer extends React.Component {
 
     render() {
         return (
-            <div style={{position: "absolute"}} id={"project-manager"}>
-                <MenuButtonList menuGroups={this.props.menuGroups} openMenuGroup={this.props.openMenuGroup}/>
+            <div id={"project-manager-container"}>
+                <div>
+                    <ul className="menu-groups">
+                        {this.props.menuGroups && this.props.menuGroups.length && this.props.menuGroups.map(
+                            (menu, index) => {
+                                return (
+                                    <button
+                                        key={menu.title}
+                                        style={{...buttonStyle, left: index * 150 + 20}}
+                                        onClick={() => {this.props.setMenuGroup(menu);}}>
+                                        {menu.title}
+                                    </button>
+                                );
+                            })
+                        }
+                    </ul>
+                </div>
+                {this.props.openMenuGroup ? <MenuPanel menuGroup={this.props.openMenuGroup}/> : null}
                 <LegendPanel/>
             </div>
         );
@@ -83,7 +102,8 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = ( dispatch ) => {
     return {
-        fetchProjectManagerConfig: fetchProjectManagerConfig(dispatch)
+        fetchProjectManagerConfig: fetchProjectManagerConfig(dispatch),
+        setMenuGroup: (menuGroup) => dispatch(setMenuGroup(menuGroup))
     };
 };
 

@@ -17,7 +17,7 @@ class MenuDatasetRowsClass extends React.Component {
     }
 
     render() {
-        if (this.props.datasets.length === 0) {
+        if (this.props.menuDatasets.length === 0) {
             return (
                 <div style={rowsStyle}>
                     <MenuDatasetRow dataset={null}/>
@@ -26,7 +26,7 @@ class MenuDatasetRowsClass extends React.Component {
         }
         return (
             <div style={rowsStyle}>
-                {this.props.datasets.map((dataset) => (
+                {this.props.menuDatasets.map((dataset) => (
                     <MenuDatasetRow dataset={dataset}/>
                 ))}
             </div>
@@ -35,10 +35,11 @@ class MenuDatasetRowsClass extends React.Component {
 }
 
 const mapStateToProps = (state) => {
+    // debugger;
     return {
         openMenuGroup: openMenuGroupSelector(state),
-        datasets: state?.projectManager.data.dataset_set.filter((dataset) => {
-            return dataset?.mapstore_menu_group?.id_label === openMenuGroupSelector(state).id_label;
+        menuDatasets: state?.projectManager?.data?.dataset_set.filter((dataset) => {
+            return dataset?.mapstore_menu_group?.id_label === openMenuGroupSelector(state)?.id_label;
         })
     };
 };

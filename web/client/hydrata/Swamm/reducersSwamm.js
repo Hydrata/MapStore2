@@ -9,6 +9,9 @@ import {
     SET_BMP_TYPE,
     SHOW_BMP_FORM,
     HIDE_BMP_FORM,
+    SHOW_BMP_MANAGER,
+    HIDE_BMP_MANAGER,
+    TOGGLE_BMP_MANAGER,
     MAKE_BMP_FORM,
     CLEAR_BMP_FORM,
     MAKE_DEFAULTS_BMP_FORM,
@@ -17,6 +20,9 @@ import {
     SUBMIT_BMP_FORM_SUCCESS,
     SET_DRAWING_BMP
 } from "./actionsSwamm";
+import {
+    SET_MENU_GROUP
+} from "../ProjectManager/actionsProjectManager";
 import { LOAD_FEATURE_INFO } from "../../actions/mapInfo";
 
 import {QUERY_RESULT} from "../../actions/wfsquery";
@@ -123,6 +129,29 @@ export default ( state = initialState, action) => {
         return {
             ...state,
             showWatersheds: !state.showWatersheds
+        };
+    case SET_MENU_GROUP:
+        if (action.payload) {
+            return {
+                ...state,
+                visibleBmpManager: false
+            };
+        }
+        return state;
+    case SHOW_BMP_MANAGER:
+        return {
+            ...state,
+            visibleBmpManager: true
+        };
+    case HIDE_BMP_MANAGER:
+        return {
+            ...state,
+            visibleBmpManager: false
+        };
+    case TOGGLE_BMP_MANAGER:
+        return {
+            ...state,
+            visibleBmpManager: !state.visibleBmpManager
         };
     case SHOW_BMP_FORM:
         return {

@@ -13,6 +13,7 @@ const fetchProjectManagerConfigSuccess = (config) => {
 };
 
 function fetchProjectManagerConfigError(e) {
+    console.log('*** error:', e);
     return {
         type: FETCH_PROJECT_MANAGER_CONFIG_ERROR,
         error: e

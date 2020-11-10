@@ -19,12 +19,11 @@ export default ( state = {}, action) => {
                 ...state,
                 openMenuGroup: null
             };
-        } else {
-            return {
-                ...state,
-                openMenuGroup: action.payload
-            };
         }
+        return {
+            ...state,
+            openMenuGroup: action.payload
+        };
     default:
         return state;
     }

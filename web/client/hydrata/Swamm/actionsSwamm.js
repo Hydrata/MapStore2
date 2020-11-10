@@ -8,6 +8,10 @@ const FETCH_SWAMM_ALL_BMPS = 'FETCH_SWAMM_ALL_BMPS';
 const FETCH_SWAMM_ALL_BMPS_ERROR = 'FETCH_SWAMM_ALL_BMPS_ERROR';
 const FETCH_SWAMM_ALL_BMPS_SUCCESS = 'FETCH_SWAMM_ALL_BMPS_SUCCESS';
 
+const SHOW_BMP_MANAGER = 'SHOW_BMP_MANAGER';
+const HIDE_BMP_MANAGER = 'HIDE_BMP_MANAGER';
+const TOGGLE_BMP_MANAGER = 'TOGGLE_BMP_MANAGER';
+
 const TOGGLE_OUTLETS = 'TOGGLE_OUTLETS';
 const TOGGLE_FOOTPRINTS = 'TOGGLE_FOOTPRINTS';
 const TOGGLE_WATERSHEDS = 'TOGGLE_WATERSHEDS';
@@ -152,6 +156,24 @@ const hideBmpForm = () => {
     };
 };
 
+const showBmpManager = () => {
+    return {
+        type: SHOW_BMP_MANAGER
+    };
+};
+
+const hideBmpManager = () => {
+    return {
+        type: HIDE_BMP_MANAGER
+    };
+};
+
+const toggleBmpManager = () => {
+    return {
+        type: TOGGLE_BMP_MANAGER
+    };
+};
+
 const makeDefaultsBmpForm = (bmpType) => {
     return {
         type: MAKE_DEFAULTS_BMP_FORM,
@@ -250,6 +272,9 @@ module.exports = {
     TOGGLE_WATERSHEDS, toggleWatersheds,
     SHOW_BMP_FORM, showBmpForm,
     HIDE_BMP_FORM, hideBmpForm,
+    SHOW_BMP_MANAGER, showBmpManager,
+    HIDE_BMP_MANAGER, hideBmpManager,
+    TOGGLE_BMP_MANAGER, toggleBmpManager,
     CLEAR_BMP_FORM, clearBmpForm,
     MAKE_BMP_FORM, makeBmpForm,
     MAKE_DEFAULTS_BMP_FORM, makeDefaultsBmpForm,
