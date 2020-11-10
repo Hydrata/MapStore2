@@ -4,7 +4,7 @@ import {MenuDatasetRows} from './projectManagerMenuDatasetRows';
 const panelStyle = {
     position: "absolute",
     zIndex: 1021,
-    top: "50px",
+    top: "65px",
     left: "20px",
     minWidth: "400px",
     backgroundColor: "rgba(0,60,136,0.6)",

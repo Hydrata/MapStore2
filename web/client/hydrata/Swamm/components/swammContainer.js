@@ -46,6 +46,7 @@ const panelStyle = {
     top: "50px",
     left: "20px",
     minWidth: "400px",
+    maxWidth: "800px",
     maxHeight: "80vh",
     backgroundColor: "rgba(0,60,136,0.6)",
     borderColor: "rgb(255 255 255 / 70%)",

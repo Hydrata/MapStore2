@@ -13,7 +13,7 @@ const buttonStyle = {
     position: "absolute",
     zIndex: 1021,
     top: 11,
-    minWidth: "135px",
+    width: "135px",
     backgroundColor: "rgba(0,60,136,0.5)",
     borderColor: "rgb(255 255 255 / 70%)",
     borderWidth: "2px",
