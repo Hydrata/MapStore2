@@ -3,9 +3,9 @@ import { connect } from 'react-redux';
 import Legend from "../../../components/TOC/fragments/legend/Legend";
 
 const legendPanelStyle = {
-    position: "fixed",
+    position: "absolute",
     zIndex: 1021,
-    top: "60px",
+    top: "10px",
     right: "60px",
     minWidth: "400px",
     backgroundColor: "rgba(0,60,136,0.6)",
@@ -23,9 +23,9 @@ const legendPanelStyle = {
 };
 
 const buttonStyle = {
-    position: "fixed",
+    position: "absolute",
     zIndex: 1021,
-    top: "60px",
+    top: "10px",
     right: "60px",
     minWidth: "135px",
     backgroundColor: "rgba(0,60,136,0.5)",
