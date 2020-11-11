@@ -145,7 +145,7 @@ class StandardApp extends React.Component {
                 <App {...other} plugins={assign(PluginsUtils.getPlugins({...plugins, ...this.filterRemoved(this.state.pluginsRegistry, this.state.removedPlugins)}), { requires })} />
             </Provider>
             : (<span><div className="_ms2_init_spinner _ms2_init_center"><div></div></div>
-                <div className="_ms2_init_text _ms2_init_center">Loading MapStore</div></span>);
+                <div className="_ms2_init_text _ms2_init_center">Loading Project</div></span>);
     }
     afterInit = () => {
         if (this.props.printingEnabled) {
