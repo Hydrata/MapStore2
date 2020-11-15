@@ -20,7 +20,7 @@ import {SwammBmpToggler} from "./swammBmpToggler";
 import {SwammBmpForm} from "./swammBmpForm";
 import {changeLayerProperties} from "../../../actions/layers";
 import {setMenuGroup} from "../../ProjectManager/actionsProjectManager";
-import {orgSelector} from "../selectorsSwamm";
+import {bmpByUniqueNameSelector, orgSelector} from "../selectorsSwamm";
 import {saveChanges} from "../../../actions/featuregrid";
 import {query} from "../../../actions/wfsquery";
 
@@ -90,8 +90,8 @@ const filterButtonStyle = {
 };
 
 const bmpProgressButtonStyle = {
-    marginTop: "50px",
-    marginLeft: "20px",
+    top: "50px",
+    left: "20px",
     position: "absolute",
     opacity: "0.7",
     borderRadius: "4px"
@@ -104,7 +104,7 @@ class SwammContainer extends React.Component {
         swammData: PropTypes.array,
         mapId: PropTypes.number,
         orgs: PropTypes.array,
-        bmpNames: PropTypes.array,
+        bmpUniqueNames: PropTypes.array,
         bmpTypes: PropTypes.array,
         allBmps: PropTypes.array,
         toggleOutlets: PropTypes.func,
@@ -132,7 +132,8 @@ class SwammContainer extends React.Component {
         filters: PropTypes.object,
         fetchingBmps: PropTypes.bool,
         visibleBmpManager: PropTypes.bool,
-        toggleBmpManager: PropTypes.func
+        clickBmpManager: PropTypes.func,
+        bmpByUniqueNameSelector: PropTypes.func
     };
 
     static defaultProps = {}
@@ -168,10 +169,20 @@ class SwammContainer extends React.Component {
         return (
             <div id={"swamm-container"}>
                 <button
-                    key="swamm-bmp-manager-button"
+                    key="swamm-bmp-viewer-button"
                     style={{...buttonStyle, left: 3 * 150 + 20}}
                     onClick={() => {this.props.clickBmpManager();}}>
-                    Manage BMPs
+                    View BMPs
+                </button>
+                <button
+                    key="swamm-bmp-creator-button"
+                    style={{...buttonStyle, left: 4 * 150 + 20}}
+                    onClick={() => {
+                        this.props.makeBmpForm();
+                        this.props.setMenuGroup(null);
+                    }}
+                >
+                    Create BMPs
                 </button>
                 {this.props.visibleBmpManager ?
                     <div style={{...panelStyle}} id="swamm-bmp-manager">
@@ -187,19 +198,10 @@ class SwammContainer extends React.Component {
                                 </tr>
                             </thead>
                             <tbody>
-                                {this.props.bmpNames?.map((bmpName) => (
+                                {this.props.bmpUniqueNames?.map((bmpName) => (
                                     <tr key={bmpName.id}>
                                         <td className="h5" style={{"padding": "3px"}}>
                                             {bmpName.name}
-                                            <button
-                                                className={"btn glyphicon glyphicon-plus pull-right"}
-                                                style={glyphStyle}
-                                                onClick={() => {
-                                                    this.setBmpTypesVisibility(bmpName.name, true);
-                                                    this.props.makeBmpForm(bmpName.id);
-                                                    this.props.setMenuGroup(null);
-                                                }}
-                                            />
                                         </td>
                                         {this.props.orgs.map((org) => (
                                             <td key={org.id}>
@@ -252,7 +254,7 @@ class SwammContainer extends React.Component {
                     : null
                 }
                 {this.props.visibleBmpForm ?
-                    <SwammBmpForm />
+                    <SwammBmpForm setBmpTypesVisibility={this.setBmpTypesVisibility}/>
                     : null
                 }
                 {this.props.storedBmpForm && !this.props.visibleBmpForm && !this.props.drawingBmp ?
@@ -348,7 +350,7 @@ const mapStateToProps = (state) => {
     return {
         mapId: mapIdSelector(state),
         orgs: orgSelector(state),
-        bmpNames: state?.swamm?.bmpTypes ? state?.swamm?.bmpTypes.filter((v, i, a)=>a.findIndex(t=>(t.name === v.name)) === i) : [],
+        bmpUniqueNames: bmpByUniqueNameSelector(state),
         bmpTypes: state?.swamm?.bmpTypes,
         allBmps: state?.swamm?.allBmps,
         showOutlets: state?.swamm?.showOutlets,

@@ -27,7 +27,7 @@ import { purgeMapInfoResults } from "../../../actions/mapInfo";
 import {featureTypeSelected, createQuery, query} from "../../../actions/wfsquery";
 import "../../ProjectManager/projectManager.css";
 import {isInt} from "../../Utils/utils";
-import {orgSelector} from "../selectorsSwamm";
+import {bmpByUniqueNameSelector, orgSelector} from "../selectorsSwamm";
 
 class SwammBmpFormClass extends React.Component {
     static propTypes = {
@@ -57,11 +57,13 @@ class SwammBmpFormClass extends React.Component {
         startDrawingFeature: PropTypes.func,
         saveChanges: PropTypes.func,
         setDrawingBmp: PropTypes.func,
-        layers: PropTypes.array,
+        layers: PropTypes.object,
         query: PropTypes.func,
         mapId: PropTypes.number,
         purgeMapInfoResults: PropTypes.func,
-        thisBmpCode: PropTypes.string
+        bmpUniqueNames: PropTypes.array,
+        thisBmpCode: PropTypes.string,
+        setBmpTypesVisibility: PropTypes.func
     };
 
     static defaultProps = {
@@ -70,13 +72,15 @@ class SwammBmpFormClass extends React.Component {
     constructor(props) {
         super(props);
         this.handleChange = this.handleChange.bind(this);
+        this.handleBmpChange = this.handleBmpChange.bind(this);
+        this.handleOrgChange = this.handleOrgChange.bind(this);
         this.state = {};
     }
 
     componentDidMount() {
-        if (Object.keys(this.props.storedBmpForm).length === 0 && this.props.creatingNewBmp) {
-            this.props.makeDefaultsBmpForm(this.props.thisBmpType);
-        }
+        // if (Object.keys(this.props.storedBmpForm).length === 0 && this.props.creatingNewBmp) {
+        //     this.props.makeDefaultsBmpForm(this.props.thisBmpType);
+        // }
         if (Object.keys(this.props.storedBmpForm).length === 0 && !this.props.creatingNewBmp) {
             this.props.purgeMapInfoResults();
             this.props.setMenuGroup(null);
@@ -84,9 +88,9 @@ class SwammBmpFormClass extends React.Component {
     }
 
     componentDidUpdate() {
-        if (Object.keys(this.props.storedBmpForm).length === 0 && !this.props.creatingNewBmp && this.props.updatingBmp) {
-            this.props.makeExistingBmpForm(this.props.updatingBmp);
-        }
+        // if (Object.keys(this.props.storedBmpForm).length === 0 && !this.props.creatingNewBmp && this.props.updatingBmp) {
+        //     this.props.makeExistingBmpForm(this.props.updatingBmp);
+        // }
     }
 
     render() {
@@ -107,7 +111,7 @@ class SwammBmpFormClass extends React.Component {
                 </Modal.Header>
                 <Modal.Body>
                     <Form horizontal>
-                        <FormGroup controlId="formControlsSelect">
+                        <FormGroup controlId="formControlsSelectOrg">
                             <Col componentClass={ControlLabel} sm={6}>
                               Organisation
                             </Col>
@@ -126,7 +130,7 @@ class SwammBmpFormClass extends React.Component {
                                         componentClass="select"
                                         name="organisation"
                                         value={JSON.stringify(this.props.storedBmpForm?.organisation)}
-                                        onChange={this.handleChange}
+                                        onChange={this.handleOrgChange}
                                     >
                                         <option key="1" value="select">Select Organisation</option>
                                         {this.props.orgs.map((org) => {
@@ -136,6 +140,26 @@ class SwammBmpFormClass extends React.Component {
                                     <FormControl.Feedback />
                                 </Col>
                             }
+                        </FormGroup>
+                        <FormGroup controlId="formControlsSelectBmp">
+                            <Col componentClass={ControlLabel} sm={6}>
+                              BMP Type
+                            </Col>
+                            <Col sm={5}>
+                                <FormControl
+                                    inline="true"
+                                    componentClass="select"
+                                    name="bmpName"
+                                    value={this.props.storedBmpForm?.bmpName}
+                                    onChange={this.handleBmpChange}
+                                >
+                                    <option key="1" value="select">Select BMP Type</option>
+                                    {this.props.bmpUniqueNames.map((bmpName) => {
+                                        return <option key={bmpName} value={bmpName}>{bmpName}</option>;
+                                    })}
+                                </FormControl>
+                                <FormControl.Feedback />
+                            </Col>
                         </FormGroup>
                         <FormGroup controlId="n_redratio" validationState={this.validateRatio("n_redratio")} >
                             <Col componentClass={ControlLabel} sm={6}>
@@ -494,20 +518,42 @@ class SwammBmpFormClass extends React.Component {
         if (event.target.type === 'number')  {
             kv = {[fieldName]: parseFloat(fieldValue)};
         }
-        if (event.target.outerHTML.includes('organisation'))  {
-            kv = {[fieldName]: JSON.parse(fieldValue)};
-            const bmpCodeNameElements = this.props.thisBmpCode.split("_");
-            bmpCodeNameElements[1] = JSON.parse(fieldValue).code;
-            const updatedBmpCode = bmpCodeNameElements.join('_');
-            kv.thisBmpCode = updatedBmpCode;
-            kv.type_data = this.props.bmpTypes.filter((bmpType) => bmpType.code === updatedBmpCode)[0];
-            kv.type = kv.type_data.id;
-        }
         this.props.updateBmpForm(kv);
+    }
+    handleOrgChange(event) {
+        const fieldName = event.target.name;
+        let fieldValue = event.target.value;
+        // let kv = {[fieldName]: fieldValue};
+        let kv = {[fieldName]: JSON.parse(fieldValue)};
+        console.log('kv: ', kv);
+        // const bmpCodeNameElements = this.props.thisBmpCode.split("_");
+        // bmpCodeNameElements[1] = JSON.parse(fieldValue).code;
+        // const updatedBmpCode = bmpCodeNameElements.join('_');
+        // kv.thisBmpCode = updatedBmpCode;
+        // kv.type_data = this.props.bmpTypes.filter((bmpType) => bmpType.code === updatedBmpCode)[0];
+        // kv.type = kv.type_data.id;
+        this.props.updateBmpForm(kv);
+    }
+    handleBmpChange(event) {
+        const fieldName = event.target.name;
+        let fieldValue = event.target.value;
+        let kv = {[fieldName]: fieldValue};
+        console.log('kv', kv);
+        console.log('fieldValue', fieldValue);
+        console.log('this.props.bmpTypes', this.props.bmpTypes);
+        console.log('this.props.storedBmpForm?.organisation', this.props.storedBmpForm?.organisation);
+        const selectedBmpType = this.props.bmpTypes.filter(
+            bmpType => bmpType?.organisation?.id === this.props.storedBmpForm?.organisation?.id
+        ).filter(
+            bmpType => bmpType.name === fieldValue
+        )[0];
+        console.log('selectedBmpType: ', selectedBmpType);
+        this.props.updateBmpForm(kv);
+        this.props.makeDefaultsBmpForm(selectedBmpType);
+        this.props.setBmpTypesVisibility(fieldValue, true);
     }
     drawBmpStep1(layerName) {
         const targetLayer = this.props.layers.flat.filter(layer => layer.name === layerName)[0];
-        console.log('targetLayer', targetLayer);
         this.props.setLayer(targetLayer?.id);
         this.props.featureTypeSelected('http://localhost:8080/geoserver/wfs', targetLayer?.name);
     }
@@ -516,6 +562,7 @@ class SwammBmpFormClass extends React.Component {
 const mapStateToProps = (state) => {
     return {
         mapId: state?.projectManager?.data?.base_map,
+        bmpUniqueNames: bmpByUniqueNameSelector(state).map(bmpType => bmpType.name),
         bmpTypes: state?.swamm?.bmpTypes,
         thisBmpType: state?.swamm?.bmpTypes.filter((bmpType) => bmpType.id === state?.swamm?.BmpFormBmpTypeId)[0],
         storedBmpForm: state?.swamm?.storedBmpForm || {},

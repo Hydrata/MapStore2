@@ -163,7 +163,10 @@ export default ( state = initialState, action) => {
             ...state,
             creatingNewBmp: true,
             visibleBmpForm: true,
-            BmpFormBmpTypeId: action.bmpTypeId
+            storedBmpForm: {
+                organisation: '',
+                bmpName: ''
+            }
         };
     case MAKE_DEFAULTS_BMP_FORM:
         const defaultsForm = {
@@ -172,7 +175,7 @@ export default ( state = initialState, action) => {
             type: action.bmpType.id,
             type_data: action.bmpType,
             project: action.bmpType.project.id,
-            organisation: null,
+            // organisation: null,
             override_n_redratio: action.bmpType.n_redratio,
             override_p_redratio: action.bmpType.p_redratio,
             override_s_redratio: action.bmpType.s_redratio,
@@ -183,7 +186,10 @@ export default ( state = initialState, action) => {
         };
         return {
             ...state,
-            storedBmpForm: defaultsForm
+            storedBmpForm: {
+                ...state.storedBmpForm,
+                ...defaultsForm
+            }
         };
     case MAKE_EXISTING_BMP_FORM:
         const existingForm = {
@@ -224,15 +230,19 @@ export default ( state = initialState, action) => {
             ...state
         };
     case UPDATE_BMP_FORM:
-        const newState = {...state};
         if (action?.kv?.type_data?.id) {
-            newState.BmpFormBmpTypeId = action.kv.type_data.id;
+            return {
+                ...state,
+                BmpFormBmpTypeId: action.kv.type_data.id
+            };
         }
-        newState.storedBmpForm = {
-            ...state.storedBmpForm,
-            ...action.kv
+        return  {
+            ...state,
+            storedBmpForm: {
+                ...state.storedBmpForm,
+                ...action.kv
+            }
         };
-        return newState;
     case QUERY_RESULT:
         if (action.reason === 'queryGetNewBmpId') {
             console.log('reducer queryGetNewBmpId got action: ', action);

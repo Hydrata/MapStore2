@@ -137,10 +137,9 @@ const toggleWatersheds = () => {
     };
 };
 
-const makeBmpForm = (bmpTypeId) => {
+const makeBmpForm = () => {
     return {
-        type: MAKE_BMP_FORM,
-        bmpTypeId: bmpTypeId
+        type: MAKE_BMP_FORM
     };
 };
 
