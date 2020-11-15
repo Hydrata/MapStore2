@@ -88,9 +88,9 @@ class SwammBmpFormClass extends React.Component {
     }
 
     componentDidUpdate() {
-        // if (Object.keys(this.props.storedBmpForm).length === 0 && !this.props.creatingNewBmp && this.props.updatingBmp) {
-        //     this.props.makeExistingBmpForm(this.props.updatingBmp);
-        // }
+        if (Object.keys(this.props.storedBmpForm).length === 0 && !this.props.creatingNewBmp && this.props.updatingBmp) {
+            this.props.makeExistingBmpForm(this.props.updatingBmp);
+        }
     }
 
     render() {
