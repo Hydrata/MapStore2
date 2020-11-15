@@ -78,9 +78,6 @@ class SwammBmpFormClass extends React.Component {
     }
 
     componentDidMount() {
-        // if (Object.keys(this.props.storedBmpForm).length === 0 && this.props.creatingNewBmp) {
-        //     this.props.makeDefaultsBmpForm(this.props.thisBmpType);
-        // }
         if (Object.keys(this.props.storedBmpForm).length === 0 && !this.props.creatingNewBmp) {
             this.props.purgeMapInfoResults();
             this.props.setMenuGroup(null);
