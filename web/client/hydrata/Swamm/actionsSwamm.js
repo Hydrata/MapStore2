@@ -8,6 +8,9 @@ const FETCH_SWAMM_ALL_BMPS = 'FETCH_SWAMM_ALL_BMPS';
 const FETCH_SWAMM_ALL_BMPS_ERROR = 'FETCH_SWAMM_ALL_BMPS_ERROR';
 const FETCH_SWAMM_ALL_BMPS_SUCCESS = 'FETCH_SWAMM_ALL_BMPS_SUCCESS';
 
+const SHOW_SWAMM_DATA_GRID = 'SHOW_SWAMM_DATA_GRID';
+const HIDE_SWAMM_DATA_GRID = 'HIDE_SWAMM_DATA_GRID';
+
 const SHOW_BMP_MANAGER = 'SHOW_BMP_MANAGER';
 const HIDE_BMP_MANAGER = 'HIDE_BMP_MANAGER';
 const TOGGLE_BMP_MANAGER = 'TOGGLE_BMP_MANAGER';
@@ -155,6 +158,18 @@ const hideBmpForm = () => {
     };
 };
 
+const showSwammDataGrid = () => {
+    return {
+        type: SHOW_SWAMM_DATA_GRID
+    };
+};
+
+const hideSwammDataGrid = () => {
+    return {
+        type: HIDE_SWAMM_DATA_GRID
+    };
+};
+
 const showBmpManager = () => {
     return {
         type: SHOW_BMP_MANAGER
@@ -271,6 +286,8 @@ module.exports = {
     TOGGLE_WATERSHEDS, toggleWatersheds,
     SHOW_BMP_FORM, showBmpForm,
     HIDE_BMP_FORM, hideBmpForm,
+    SHOW_SWAMM_DATA_GRID, showSwammDataGrid,
+    HIDE_SWAMM_DATA_GRID, hideSwammDataGrid,
     SHOW_BMP_MANAGER, showBmpManager,
     HIDE_BMP_MANAGER, hideBmpManager,
     TOGGLE_BMP_MANAGER, toggleBmpManager,

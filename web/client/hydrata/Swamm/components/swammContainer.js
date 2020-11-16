@@ -14,10 +14,12 @@ import {
     makeBmpForm,
     setDrawingBmp,
     toggleBmpType,
-    setBmpType
+    setBmpType,
+    showSwammDataGrid
 } from "../actionsSwamm";
 import {SwammBmpToggler} from "./swammBmpToggler";
 import {SwammBmpForm} from "./swammBmpForm";
+import {SwammDataGrid} from "./swammDataGrid";
 import {changeLayerProperties} from "../../../actions/layers";
 import {setMenuGroup} from "../../ProjectManager/actionsProjectManager";
 import {bmpByUniqueNameSelector, orgSelector} from "../selectorsSwamm";
@@ -132,6 +134,8 @@ class SwammContainer extends React.Component {
         filters: PropTypes.object,
         fetchingBmps: PropTypes.bool,
         visibleBmpManager: PropTypes.bool,
+        visibleSwammDataGrid: PropTypes.bool,
+        showSwammDataGrid: PropTypes.func,
         clickBmpManager: PropTypes.func,
         bmpByUniqueNameSelector: PropTypes.func
     };
@@ -183,6 +187,16 @@ class SwammContainer extends React.Component {
                     }}
                 >
                     Create BMPs
+                </button>
+                <button
+                    key="swamm-bmp-data-grid-button"
+                    style={{...buttonStyle, left: 5 * 150 + 20}}
+                    onClick={() => {
+                        this.props.showSwammDataGrid();
+                        this.props.setMenuGroup(null);
+                    }}
+                >
+                    BMP Summary
                 </button>
                 {this.props.visibleBmpManager ?
                     <div style={{...panelStyle}} id="swamm-bmp-manager">
@@ -255,6 +269,10 @@ class SwammContainer extends React.Component {
                 }
                 {this.props.visibleBmpForm ?
                     <SwammBmpForm setBmpTypesVisibility={this.setBmpTypesVisibility}/>
+                    : null
+                }
+                {this.props.visibleSwammDataGrid ?
+                    <div><SwammDataGrid/>SwammDataGrid</div>
                     : null
                 }
                 {this.props.storedBmpForm && !this.props.visibleBmpForm && !this.props.drawingBmp ?
@@ -362,6 +380,7 @@ const mapStateToProps = (state) => {
         storedBmpForm: state?.swamm?.storedBmpForm,
         drawingBmp: state?.swamm?.drawingBmp,
         visibleBmpManager: state?.swamm?.visibleBmpManager,
+        visibleSwammDataGrid: state?.swamm?.visibleSwammDataGrid,
         queryStore: state?.query,
         filters: {
             showOutlets: state.swamm?.showOutlets,
@@ -380,6 +399,7 @@ const mapDispatchToProps = ( dispatch ) => {
         toggleFootprints: () => dispatch(toggleFootprints()),
         toggleWatersheds: () => dispatch(toggleWatersheds()),
         showBmpForm: () => dispatch(showBmpForm()),
+        showSwammDataGrid: () => dispatch(showSwammDataGrid()),
         clickBmpManager: () => {
             dispatch(toggleBmpManager());
             dispatch(setMenuGroup(null));

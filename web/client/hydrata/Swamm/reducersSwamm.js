@@ -9,6 +9,8 @@ import {
     SET_BMP_TYPE,
     SHOW_BMP_FORM,
     HIDE_BMP_FORM,
+    SHOW_SWAMM_DATA_GRID,
+    HIDE_SWAMM_DATA_GRID,
     SHOW_BMP_MANAGER,
     HIDE_BMP_MANAGER,
     TOGGLE_BMP_MANAGER,
@@ -152,6 +154,16 @@ export default ( state = initialState, action) => {
         return {
             ...state,
             visibleBmpManager: !state.visibleBmpManager
+        };
+    case SHOW_SWAMM_DATA_GRID:
+        return {
+            ...state,
+            visibleSwammDataGrid: true
+        };
+    case HIDE_SWAMM_DATA_GRID:
+        return {
+            ...state,
+            visibleSwammDataGrid: false
         };
     case SHOW_BMP_FORM:
         return {
