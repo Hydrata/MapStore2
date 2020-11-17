@@ -44,7 +44,7 @@ class SwammDataGridClass extends React.Component {
                     marginTop: "100px",
                     minWidth: "800px"
                 }}
-                dialogClassName="swamm-data-grid-modal"
+                dialogClassName="swamm-big-modal"
             >
                 <Modal.Header>
                     <Modal.Title>
