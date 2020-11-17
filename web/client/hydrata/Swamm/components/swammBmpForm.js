@@ -97,19 +97,21 @@ class SwammBmpFormClass extends React.Component {
                 show={true}
                 onHide={() => this.props.hideBmpForm()}
                 style={{
-                    marginTop: "100px"
+                    marginTop: "100px",
+                    fontSize: "small"
                 }}
             >
                 <Modal.Header>
                     <Modal.Title>
                         {this.props.storedBmpForm.id ?
                             "Edit BMP: " + this.props.storedBmpForm?.type_data?.name + " " + this.props.storedBmpForm.id :
-                            "Create a new " + this.props?.storedBmpForm?.type_data?.name}
+                            "Create a new BMP"
+                        }
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <Form horizontal>
-                        <FormGroup controlId="formControlsSelectOrg">
+                        <FormGroup controlId="formControlsSelectOrg" bsSize={"small"}>
                             <Col componentClass={ControlLabel} sm={6}>
                               Organisation
                             </Col>
@@ -139,7 +141,7 @@ class SwammBmpFormClass extends React.Component {
                                 </Col>
                             }
                         </FormGroup>
-                        <FormGroup controlId="formControlsSelectBmp">
+                        <FormGroup controlId="formControlsSelectBmp" bsSize={"small"}>
                             <Col componentClass={ControlLabel} sm={6}>
                               BMP Type
                             </Col>
@@ -159,7 +161,7 @@ class SwammBmpFormClass extends React.Component {
                                 <FormControl.Feedback />
                             </Col>
                         </FormGroup>
-                        <FormGroup controlId="formControlsSelectStatus">
+                        <FormGroup controlId="formControlsSelectStatus" bsSize={"small"}>
                             <Col componentClass={ControlLabel} sm={6}>
                               BMP Status
                             </Col>
@@ -179,7 +181,7 @@ class SwammBmpFormClass extends React.Component {
                                 <FormControl.Feedback />
                             </Col>
                         </FormGroup>
-                        <FormGroup controlId="n_redratio" validationState={this.validateRatio("n_redratio")} >
+                        <FormGroup controlId="n_redratio" validationState={this.validateRatio("n_redratio")} bsSize={"small"}>
                             <Col componentClass={ControlLabel} sm={6}>
                               Nitrogen Reduction Ratio (0 to 1)
                             </Col>
@@ -196,7 +198,7 @@ class SwammBmpFormClass extends React.Component {
                                 <FormControl.Feedback />
                             </Col>
                         </FormGroup>
-                        <FormGroup controlId="p_redratio" validationState={this.validateRatio("p_redratio")} >
+                        <FormGroup controlId="p_redratio" validationState={this.validateRatio("p_redratio")} bsSize={"small"}>
                             <Col componentClass={ControlLabel} sm={6}>
                               Phosphorus Reduction Ratio (0 to 1)
                             </Col>
@@ -213,7 +215,7 @@ class SwammBmpFormClass extends React.Component {
                                 <FormControl.Feedback />
                             </Col>
                         </FormGroup>
-                        <FormGroup controlId="s_redratio" validationState={this.validateRatio("s_redratio")}>
+                        <FormGroup controlId="s_redratio" validationState={this.validateRatio("s_redratio")} bsSize={"small"}>
                             <Col componentClass={ControlLabel} sm={6}>
                               Sediment Reduction Ratio (0 to 1)
                             </Col>
@@ -230,7 +232,7 @@ class SwammBmpFormClass extends React.Component {
                                 <FormControl.Feedback />
                             </Col>
                         </FormGroup>
-                        <FormGroup controlId="cost_base" validationState={this.validateCost("cost_base")}>
+                        <FormGroup controlId="cost_base" validationState={this.validateCost("cost_base")} bsSize={"small"}>
                             <Col componentClass={ControlLabel} sm={6}>
                               Base Cost ($)
                             </Col>
@@ -247,7 +249,7 @@ class SwammBmpFormClass extends React.Component {
                                 <FormControl.Feedback />
                             </Col>
                         </FormGroup>
-                        <FormGroup controlId="cost_rate_per_footprint_area" validationState={this.validateCost("cost_rate_per_footprint_area")}>
+                        <FormGroup controlId="cost_rate_per_footprint_area" validationState={this.validateCost("cost_rate_per_footprint_area")} bsSize={"small"}>
                             <Col componentClass={ControlLabel} sm={6}>
                               Footprint Cost ($/acre)
                             </Col>
@@ -264,7 +266,7 @@ class SwammBmpFormClass extends React.Component {
                                 <FormControl.Feedback />
                             </Col>
                         </FormGroup>
-                        <FormGroup controlId="cost_rate_per_watershed_area" validationState={this.validateCost("cost_rate_per_watershed_area")}>
+                        <FormGroup controlId="cost_rate_per_watershed_area" validationState={this.validateCost("cost_rate_per_watershed_area")} bsSize={"small"}>
                             <Col componentClass={ControlLabel} sm={6}>
                               Watershed Cost ($/acre)
                             </Col>
@@ -281,7 +283,7 @@ class SwammBmpFormClass extends React.Component {
                                 <FormControl.Feedback />
                             </Col>
                         </FormGroup>
-                        <FormGroup controlId="outlet_fid" validationState={this.validateFid("outlet_fid")}>
+                        <FormGroup controlId="outlet_fid" validationState={this.validateFid("outlet_fid")} bsSize={"small"}>
                             <Col componentClass={ControlLabel} sm={6}>
                                 Outlet Point:
                             </Col>
@@ -318,7 +320,7 @@ class SwammBmpFormClass extends React.Component {
                                 </React.Fragment>
                             }
                         </FormGroup>
-                        <FormGroup controlId="footprint_fid" validationState={this.validateFid("footprint_fid")}>
+                        <FormGroup controlId="footprint_fid" validationState={this.validateFid("footprint_fid")} bsSize={"small"}>
                             <Col componentClass={ControlLabel} sm={6}>
                                 Footprint:
                             </Col>
@@ -357,7 +359,7 @@ class SwammBmpFormClass extends React.Component {
                                 </React.Fragment>
                             }
                         </FormGroup>
-                        <FormGroup controlId="watershed_fid" validationState={this.validateFid("watershed_fid")}>
+                        <FormGroup controlId="watershed_fid" validationState={this.validateFid("watershed_fid")} bsSize={"small"}>
                             <Col componentClass={ControlLabel} sm={6}>
                                 Watershed:
                             </Col>
@@ -389,7 +391,7 @@ class SwammBmpFormClass extends React.Component {
                                             disabled={ !this.props.storedBmpForm?.organisation}
                                             bsStyle={ this.props.storedBmpForm?.organisation ? "success" : "default"}
                                             style={{opacity: "0.7"}}
-                                            onClick={() => this.drawBmpStep1(this.props?.thisBmpCode + '_watershed')}>
+                                            onClick={() => this.drawBmpStep1(this.props?.thisBmpCode + '_watershed')} bsSize={"small"}>
                                         Draw watershed
                                         </Button>
                                     </Col>
