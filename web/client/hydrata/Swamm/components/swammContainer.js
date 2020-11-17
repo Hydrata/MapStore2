@@ -6,6 +6,7 @@ import {Button} from "react-bootstrap";
 import {
     fetchSwammBmpTypes,
     fetchSwammAllBmps,
+    fetchSwammBmpStatuses,
     toggleOutlets,
     toggleFootprints,
     toggleWatersheds,
@@ -103,6 +104,8 @@ class SwammContainer extends React.Component {
     static propTypes = {
         fetchSwammBmpTypes: PropTypes.func,
         fetchSwammAllBmps: PropTypes.func,
+        fetchSwammBmpStatuses: PropTypes.func,
+        statuses: PropTypes.array,
         swammData: PropTypes.array,
         mapId: PropTypes.number,
         orgs: PropTypes.array,
@@ -166,6 +169,16 @@ class SwammContainer extends React.Component {
         }
         if (this.props.mapId && (this.props.allBmps.length > 0)) {
             this.fetchingBmps = false;
+        }
+        if (!this.props.mapId && !this.fetchingStatuses) {
+            this.fetchingStatuses = false;
+        }
+        if (this.props.mapId && (this.props.statuses.length === 0) && !this.fetchingStatuses) {
+            this.fetchingStatuses = true;
+            this.props.fetchSwammBmpStatuses(this.props.mapId);
+        }
+        if (this.props.mapId && (this.props.statuses.length > 0)) {
+            this.fetchingStatuses = false;
         }
     }
 
@@ -371,6 +384,7 @@ const mapStateToProps = (state) => {
         bmpUniqueNames: bmpByUniqueNameSelector(state),
         bmpTypes: state?.swamm?.bmpTypes,
         allBmps: state?.swamm?.allBmps,
+        statuses: state?.swamm?.statuses,
         showOutlets: state?.swamm?.showOutlets,
         showFootprints: state?.swamm?.showFootprints,
         showWatersheds: state?.swamm?.showWatersheds,
@@ -394,6 +408,7 @@ const mapDispatchToProps = ( dispatch ) => {
     return {
         fetchSwammBmpTypes: (mapId) => dispatch(fetchSwammBmpTypes(mapId)),
         fetchSwammAllBmps: (mapId) => dispatch(fetchSwammAllBmps(mapId)),
+        fetchSwammBmpStatuses: (mapId) => dispatch(fetchSwammBmpStatuses(mapId)),
         toggleLayer: (layer, isVisible) => dispatch(changeLayerProperties(layer, {visibility: isVisible})),
         toggleOutlets: () => dispatch(toggleOutlets()),
         toggleFootprints: () => dispatch(toggleFootprints()),

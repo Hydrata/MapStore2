@@ -2,6 +2,8 @@ import {
     FETCH_SWAMM_BMPTYPES_SUCCESS,
     FETCH_SWAMM_BMPTYPES,
     FETCH_SWAMM_ALL_BMPS_SUCCESS,
+    FETCH_SWAMM_BMP_STATUSES,
+    FETCH_SWAMM_BMP_STATUSES_SUCCESS,
     TOGGLE_OUTLETS,
     TOGGLE_FOOTPRINTS,
     TOGGLE_WATERSHEDS,
@@ -35,6 +37,7 @@ const initialState = {
     showWatersheds: true,
     bmpTypes: [],
     allBmps: [],
+    statuses: [],
     visibleBmpForm: false,
     creatingNewBmp: false,
     drawingBmp: false
@@ -90,6 +93,16 @@ export default ( state = initialState, action) => {
             ...state,
             fetching: false,
             allBmps: action.allBmps
+        };
+    case FETCH_SWAMM_BMP_STATUSES:
+        return {
+            ...state,
+            fetchingStatuses: true
+        };
+    case FETCH_SWAMM_BMP_STATUSES_SUCCESS:
+        return {
+            ...state,
+            statuses: action.statuses
         };
     case TOGGLE_BMP_TYPE:
         return {

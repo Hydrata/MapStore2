@@ -33,6 +33,7 @@ class SwammBmpFormClass extends React.Component {
     static propTypes = {
         bmpTypeId: PropTypes.number,
         bmpTypes: PropTypes.array,
+        statuses: PropTypes.array,
         setMenuGroup: PropTypes.func,
         creatingNewBmp: PropTypes.bool,
         updatingBmp: PropTypes.object,
@@ -153,6 +154,26 @@ class SwammBmpFormClass extends React.Component {
                                     <option key="1" value="select">Select BMP Type</option>
                                     {this.props.bmpUniqueNames.map((bmpName) => {
                                         return <option key={bmpName} value={bmpName}>{bmpName}</option>;
+                                    })}
+                                </FormControl>
+                                <FormControl.Feedback />
+                            </Col>
+                        </FormGroup>
+                        <FormGroup controlId="formControlsSelectStatus">
+                            <Col componentClass={ControlLabel} sm={6}>
+                              BMP Status
+                            </Col>
+                            <Col sm={5}>
+                                <FormControl
+                                    inline="true"
+                                    componentClass="select"
+                                    name="status"
+                                    value={this.props.storedBmpForm?.status}
+                                    onChange={this.handleChange}
+                                >
+                                    <option key="1" value="select">Select BMP Status</option>
+                                    {this.props.statuses.map((status) => {
+                                        return <option key={status} value={status}>{status}</option>;
                                     })}
                                 </FormControl>
                                 <FormControl.Feedback />
@@ -520,31 +541,18 @@ class SwammBmpFormClass extends React.Component {
     handleOrgChange(event) {
         const fieldName = event.target.name;
         let fieldValue = event.target.value;
-        // let kv = {[fieldName]: fieldValue};
         let kv = {[fieldName]: JSON.parse(fieldValue)};
-        console.log('kv: ', kv);
-        // const bmpCodeNameElements = this.props.thisBmpCode.split("_");
-        // bmpCodeNameElements[1] = JSON.parse(fieldValue).code;
-        // const updatedBmpCode = bmpCodeNameElements.join('_');
-        // kv.thisBmpCode = updatedBmpCode;
-        // kv.type_data = this.props.bmpTypes.filter((bmpType) => bmpType.code === updatedBmpCode)[0];
-        // kv.type = kv.type_data.id;
         this.props.updateBmpForm(kv);
     }
     handleBmpChange(event) {
         const fieldName = event.target.name;
         let fieldValue = event.target.value;
         let kv = {[fieldName]: fieldValue};
-        console.log('kv', kv);
-        console.log('fieldValue', fieldValue);
-        console.log('this.props.bmpTypes', this.props.bmpTypes);
-        console.log('this.props.storedBmpForm?.organisation', this.props.storedBmpForm?.organisation);
         const selectedBmpType = this.props.bmpTypes.filter(
             bmpType => bmpType?.organisation?.id === this.props.storedBmpForm?.organisation?.id
         ).filter(
             bmpType => bmpType.name === fieldValue
         )[0];
-        console.log('selectedBmpType: ', selectedBmpType);
         this.props.updateBmpForm(kv);
         this.props.makeDefaultsBmpForm(selectedBmpType);
         this.props.setBmpTypesVisibility(fieldValue, true);
@@ -561,6 +569,7 @@ const mapStateToProps = (state) => {
         mapId: state?.projectManager?.data?.base_map,
         bmpUniqueNames: bmpByUniqueNameSelector(state).map(bmpType => bmpType.name),
         bmpTypes: state?.swamm?.bmpTypes,
+        statuses: state?.swamm?.statuses,
         thisBmpType: state?.swamm?.bmpTypes.filter((bmpType) => bmpType.id === state?.swamm?.BmpFormBmpTypeId)[0],
         storedBmpForm: state?.swamm?.storedBmpForm || {},
         thisBmpCode: state?.swamm?.storedBmpForm?.type_data?.code,

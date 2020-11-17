@@ -8,6 +8,10 @@ const FETCH_SWAMM_ALL_BMPS = 'FETCH_SWAMM_ALL_BMPS';
 const FETCH_SWAMM_ALL_BMPS_ERROR = 'FETCH_SWAMM_ALL_BMPS_ERROR';
 const FETCH_SWAMM_ALL_BMPS_SUCCESS = 'FETCH_SWAMM_ALL_BMPS_SUCCESS';
 
+const FETCH_SWAMM_BMP_STATUSES = 'FETCH_SWAMM_BMP_STATUSES';
+const FETCH_SWAMM_BMP_STATUSES_ERROR = 'FETCH_SWAMM_BMP_STATUSES_ERROR';
+const FETCH_SWAMM_BMP_STATUSES_SUCCESS = 'FETCH_SWAMM_BMP_STATUSES_SUCCESS';
+
 const SHOW_SWAMM_DATA_GRID = 'SHOW_SWAMM_DATA_GRID';
 const HIDE_SWAMM_DATA_GRID = 'HIDE_SWAMM_DATA_GRID';
 
@@ -86,6 +90,35 @@ const fetchSwammAllBmps = (mapId) => {
         ).catch(
             e => {
                 dispatch(fetchSwammAllBmpsError(e));
+            }
+        );
+    };
+};
+
+const fetchSwammBmpStatusesSuccess = (statuses) => {
+    return {
+        type: FETCH_SWAMM_BMP_STATUSES_SUCCESS,
+        statuses: statuses
+    };
+};
+
+function fetchSwammBmpStatusesError(e) {
+    return {
+        type: FETCH_SWAMM_BMP_STATUSES_ERROR,
+        error: e
+    };
+}
+
+const fetchSwammBmpStatuses = (mapId) => {
+    return (dispatch) => {
+        return axios.get(`/swamm/api/${mapId}/bmps/status_list/`
+        ).then(
+            response => {
+                dispatch(fetchSwammBmpStatusesSuccess(response.data));
+            }
+        ).catch(
+            e => {
+                dispatch(fetchSwammBmpStatusesError(e));
             }
         );
     };
@@ -276,6 +309,9 @@ module.exports = {
     FETCH_SWAMM_ALL_BMPS, fetchSwammAllBmps,
     FETCH_SWAMM_ALL_BMPS_ERROR, fetchSwammAllBmpsError,
     FETCH_SWAMM_ALL_BMPS_SUCCESS, fetchSwammAllBmpsSuccess,
+    FETCH_SWAMM_BMP_STATUSES, fetchSwammBmpStatuses,
+    FETCH_SWAMM_BMP_STATUSES_ERROR, fetchSwammBmpStatusesError,
+    FETCH_SWAMM_BMP_STATUSES_SUCCESS, fetchSwammBmpStatusesSuccess,
     SUBMIT_BMP_FORM, submitBmpForm,
     SUBMIT_BMP_FORM_ERROR, submitBmpFormError,
     SUBMIT_BMP_FORM_SUCCESS, submitBmpFormSuccess,
