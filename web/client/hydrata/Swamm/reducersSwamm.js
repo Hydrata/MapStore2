@@ -47,6 +47,7 @@ export default ( state = initialState, action) => {
     switch (action.type) {
     case LOAD_FEATURE_INFO:
         let possibleBmpFeatures = [];
+        console.log(possibleBmpFeatures);
         possibleBmpFeatures = action?.data?.features?.map((feature) => {
             if (
                 /([a-zA-Z0-9]{3}_){3}outlet/.test(feature.id) ||
@@ -55,6 +56,7 @@ export default ( state = initialState, action) => {
             ) { return feature;}
             return null;
         });
+        console.log(possibleBmpFeatures);
         if (possibleBmpFeatures[0]) {
             let bmp;
             if (state.allBmps.filter((bmpToCheck) => bmpToCheck.watershed_fid === possibleBmpFeatures[0].id)[0]) {
