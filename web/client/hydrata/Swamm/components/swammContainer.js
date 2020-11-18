@@ -187,13 +187,13 @@ class SwammContainer extends React.Component {
             <div id={"swamm-container"}>
                 <button
                     key="swamm-bmp-viewer-button"
-                    style={{...buttonStyle, left: 3 * 150 + 20}}
+                    style={{...buttonStyle, left: 2 * 150 + 20}}
                     onClick={() => {this.props.clickBmpManager();}}>
                     View BMPs
                 </button>
                 <button
                     key="swamm-bmp-creator-button"
-                    style={{...buttonStyle, left: 4 * 150 + 20}}
+                    style={{...buttonStyle, left: 3 * 150 + 20}}
                     onClick={() => {
                         this.props.makeBmpForm();
                         this.props.setMenuGroup(null);
@@ -203,7 +203,7 @@ class SwammContainer extends React.Component {
                 </button>
                 <button
                     key="swamm-bmp-data-grid-button"
-                    style={{...buttonStyle, left: 5 * 150 + 20}}
+                    style={{...buttonStyle, left: 4 * 150 + 20}}
                     onClick={() => {
                         this.props.showSwammDataGrid();
                         this.props.setMenuGroup(null);
