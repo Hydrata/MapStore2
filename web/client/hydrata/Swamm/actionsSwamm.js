@@ -12,6 +12,9 @@ const FETCH_SWAMM_BMP_STATUSES = 'FETCH_SWAMM_BMP_STATUSES';
 const FETCH_SWAMM_BMP_STATUSES_ERROR = 'FETCH_SWAMM_BMP_STATUSES_ERROR';
 const FETCH_SWAMM_BMP_STATUSES_SUCCESS = 'FETCH_SWAMM_BMP_STATUSES_SUCCESS';
 
+const SHOW_SWAMM_BMP_CHART = 'SHOW_SWAMM_BMP_CHART';
+const HIDE_SWAMM_BMP_CHART = 'HIDE_SWAMM_BMP_CHART';
+
 const SHOW_SWAMM_DATA_GRID = 'SHOW_SWAMM_DATA_GRID';
 const HIDE_SWAMM_DATA_GRID = 'HIDE_SWAMM_DATA_GRID';
 
@@ -203,6 +206,18 @@ const hideSwammDataGrid = () => {
     };
 };
 
+const showSwammBmpChart = () => {
+    return {
+        type: SHOW_SWAMM_BMP_CHART
+    };
+};
+
+const hideSwammBmpChart = () => {
+    return {
+        type: HIDE_SWAMM_BMP_CHART
+    };
+};
+
 const showBmpManager = () => {
     return {
         type: SHOW_BMP_MANAGER
@@ -324,6 +339,8 @@ module.exports = {
     HIDE_BMP_FORM, hideBmpForm,
     SHOW_SWAMM_DATA_GRID, showSwammDataGrid,
     HIDE_SWAMM_DATA_GRID, hideSwammDataGrid,
+    SHOW_SWAMM_BMP_CHART, showSwammBmpChart,
+    HIDE_SWAMM_BMP_CHART, hideSwammBmpChart,
     SHOW_BMP_MANAGER, showBmpManager,
     HIDE_BMP_MANAGER, hideBmpManager,
     TOGGLE_BMP_MANAGER, toggleBmpManager,

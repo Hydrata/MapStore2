@@ -11,6 +11,7 @@ import {
     toggleFootprints,
     toggleWatersheds,
     showBmpForm,
+    showSwammBmpChart,
     toggleBmpManager,
     makeBmpForm,
     setDrawingBmp,
@@ -26,6 +27,7 @@ import {setMenuGroup} from "../../ProjectManager/actionsProjectManager";
 import {bmpByUniqueNameSelector, orgSelector} from "../selectorsSwamm";
 import {saveChanges} from "../../../actions/featuregrid";
 import {query} from "../../../actions/wfsquery";
+import {SwammBmpChart} from "./swammBmpChart";
 
 const buttonStyle = {
     position: "absolute",
@@ -139,6 +141,8 @@ class SwammContainer extends React.Component {
         visibleBmpManager: PropTypes.bool,
         visibleSwammDataGrid: PropTypes.bool,
         showSwammDataGrid: PropTypes.func,
+        visibleSwammBmpChart: PropTypes.bool,
+        showSwammBmpChart: PropTypes.func,
         clickBmpManager: PropTypes.func,
         bmpByUniqueNameSelector: PropTypes.func
     };
@@ -209,7 +213,17 @@ class SwammContainer extends React.Component {
                         this.props.setMenuGroup(null);
                     }}
                 >
-                    BMP Summary
+                    Summary Table
+                </button>
+                <button
+                    key="swamm-bmp-chart-button"
+                    style={{...buttonStyle, left: 5 * 150 + 20}}
+                    onClick={() => {
+                        this.props.showSwammBmpChart();
+                        this.props.setMenuGroup(null);
+                    }}
+                >
+                    Dashboard
                 </button>
                 {this.props.visibleBmpManager ?
                     <div style={{...panelStyle}} id="swamm-bmp-manager">
@@ -285,7 +299,17 @@ class SwammContainer extends React.Component {
                     : null
                 }
                 {this.props.visibleSwammDataGrid ?
-                    <div><SwammDataGrid/>SwammDataGrid</div>
+                    <div>
+                        <SwammDataGrid/>
+                        SwammDataGrid
+                    </div>
+                    : null
+                }
+                {this.props.visibleSwammBmpChart ?
+                    <div>
+                        <SwammBmpChart/>
+                        SwammBmpChart
+                    </div>
                     : null
                 }
                 {this.props.storedBmpForm && !this.props.visibleBmpForm && !this.props.drawingBmp ?
@@ -395,6 +419,7 @@ const mapStateToProps = (state) => {
         drawingBmp: state?.swamm?.drawingBmp,
         visibleBmpManager: state?.swamm?.visibleBmpManager,
         visibleSwammDataGrid: state?.swamm?.visibleSwammDataGrid,
+        visibleSwammBmpChart: state?.swamm?.visibleSwammBmpChart,
         queryStore: state?.query,
         filters: {
             showOutlets: state.swamm?.showOutlets,
@@ -415,6 +440,7 @@ const mapDispatchToProps = ( dispatch ) => {
         toggleWatersheds: () => dispatch(toggleWatersheds()),
         showBmpForm: () => dispatch(showBmpForm()),
         showSwammDataGrid: () => dispatch(showSwammDataGrid()),
+        showSwammBmpChart: () => dispatch(showSwammBmpChart()),
         clickBmpManager: () => {
             dispatch(toggleBmpManager());
             dispatch(setMenuGroup(null));
