@@ -204,16 +204,16 @@ class CustomTooltip extends React.Component {
 
     render() {
         if (this.props.active) {
-            let type = null;
+            let bmp = null;
             Object.keys(data[0]).map(key => {
                 const obj = data[0][key];
                 if (obj.id === this.props.tooltipBarId) {
-                    type =  obj.type;
+                    bmp = obj;
                 }
             });
             return (
                 <div className="custom-tooltip">
-                    <p className="label">{`${type}`}</p>
+                    <p className="label">{`${bmp?.type} - ID${bmp?.id}`}</p>
                 </div >
             );
         }
