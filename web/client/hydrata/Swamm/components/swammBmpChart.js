@@ -7,16 +7,6 @@ import {hideSwammBmpChart} from "../actionsSwamm";
 import {bmpDashboardDataSelector, bmpSpeedDialSelector} from "../selectorsSwamm";
 const {Cell, BarChart, Bar, PieChart, Pie, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip} = require('recharts');
 
-
-const colourMap = {
-    "Wetland": "#155481",
-    "Filter Strips": "#385980",
-    "Wascb": "#25215e",
-    "other1": "#3283ba",
-    "other2": "#196dac",
-    "other3": "#97b3c3"
-};
-
 const circleSize = 200;
 
 class SwammBmpChartClass extends React.Component {
@@ -105,7 +95,7 @@ class SwammBmpChartClass extends React.Component {
                                                         x={circleSize / 2}
                                                         y={circleSize / 2 + 20}
                                                         textAnchor="middle"
-                                                        fontSize={10}
+                                                        fontSize={14}
                                                         dominantBaseline="middle"
                                                         className="progress-label"
                                                     >
