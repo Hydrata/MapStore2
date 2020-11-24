@@ -1,7 +1,7 @@
 import React from "react";
 import {connect} from "react-redux";
 const PropTypes = require('prop-types');
-import {ToggleButtonGroup, ToggleButton } from "react-bootstrap";
+import {ButtonGroup, Button } from "react-bootstrap";
 import {setStatusFilter} from "../actionsSwamm";
 
 
@@ -17,20 +17,20 @@ class SwammStatusFilterClass extends React.Component {
 
     render() {
         return (
-            <ToggleButtonGroup
+            <ButtonGroup
                 type="checkbox"
                 value={this.state.value}
                 onChange={(e) => this.handleChange(e)}
                 className={this.props.className}
             >
-                <ToggleButton value={this.props.statuses[0]}>{this.props.statuses[0]}</ToggleButton>
-                <ToggleButton value={this.props.statuses[1]}>{this.props.statuses[1]}</ToggleButton>
-                <ToggleButton value={this.props.statuses[2]}>{this.props.statuses[2]}</ToggleButton>
-                <ToggleButton value={this.props.statuses[3]}>{this.props.statuses[3]}</ToggleButton>
-                <ToggleButton value={this.props.statuses[4]}>{this.props.statuses[4]}</ToggleButton>
-                <ToggleButton value={this.props.statuses[5]}>{this.props.statuses[5]}</ToggleButton>
-                <ToggleButton value={this.props.statuses[6]}>{this.props.statuses[6]}</ToggleButton>
-            </ToggleButtonGroup>
+                <Button value={this.props.statuses[0]}>{this.props.statuses[0]}</Button>
+                <Button value={this.props.statuses[1]}>{this.props.statuses[1]}</Button>
+                <Button value={this.props.statuses[2]}>{this.props.statuses[2]}</Button>
+                <Button value={this.props.statuses[3]}>{this.props.statuses[3]}</Button>
+                <Button value={this.props.statuses[4]}>{this.props.statuses[4]}</Button>
+                <Button value={this.props.statuses[5]}>{this.props.statuses[5]}</Button>
+                <Button value={this.props.statuses[6]}>{this.props.statuses[6]}</Button>
+            </ButtonGroup>
         );
     }
 
