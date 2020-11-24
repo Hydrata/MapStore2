@@ -140,26 +140,29 @@ class SwammBmpChartClass extends React.Component {
                                                             tooltipPollutantKey={this.state.tooltipPollutantKey}
                                                         />}
                                                     />
-                                                    {Object.keys(this.props.dashboardData[0]).map(key => {
-                                                        const bmp = this.props.dashboardData[0][key];
-                                                        return (
-                                                            <Bar
-                                                                key={bmp.id}
-                                                                stackId="n"
-                                                                dataKey={(bmp.id + "." + pollutant.load_red_total_key)}
-                                                                fill={bmp.type_data.colour + '60'}
-                                                                stroke={"white"}
-                                                                strokeWidth={1}
-                                                                name="Name"
-                                                                onMouseOver={() => {
-                                                                    this.setState({
-                                                                        tooltipBarId: bmp.id,
-                                                                        tooltipPollutantKey: pollutant.load_red_total_key
-                                                                    });
-                                                                }}
-                                                            />
-                                                        );
-                                                    })}
+                                                    {Object.keys(this.props.dashboardData[0])
+                                                        .sort((a, b) => a?.type - b?.type)
+                                                        .map(key => {
+                                                            const bmp = this.props.dashboardData[0][key];
+                                                            return (
+                                                                <Bar
+                                                                    key={bmp.id}
+                                                                    stackId="n"
+                                                                    dataKey={(bmp.id + "." + pollutant.load_red_total_key)}
+                                                                    fill={bmp.type_data.colour + '60'}
+                                                                    stroke={"white"}
+                                                                    strokeWidth={1}
+                                                                    name="Name"
+                                                                    onMouseOver={() => {
+                                                                        this.setState({
+                                                                            tooltipBarId: bmp.id,
+                                                                            tooltipPollutantKey: pollutant.load_red_total_key
+                                                                        });
+                                                                    }}
+                                                                />
+                                                            );
+                                                        })
+                                                    }
                                                 </BarChart>
                                             </ResponsiveContainer>
                                         </div>

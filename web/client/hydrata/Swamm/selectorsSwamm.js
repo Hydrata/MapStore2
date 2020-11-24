@@ -21,7 +21,6 @@ export const bmpDashboardDataSelector = (state) => {
             ...bmp
         };
     });
-    outputObj.sort((a, b) => a?.type - b?.type);
     return [outputObj];
 };
 
