@@ -3,6 +3,7 @@ import {connect} from "react-redux";
 const PropTypes = require('prop-types');
 import {Modal, Button,  Col } from "react-bootstrap";
 import {formatMoney} from "../../Utils/utils";
+import {SwammStatusFilter} from "../components/swammStatusFilter";
 import {hideSwammBmpChart} from "../actionsSwamm";
 import {bmpDashboardDataSelector, bmpSpeedDialSelector} from "../selectorsSwamm";
 const {Cell, BarChart, Bar, PieChart, Pie, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip} = require('recharts');
@@ -99,8 +100,18 @@ class SwammBmpChartClass extends React.Component {
                                                         dominantBaseline="middle"
                                                         className="progress-label"
                                                     >
-                                                        {formatMoney(this.props?.speedDialData[`totalBmp${pollutant.name}Reduction`], 0) + ' of ' +
-                                                        formatMoney(this.props?.speedDialData[`target${pollutant.name}LoadReduction`], 0) + ' ' +
+                                                        Progress: {formatMoney(this.props?.speedDialData[`totalBmp${pollutant.name}Reduction`], 0) + ' ' +
+                                                        pollutant.units}
+                                                    </text>
+                                                    <text
+                                                        x={circleSize / 2}
+                                                        y={circleSize / 2 + 40}
+                                                        textAnchor="middle"
+                                                        fontSize={14}
+                                                        dominantBaseline="middle"
+                                                        className="progress-label"
+                                                    >
+                                                        Target: {formatMoney(this.props?.speedDialData[`target${pollutant.name}LoadReduction`], 0) + ' ' +
                                                         pollutant.units}
                                                     </text>
                                                 </PieChart>
@@ -163,6 +174,15 @@ class SwammBmpChartClass extends React.Component {
                     }
                 </Modal.Body>
                 <Modal.Footer>
+                    <h5
+                        className={"pull-left"}
+                        style={{marginTop: "7px", marginRight: "10px"}}
+                    >
+                        Filter by BMP status:
+                    </h5>
+                    <SwammStatusFilter
+                        className={"pull-left"}
+                    />
                     <Button
                         bsStyle="danger"
                         bsSize="small"
@@ -199,7 +219,7 @@ class CustomTooltipClass extends React.Component {
         type: PropTypes.string,
         payload: PropTypes.array,
         active: PropTypes.bool,
-        tooltipBarId: PropTypes.string,
+        tooltipBarId: PropTypes.number,
         tooltipPollutantKey: PropTypes.string,
         dashboardData: PropTypes.array
     }
@@ -230,7 +250,8 @@ const mapStateToProps = (state) => {
         mapId: state?.projectManager?.data?.base_map,
         allBmps: state?.swamm?.allBmps,
         dashboardData: bmpDashboardDataSelector(state) || [],
-        speedDialData: bmpSpeedDialSelector(state) || []
+        speedDialData: bmpSpeedDialSelector(state) || [],
+        statuses: state?.swamm?.statuses || []
     };
 };
 

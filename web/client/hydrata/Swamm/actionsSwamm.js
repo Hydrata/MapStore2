@@ -28,6 +28,8 @@ const TOGGLE_WATERSHEDS = 'TOGGLE_WATERSHEDS';
 const TOGGLE_BMP_TYPE = 'TOGGLE_BMP_TYPE';
 const SET_BMP_TYPE = 'SET_BMP_TYPE';
 
+const SET_STATUS_FILTER = 'SET_STATUS_FILTER';
+
 const SHOW_BMP_FORM = 'SHOW_BMP_FORM';
 const HIDE_BMP_FORM = 'HIDE_BMP_FORM';
 const SUBMIT_BMP_FORM = 'SUBMIT_BMP_FORM';
@@ -67,6 +69,13 @@ const fetchSwammBmpTypes = (mapId) => {
                 dispatch(fetchSwammBmpTypesError(e));
             }
         );
+    };
+};
+
+const setStatusFilter = (statuses) => {
+    return {
+        type: SET_STATUS_FILTER,
+        statuses: statuses
     };
 };
 
@@ -336,6 +345,7 @@ module.exports = {
     SUBMIT_BMP_FORM_SUCCESS, submitBmpFormSuccess,
     TOGGLE_BMP_TYPE, toggleBmpType,
     SET_BMP_TYPE, setBmpType,
+    SET_STATUS_FILTER, setStatusFilter,
     TOGGLE_OUTLETS, toggleOutlets,
     TOGGLE_FOOTPRINTS, toggleFootprints,
     TOGGLE_WATERSHEDS, toggleWatersheds,
