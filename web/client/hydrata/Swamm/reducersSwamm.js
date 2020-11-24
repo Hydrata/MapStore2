@@ -235,7 +235,8 @@ export default ( state = initialState, action) => {
         const existingForm = {
             ...action.bmp,
             id: action.bmp.id,
-            type: action.bmp.type_data.id,
+            type: action.bmpType.id,
+            type_data: action.bmpType,
             project: action.bmp.project,
             organisation: action.bmp.type_data.organisation,
             override_n_redratio: action.bmp.override_n_redratio,
