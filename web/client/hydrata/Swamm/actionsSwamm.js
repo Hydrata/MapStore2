@@ -48,6 +48,7 @@ const fetchSwammBmpTypesSuccess = (config) => {
 };
 
 function fetchSwammBmpTypesError(e) {
+    console.log('fetchSwammBmpTypesError', e);
     return {
         type: FETCH_SWAMM_BMPTYPES_ERROR,
         error: e
@@ -77,6 +78,7 @@ const fetchSwammAllBmpsSuccess = (allBmps) => {
 };
 
 function fetchSwammAllBmpsError(e) {
+    console.log('fetchSwammAllBmpsError', e);
     return {
         type: FETCH_SWAMM_ALL_BMPS_ERROR,
         error: e
@@ -106,6 +108,7 @@ const fetchSwammBmpStatusesSuccess = (statuses) => {
 };
 
 function fetchSwammBmpStatusesError(e) {
+    console.log('fetchSwammBmpStatusesError', e);
     return {
         type: FETCH_SWAMM_BMP_STATUSES_ERROR,
         error: e
@@ -278,6 +281,7 @@ const submitBmpFormSuccess = (bmp) => {
 };
 
 function submitBmpFormError(e) {
+    console.log('submitBmpFormError', e);
     return {
         type: SUBMIT_BMP_FORM_ERROR,
         error: e
