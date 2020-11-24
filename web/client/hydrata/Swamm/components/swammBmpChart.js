@@ -141,17 +141,19 @@ class SwammBmpChartClass extends React.Component {
                                                         />}
                                                     />
                                                     {Object.keys(this.props.dashboardData[0]).map(key => {
-                                                        const obj = this.props.dashboardData[0][key];
+                                                        const bmp = this.props.dashboardData[0][key];
                                                         return (
                                                             <Bar
-                                                                key={obj.id}
+                                                                key={bmp.id}
                                                                 stackId="n"
-                                                                dataKey={(obj.id + "." + pollutant.load_red_total_key)}
-                                                                fill={colourMap[obj.type]}
+                                                                dataKey={(bmp.id + "." + pollutant.load_red_total_key)}
+                                                                fill={bmp.type_data.colour + '60'}
+                                                                stroke={"white"}
+                                                                strokeWidth={1}
                                                                 name="Name"
                                                                 onMouseOver={() => {
                                                                     this.setState({
-                                                                        tooltipBarId: obj.id,
+                                                                        tooltipBarId: bmp.id,
                                                                         tooltipPollutantKey: pollutant.load_red_total_key
                                                                     });
                                                                 }}
@@ -183,17 +185,17 @@ class SwammBmpChartClass extends React.Component {
     pollutants = [
         {
             name: 'Nitrogen',
-            load_red_total_key: 'n_red',
+            load_red_total_key: 'n_load_reduction',
             units: 'lbs/year'
         },
         {
             name: 'Phosphorus',
-            load_red_total_key: 'p_red',
+            load_red_total_key: 'p_load_reduction',
             units: 'lbs/year'
         },
         {
             name: 'Sediment',
-            load_red_total_key: 's_red',
+            load_red_total_key: 's_load_reduction',
             units: 'tons/year'
         }
     ]
@@ -220,7 +222,7 @@ class CustomTooltipClass extends React.Component {
             });
             return (
                 <div className="custom-tooltip" style={{background: "black", borderRadius: "3px"}}>
-                    <div className="label">{`${bmp?.type} - ID:${bmp?.id}`}</div>
+                    <div className="label">{`${bmp?.type_data.name} - ID:${bmp?.id}`}</div>
                     <br/>
                     <div className="label">{formatMoney(bmp?.[this.props.tooltipPollutantKey], 0)}</div>
                 </div >
