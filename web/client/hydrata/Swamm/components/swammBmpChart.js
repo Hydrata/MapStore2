@@ -141,7 +141,7 @@ class SwammBmpChartClass extends React.Component {
                                                         />}
                                                     />
                                                     {Object.keys(this.props.dashboardData[0])
-                                                        .sort((a, b) => a?.type - b?.type)
+                                                        .sort((keyA, keyB) => this.props.dashboardData[0][keyA]?.type - this.props.dashboardData[0][keyB]?.type)
                                                         .map(key => {
                                                             const bmp = this.props.dashboardData[0][key];
                                                             return (
