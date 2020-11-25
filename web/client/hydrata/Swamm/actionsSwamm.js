@@ -35,12 +35,14 @@ const HIDE_BMP_FORM = 'HIDE_BMP_FORM';
 const SUBMIT_BMP_FORM = 'SUBMIT_BMP_FORM';
 const SUBMIT_BMP_FORM_SUCCESS = 'SUBMIT_BMP_FORM_SUCCESS';
 const SUBMIT_BMP_FORM_ERROR = 'SUBMIT_BMP_FORM_ERROR';
+const CLEAR_SUBMIT_BMP_FORM_ERROR = 'CLEAR_SUBMIT_BMP_FORM_ERROR';
 const MAKE_BMP_FORM = 'MAKE_BMP_FORM';
 const CLEAR_BMP_FORM = 'CLEAR_BMP_FORM';
 const MAKE_DEFAULTS_BMP_FORM = 'MAKE_DEFAULTS_BMP_FORM';
 const MAKE_EXISTING_BMP_FORM = 'MAKE_EXISTING_BMP_FORM';
 const UPDATE_BMP_FORM = 'UPDATE_BMP_FORM';
 const SET_DRAWING_BMP = 'SET_DRAWING_BMP';
+const SET_SWAMM_DRAWING_HIGHLIGHT_PATH = 'SET_SWAMM_DRAWING_HIGHLIGHT_PATH';
 
 const fetchSwammBmpTypesSuccess = (config) => {
     return {
@@ -297,6 +299,13 @@ function submitBmpFormError(e) {
     };
 }
 
+function clearSubmitBmpFormError() {
+    console.log('clearSubmitBmpFormError');
+    return {
+        type: CLEAR_SUBMIT_BMP_FORM_ERROR
+    };
+}
+
 const submitBmpForm = (newBmp, mapId) => {
     if (newBmp.id) {
         return (dispatch) => {
@@ -342,6 +351,7 @@ module.exports = {
     FETCH_SWAMM_BMP_STATUSES_SUCCESS, fetchSwammBmpStatusesSuccess,
     SUBMIT_BMP_FORM, submitBmpForm,
     SUBMIT_BMP_FORM_ERROR, submitBmpFormError,
+    CLEAR_SUBMIT_BMP_FORM_ERROR, clearSubmitBmpFormError,
     SUBMIT_BMP_FORM_SUCCESS, submitBmpFormSuccess,
     TOGGLE_BMP_TYPE, toggleBmpType,
     SET_BMP_TYPE, setBmpType,
@@ -363,5 +373,6 @@ module.exports = {
     MAKE_DEFAULTS_BMP_FORM, makeDefaultsBmpForm,
     MAKE_EXISTING_BMP_FORM, makeExistingBmpForm,
     UPDATE_BMP_FORM, updateBmpForm,
-    SET_DRAWING_BMP, setDrawingBmp
+    SET_DRAWING_BMP, setDrawingBmp,
+    SET_SWAMM_DRAWING_HIGHLIGHT_PATH, setSwammDrawingHighlightPath
 };
