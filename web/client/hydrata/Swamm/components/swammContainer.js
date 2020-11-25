@@ -344,7 +344,7 @@ class SwammContainer extends React.Component {
         const visibleBmpTypes = this.props?.bmpTypes.filter((bmpType) => bmpType.visibility);
         outletLayers.map((layer) => {
             visibleBmpTypes.map((bmpType) => {
-                if (layer.name.indexOf(bmpType.code) > -1) {
+                if (layer.name.indexOf(bmpType.full_code) > -1) {
                     this.props.showOutlets ? this.props.toggleLayer(layer.id, false) : this.props.toggleLayer(layer.id, true);
                 }
             });
@@ -357,7 +357,7 @@ class SwammContainer extends React.Component {
         const visibleBmpTypes = this.props?.bmpTypes.filter((bmpType) => bmpType.visibility);
         footprintLayers.map((layer) => {
             visibleBmpTypes.map((bmpType) => {
-                if (layer.name.indexOf(bmpType.code) > -1) {
+                if (layer.name.indexOf(bmpType.full_code) > -1) {
                     this.props.showFootprints ? this.props.toggleLayer(layer.id, false) : this.props.toggleLayer(layer.id, true);
                 }
             });
@@ -370,7 +370,7 @@ class SwammContainer extends React.Component {
         const visibleBmpTypes = this.props?.bmpTypes.filter((bmpType) => bmpType.visibility);
         watershedLayers.map((layer) => {
             visibleBmpTypes.map((bmpType) => {
-                if (layer.name.indexOf(bmpType.code) > -1) {
+                if (layer.name.indexOf(bmpType.full_code) > -1) {
                     this.props.showWatersheds ? this.props.toggleLayer(layer.id, false) : this.props.toggleLayer(layer.id, true);
                 }
             });
@@ -382,9 +382,9 @@ class SwammContainer extends React.Component {
         if (!this.props.showFootprints) {this.toggleFootprints();}
         if (!this.props.showWatersheds) {this.toggleWatersheds();}
         this.props.bmpTypes.filter((bmpTypeToTest) => bmpTypeName === bmpTypeToTest.name).map((bmpTypeToSet) => {
-            const outletLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpTypeToSet.code + '_outlet';})[0];
-            const footprintLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpTypeToSet.code + '_footprint';})[0];
-            const watershedLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpTypeToSet.code + '_watershed';})[0];
+            const outletLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpTypeToSet.full_code + '_outlet';})[0];
+            const footprintLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpTypeToSet.full_code + '_footprint';})[0];
+            const watershedLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpTypeToSet.full_code + '_watershed';})[0];
             this.props.setBmpType(bmpTypeToSet, visible);
             // if the BMP Type is "not visible", make sure none of it's layers are visible either:
             if (!visible) {

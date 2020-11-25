@@ -68,7 +68,8 @@ class SwammBmpFormClass extends React.Component {
         purgeMapInfoResults: PropTypes.func,
         bmpUniqueNames: PropTypes.array,
         thisBmpCode: PropTypes.string,
-        setBmpTypesVisibility: PropTypes.func
+        setBmpTypesVisibility: PropTypes.func,
+        setHighlightFeaturesPath: PropTypes.func
     };
 
     static defaultProps = {
@@ -623,7 +624,7 @@ const mapStateToProps = (state) => {
         storedBmpForm: state?.swamm?.storedBmpForm || {},
         showSubmitBmpFormSuccess: state?.swamm?.showSubmitBmpFormSuccess,
         showSubmitBmpFormError: state?.swamm?.showSubmitBmpFormError,
-        thisBmpCode: state?.swamm?.storedBmpForm?.type_data?.code,
+        thisBmpCode: state?.swamm?.storedBmpForm?.type_data?.full_code,
         creatingNewBmp: state?.swamm?.creatingNewBmp,
         updatingBmp: state?.swamm?.updatingBmp,
         orgs: orgSelector(state),

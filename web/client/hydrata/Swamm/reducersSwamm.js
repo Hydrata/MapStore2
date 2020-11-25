@@ -85,15 +85,15 @@ export default ( state = initialState, action) => {
             fetching: action.mapId
         };
     case FETCH_SWAMM_BMPTYPES_SUCCESS:
-        const newBmpTypes = action.bmpTypes.map(function(bmpType) {
-            if (!bmpType.visibility) {bmpType.visibility = false;}
-            bmpType.code = bmpType.project.code + '_' + bmpType.organisation.code + '_' + bmpType.code;
-            return bmpType;
-        });
+        // const newBmpTypes = action.bmpTypes.map(function(bmpType) {
+        //     if (!bmpType.visibility) {bmpType.visibility = false;}
+        //     bmpType.full_code = bmpType.project.code + '_' + bmpType.organisation.code + '_' + bmpType.code;
+        //     return bmpType;
+        // });
         return {
             ...state,
             fetching: false,
-            bmpTypes: newBmpTypes
+            bmpTypes: action.bmpTypes
         };
     case FETCH_SWAMM_ALL_BMPS_SUCCESS:
         return {

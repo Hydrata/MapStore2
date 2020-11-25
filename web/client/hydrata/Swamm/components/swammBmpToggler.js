@@ -66,7 +66,7 @@ const mapStateToProps = (state, ownProps) => {
     return {
         layers: state?.layers,
         bmpTypes: state?.swamm?.bmpTypes,
-        bmpType: state?.swamm?.bmpTypes?.filter((item) => item.code === ownProps.bmpCode)[0],
+        bmpType: state?.swamm?.bmpTypes?.filter((item) => item.full_code === ownProps.bmpCode)[0],
         filters: {
             showOutlets: state.swamm?.showOutlets,
             showFootprints: state.swamm?.showFootprints,

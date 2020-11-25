@@ -373,6 +373,5 @@ module.exports = {
     MAKE_DEFAULTS_BMP_FORM, makeDefaultsBmpForm,
     MAKE_EXISTING_BMP_FORM, makeExistingBmpForm,
     UPDATE_BMP_FORM, updateBmpForm,
-    SET_DRAWING_BMP, setDrawingBmp,
-    SET_SWAMM_DRAWING_HIGHLIGHT_PATH, setSwammDrawingHighlightPath
+    SET_DRAWING_BMP, setDrawingBmp
 };

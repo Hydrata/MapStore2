@@ -10,12 +10,13 @@ import {
     startDrawingFeature,
     SAVE_SUCCESS
 } from "../../actions/featuregrid";
+import { setHighlightFeaturesPath } from "../../actions/highlight";
 
 export const setBmpDrawingLayer = (action$, store) =>
     action$.ofType(FEATURE_TYPE_LOADED)
         .filter(action => {
             const state = store.getState();
-            return action?.typeName.includes(state?.swamm?.storedBmpForm?.type_data?.code);
+            return action?.typeName.includes(state?.swamm?.storedBmpForm?.type_data?.full_code);
         })
         .flatMap((action) => Rx.Observable.of(
             query('http://localhost:8080/geoserver/wfs', {featureTypeName: action?.typeName, filterType: 'OGC', ogcVersion: '1.1.0'}, {}, 'querySetNewBmpLayer')
@@ -37,7 +38,8 @@ export const startBmpDrawingEpic = (action$) =>
     action$.ofType(SET_DRAWING_BMP)
         .flatMap(() => Rx.Observable.of(
             createNewFeatures([{}]),
-            startDrawingFeature()
+            startDrawingFeature(),
+            setHighlightFeaturesPath('draw.tempFeatures')
         ));
 
 export const saveBmpDrawingFeature = (action$, store) =>
@@ -54,5 +56,6 @@ export const saveBmpDrawingFeature = (action$, store) =>
                 {},
                 'queryGetNewBmpId'
             ),
-            setDrawingBmp(null)
+            setDrawingBmp(null),
+            setHighlightFeaturesPath('highlight.emptyFeatures')
         ));
