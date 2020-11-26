@@ -57,8 +57,8 @@ class SwammDataGridClass extends React.Component {
                             columns={this.columns}
                             rowGetter={i => this.rows[i]}
                             rowsCount={this.rows.length}
-                            minHeight={400}
-                            height={"90vh"}
+                            minHeight={"75vh"}
+                            height={"75vh"}
                             style={{margin: "10px"}}
                         />
                     </div>
