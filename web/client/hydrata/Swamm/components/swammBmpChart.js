@@ -3,12 +3,12 @@ import {connect} from "react-redux";
 const PropTypes = require('prop-types');
 import {Modal, Button,  Col } from "react-bootstrap";
 import {formatMoney} from "../../Utils/utils";
-import {SwammStatusFilter} from "../components/swammStatusFilter";
+import {SwammStatusFilter} from "./swammStatusFilter";
 import {hideSwammBmpChart} from "../actionsSwamm";
 import {bmpDashboardDataSelector, bmpSpeedDialSelector} from "../selectorsSwamm";
 const {Cell, BarChart, Bar, PieChart, Pie, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip} = require('recharts');
 
-const circleSize = 200;
+const circleSize = 150;
 
 class SwammBmpChartClass extends React.Component {
     static propTypes = {
@@ -41,39 +41,43 @@ class SwammBmpChartClass extends React.Component {
                 show
                 onHide={() => console.log('onHide')}
                 style={{
-                    marginTop: "100px",
-                    minWidth: "800px"
+                    marginTop: "50px",
+                    width: "100%"
                 }}
                 dialogClassName="swamm-big-modal"
             >
                 <Modal.Header>
                     <Modal.Title style={{textAlign: "center"}}>
-                        <h2>Management Dashboard</h2>
+                        <h4 style={{padding: "0", margin: "0"}}>Management Dashboard</h4>
                     </Modal.Title>
                 </Modal.Header>
-                <Modal.Body>
+                <Modal.Body style={{padding: "0", margin: "0"}}>
                     {
                         this.pollutants.map(pollutant => {
                             return (
-                                <div className={"container"} key={pollutant.name + "-dashboard"}>
+                                <div
+                                    className={"container well"}
+                                    style={{padding: 0}}
+                                    key={pollutant.name + "-dashboard"}
+                                >
                                     <Col sm={3}>
-                                        <h4 style={{textAlign: "left", justify: "center"}}>
-                                            {pollutant.name} Reduction<br/>Progress
+                                        <h4 style={{fontSize: "16px"}}>
+                                            {pollutant.name} Reduction Progress
                                         </h4>
-                                        <div style={{width: '100%', height: 200}}>
+                                        <div style={{width: '100%', height: circleSize / 1.2}}>
                                             <ResponsiveContainer>
                                                 <PieChart
                                                     key={'asdf'}
-                                                    width={400}
-                                                    height={400}
+                                                    width={circleSize * 1.5}
+                                                    height={circleSize}
                                                 >
                                                     <Pie
                                                         data={this.props.speedDialData[`percent${pollutant.name}Target`]}
                                                         dataKey="value"
-                                                        cx={circleSize / 2}
+                                                        cx={circleSize / 1.3}
                                                         cy={circleSize / 2}
-                                                        innerRadius={70}
-                                                        outerRadius={90}
+                                                        innerRadius={circleSize / 3}
+                                                        outerRadius={circleSize / 2}
                                                         fill="#82ca9d"
                                                         startAngle={180}
                                                         endAngle={0}
@@ -83,20 +87,20 @@ class SwammBmpChartClass extends React.Component {
                                                         <Cell fill={"#97b3c3"} cornerRadius={5}/>
                                                     </Pie>
                                                     <text
-                                                        x={circleSize / 2}
+                                                        x={circleSize / 1.3}
                                                         y={circleSize / 2 - 10}
                                                         textAnchor="middle"
-                                                        fontSize={30}
+                                                        fontSize={circleSize / 5}
                                                         dominantBaseline="middle"
                                                         className="progress-label"
                                                     >
                                                         {this.props.speedDialData[`percent${pollutant.name}Target`]?.[0]?.value.toFixed(1)}%
                                                     </text>
                                                     <text
-                                                        x={circleSize / 2}
+                                                        x={circleSize / 1.3}
                                                         y={circleSize / 2 + 20}
                                                         textAnchor="middle"
-                                                        fontSize={14}
+                                                        fontSize={circleSize / 10}
                                                         dominantBaseline="middle"
                                                         className="progress-label"
                                                     >
@@ -104,10 +108,10 @@ class SwammBmpChartClass extends React.Component {
                                                         pollutant.units}
                                                     </text>
                                                     <text
-                                                        x={circleSize / 2}
+                                                        x={circleSize / 1.3}
                                                         y={circleSize / 2 + 40}
                                                         textAnchor="middle"
-                                                        fontSize={14}
+                                                        fontSize={circleSize / 10}
                                                         dominantBaseline="middle"
                                                         className="progress-label"
                                                     >
@@ -118,19 +122,19 @@ class SwammBmpChartClass extends React.Component {
                                             </ResponsiveContainer>
                                         </div>
                                     </Col>
-                                    <Col sm={8}>
+                                    <Col sm={9}>
                                         <h4 style={{textAlign: "center"}}>
                                             Current {pollutant.name} Load Reductions ({pollutant.units})
                                         </h4>
-                                        <div style={{width: '100%', height: 150}}>
+                                        <div style={{width: '100%', height: 100}}>
                                             <ResponsiveContainer>
                                                 <BarChart
                                                     width={600}
-                                                    height={150}
+                                                    height={100}
                                                     data={this.props.dashboardData}
                                                     margin={{top: 10, right: 0, left: 0, bottom: 10}}
                                                     layout="vertical"
-                                                    maxBarSize={150}
+                                                    maxBarSize={100}
                                                 >
                                                     <XAxis type="number"/>
                                                     <YAxis type="category" hide/>
@@ -174,15 +178,15 @@ class SwammBmpChartClass extends React.Component {
                     }
                 </Modal.Body>
                 <Modal.Footer>
-                    <h5
-                        className={"pull-left"}
-                        style={{marginTop: "7px", marginRight: "10px"}}
-                    >
-                        Filter by BMP status:
-                    </h5>
-                    <SwammStatusFilter
-                        className={"pull-left"}
-                    />
+                    {/*<h5*/}
+                    {/*    className={"pull-left"}*/}
+                    {/*    style={{marginTop: "7px", marginRight: "10px"}}*/}
+                    {/*>*/}
+                    {/*    Filter by BMP status:*/}
+                    {/*</h5>*/}
+                    {/*<SwammStatusFilter*/}
+                    {/*    className={"pull-left"}*/}
+                    {/*/>*/}
                     <Button
                         bsStyle="danger"
                         bsSize="small"

@@ -11,6 +11,7 @@ import {
     makeExistingBmpForm,
     updateBmpForm,
     clearSubmitBmpFormError,
+    clearSubmitBmpFormSuccess,
     setDrawingBmp
 } from "../actionsSwamm";
 import {setMenuGroup} from "../../ProjectManager/actionsProjectManager";
@@ -43,6 +44,7 @@ class SwammBmpFormClass extends React.Component {
         submitBmpForm: PropTypes.func,
         showSubmitBmpFormSuccess: PropTypes.bool,
         clearSubmitBmpFormError: PropTypes.func,
+        clearSubmitBmpFormSuccess: PropTypes.func,
         showSubmitBmpFormError: PropTypes.bool,
         storeBmpForm: PropTypes.func,
         thisBmpType: PropTypes.object,
@@ -110,8 +112,21 @@ class SwammBmpFormClass extends React.Component {
                 >
                     <Modal.Header>
                         {this.props.showSubmitBmpFormSuccess ?
-                            <Alert style={{ position: "fixed", top: "10px", right: "20px"}} bsStyle="success">
-                                Success**
+                            <Alert
+                                style={{ position: "fixed", top: "10px", right: "10px", padding: "5px"}}
+                                bsStyle="success"
+                            >
+                                Successfully saved BMP data.
+                                <Button
+                                    style={{marginLeft: "30px", opacity: 0.7}}
+                                    bsStyle={"success"}
+                                    bsSize={"sm"}
+                                    onClick={() => {
+                                        this.props.clearSubmitBmpFormSuccess();
+                                    }}
+                                >
+                                    Great.
+                                </Button>
                             </Alert> :
                             null
                         }
@@ -217,10 +232,11 @@ class SwammBmpFormClass extends React.Component {
                                             value={this.props.storedBmpForm?.status}
                                             onChange={this.handleChange}
                                         >
-                                            <option key="1" value="select">Select BMP Status</option>
-                                            {this.props.statuses.map((status) => {
-                                                return <option key={status} value={status}>{status}</option>;
-                                            })}
+                                            <option key={'Proposed'} value={'Proposed'}>{'Proposed'}</option>
+                                            {this.props.statuses
+                                                .filter(status => status !== 'Proposed')
+                                                .map(status => <option key={status} value={status}>{status}</option>)
+                                            }
                                         </FormControl>
                                         <FormControl.Feedback />
                                     </Col>
@@ -332,36 +348,24 @@ class SwammBmpFormClass extends React.Component {
                                         Outlet Point:
                                     </Col>
                                     {this.props.storedBmpForm?.outlet_fid ?
-                                        <React.Fragment>
-                                            <Col sm={4}>
-                                                <FormControl
-                                                    inline="true"
-                                                    readOnly="true"
-                                                    type={"string"}
-                                                    value={this.props.storedBmpForm?.outlet_fid}
-                                                />
-                                            </Col>
-                                            <Col sm={1}>
-                                                <Button
-                                                    className={"pull-right"}
-                                                    bsStyle={"info"}
-                                                    style={{opacity: "0.7"}}
-                                                    onClick={() => window.alert('not implemented yet')}>
-                                                Edit
-                                                </Button>
-                                            </Col>
-                                        </React.Fragment> :
-                                        <React.Fragment>
-                                            <Col sm={5}>
-                                                <Button
-                                                    disabled={ !this.props.storedBmpForm?.organisation}
-                                                    bsStyle={ this.props.storedBmpForm?.organisation ? "success" : "default"}
-                                                    style={{opacity: "0.7"}}
-                                                    onClick={() => this.drawBmpStep1(this.props?.thisBmpCode + '_outlet')}>
-                                                Locate Outlet
-                                                </Button>
-                                            </Col>
-                                        </React.Fragment>
+                                        <Col sm={1}>
+                                            <Button
+                                                className={"pull-right"}
+                                                bsStyle={"info"}
+                                                style={{opacity: "0.7"}}
+                                                onClick={() => window.alert('not implemented yet')}>
+                                            Edit
+                                            </Button>
+                                        </Col> :
+                                        <Col sm={5}>
+                                            <Button
+                                                disabled={(!this.props.storedBmpForm?.organisation || !this.props.storedBmpForm.bmpName)}
+                                                bsStyle={(!this.props.storedBmpForm?.organisation || !this.props.storedBmpForm.bmpName) ? "default" : "success" }
+                                                style={{opacity: "0.7"}}
+                                                onClick={() => this.drawBmpStep1(this.props?.thisBmpCode + '_outlet')}>
+                                            Locate Outlet
+                                            </Button>
+                                        </Col>
                                     }
                                 </FormGroup>
                                 <FormGroup controlId="footprint_fid" validationState={this.validateFid("footprint_fid")} bsSize={"small"}>
@@ -393,8 +397,8 @@ class SwammBmpFormClass extends React.Component {
                                         <React.Fragment>
                                             <Col sm={5}>
                                                 <Button
-                                                    disabled={ !this.props.storedBmpForm?.organisation}
-                                                    bsStyle={ this.props.storedBmpForm?.organisation ? "success" : "default"}
+                                                    disabled={(!this.props.storedBmpForm?.organisation || !this.props.storedBmpForm.bmpName)}
+                                                    bsStyle={(!this.props.storedBmpForm?.organisation || !this.props.storedBmpForm.bmpName) ? "default" : "success" }
                                                     style={{opacity: "0.7"}}
                                                     onClick={() => this.drawBmpStep1(this.props?.thisBmpCode + '_footprint')}>
                                                 Draw footprint
@@ -432,8 +436,8 @@ class SwammBmpFormClass extends React.Component {
                                         <React.Fragment>
                                             <Col sm={5}>
                                                 <Button
-                                                    disabled={ !this.props.storedBmpForm?.organisation}
-                                                    bsStyle={ this.props.storedBmpForm?.organisation ? "success" : "default"}
+                                                    disabled={(!this.props.storedBmpForm?.organisation || !this.props.storedBmpForm.bmpName)}
+                                                    bsStyle={(!this.props.storedBmpForm?.organisation || !this.props.storedBmpForm.bmpName) ? "default" : "success" }
                                                     style={{opacity: "0.7"}}
                                                     onClick={() => this.drawBmpStep1(this.props?.thisBmpCode + '_watershed')} bsSize={"small"}>
                                                 Draw watershed
@@ -640,6 +644,7 @@ const mapDispatchToProps = ( dispatch ) => {
         showBmpForm: () => dispatch(showBmpForm()),
         submitBmpForm: (newBmp, mapId) => dispatch(submitBmpForm(newBmp, mapId)),
         clearSubmitBmpFormError: () => dispatch(clearSubmitBmpFormError()),
+        clearSubmitBmpFormSuccess: () => dispatch(clearSubmitBmpFormSuccess()),
         updateBmpForm: (kv) => dispatch(updateBmpForm(kv)),
         clearBmpForm: () => dispatch(clearBmpForm()),
         makeDefaultsBmpForm: (bmpType) => dispatch(makeDefaultsBmpForm(bmpType)),

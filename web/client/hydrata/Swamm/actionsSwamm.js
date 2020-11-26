@@ -36,6 +36,7 @@ const SUBMIT_BMP_FORM = 'SUBMIT_BMP_FORM';
 const SUBMIT_BMP_FORM_SUCCESS = 'SUBMIT_BMP_FORM_SUCCESS';
 const SUBMIT_BMP_FORM_ERROR = 'SUBMIT_BMP_FORM_ERROR';
 const CLEAR_SUBMIT_BMP_FORM_ERROR = 'CLEAR_SUBMIT_BMP_FORM_ERROR';
+const CLEAR_SUBMIT_BMP_FORM_SUCCESS = 'CLEAR_SUBMIT_BMP_FORM_SUCCESS';
 const MAKE_BMP_FORM = 'MAKE_BMP_FORM';
 const CLEAR_BMP_FORM = 'CLEAR_BMP_FORM';
 const MAKE_DEFAULTS_BMP_FORM = 'MAKE_DEFAULTS_BMP_FORM';
@@ -300,9 +301,14 @@ function submitBmpFormError(e) {
 }
 
 function clearSubmitBmpFormError() {
-    console.log('clearSubmitBmpFormError');
     return {
         type: CLEAR_SUBMIT_BMP_FORM_ERROR
+    };
+}
+
+function clearSubmitBmpFormSuccess() {
+    return {
+        type: CLEAR_SUBMIT_BMP_FORM_SUCCESS
     };
 }
 
@@ -352,6 +358,7 @@ module.exports = {
     SUBMIT_BMP_FORM, submitBmpForm,
     SUBMIT_BMP_FORM_ERROR, submitBmpFormError,
     CLEAR_SUBMIT_BMP_FORM_ERROR, clearSubmitBmpFormError,
+    CLEAR_SUBMIT_BMP_FORM_SUCCESS, clearSubmitBmpFormSuccess,
     SUBMIT_BMP_FORM_SUCCESS, submitBmpFormSuccess,
     TOGGLE_BMP_TYPE, toggleBmpType,
     SET_BMP_TYPE, setBmpType,
