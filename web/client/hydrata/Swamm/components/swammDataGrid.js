@@ -1,9 +1,9 @@
 import React from "react";
 import {connect} from "react-redux";
 const PropTypes = require('prop-types');
-import {Modal, Button, Table, ControlLabel, FormControl, FormGroup, Form, Col} from "react-bootstrap";
+import {Modal, Button} from "react-bootstrap";
 import ReactDataGrid from 'react-data-grid';
-import { Toolbar, Data, Filters } from "react-data-grid-addons";
+import { Filters } from "react-data-grid-addons";
 const {
     NumericFilter,
     AutoCompleteFilter,
@@ -38,11 +38,11 @@ class SwammDataGridClass extends React.Component {
     render() {
         return (
             <Modal
-                show={true}
+                show
                 onHide={() => console.log('onHide')}
                 style={{
-                    marginTop: "100px",
-                    minWidth: "800px"
+                    marginTop: "50px",
+                    width: "100%"
                 }}
                 dialogClassName="swamm-big-modal"
             >
@@ -57,7 +57,8 @@ class SwammDataGridClass extends React.Component {
                             columns={this.columns}
                             rowGetter={i => this.rows[i]}
                             rowsCount={this.rows.length}
-                            minHeight={800}
+                            minHeight={400}
+                            height={"90vh"}
                             style={{margin: "10px"}}
                         />
                     </div>
