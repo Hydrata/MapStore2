@@ -25,8 +25,6 @@ import {
     UPDATE_BMP_FORM,
     SUBMIT_BMP_FORM_SUCCESS,
     SUBMIT_BMP_FORM_ERROR,
-    CLEAR_SUBMIT_BMP_FORM_ERROR,
-    CLEAR_SUBMIT_BMP_FORM_SUCCESS,
     SET_DRAWING_BMP
 } from "./actionsSwamm";
 import {
@@ -279,16 +277,6 @@ export default ( state = initialState, action) => {
         return {
             ...state,
             showSubmitBmpFormError: true
-        };
-    case CLEAR_SUBMIT_BMP_FORM_ERROR:
-        return {
-            ...state,
-            showSubmitBmpFormError: false
-        };
-    case CLEAR_SUBMIT_BMP_FORM_SUCCESS:
-        return {
-            ...state,
-            showSubmitBmpFormSuccess: false
         };
     case UPDATE_BMP_FORM:
         if (action?.kv?.type_data?.id) {

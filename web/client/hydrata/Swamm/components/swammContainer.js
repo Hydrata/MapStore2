@@ -65,17 +65,6 @@ const panelStyle = {
     overflowX: "hidden"
 };
 
-const glyphStyle = {
-    background: "#6aa3789F",
-    borderRadius: "3px",
-    display: "inline",
-    marginRight: "5px",
-    color: "white",
-    borderColor: "white",
-    borderWidth: "1px",
-    fontSize: "10px"
-};
-
 const tableHeaderStyleOrgs = {
     textAlign: "center",
     width: "100px"
@@ -97,6 +86,7 @@ const filterButtonStyle = {
 const bmpProgressButtonStyle = {
     top: "50px",
     left: "20px",
+    minWidth: "135px",
     position: "absolute",
     opacity: "0.7",
     borderRadius: "4px"
