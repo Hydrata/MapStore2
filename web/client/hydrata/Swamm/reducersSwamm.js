@@ -73,6 +73,11 @@ export default ( state = initialState, action) => {
             if (state.allBmps.filter((bmpToCheck) => bmpToCheck.outlet_fid === possibleBmpFeatures[0].id)[0]) {
                 bmp = state.allBmps.filter((bmpToCheck) => bmpToCheck.outlet_fid === possibleBmpFeatures[0].id)[0];
             }
+            console.log('possibleBmpFeatures', possibleBmpFeatures);
+            if (!bmp) {
+                alert(`error: Orphaned geometry ${JSON.stringify(possibleBmpFeatures[0])}`);
+                return state;
+            }
             return {
                 ...state,
                 visibleBmpForm: true,
@@ -86,11 +91,6 @@ export default ( state = initialState, action) => {
             fetching: action.mapId
         };
     case FETCH_SWAMM_BMPTYPES_SUCCESS:
-        // const newBmpTypes = action.bmpTypes.map(function(bmpType) {
-        //     if (!bmpType.visibility) {bmpType.visibility = false;}
-        //     bmpType.full_code = bmpType.project.code + '_' + bmpType.organisation.code + '_' + bmpType.code;
-        //     return bmpType;
-        // });
         return {
             ...state,
             fetching: false,

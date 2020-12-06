@@ -232,9 +232,9 @@ class SwammBmpFormClass extends React.Component {
                                             value={this.props.storedBmpForm?.status}
                                             onChange={this.handleChange}
                                         >
-                                            <option key={'Proposed'} value={'Proposed'}>{'Proposed'}</option>
+                                            <option key={'Unknown'} value={'Unknown'}>{'Unknown'}</option>
                                             {this.props.statuses
-                                                .filter(status => status !== 'Proposed')
+                                                .filter(status => status !== 'Unknown')
                                                 .map(status => <option key={status} value={status}>{status}</option>)
                                             }
                                         </FormControl>
