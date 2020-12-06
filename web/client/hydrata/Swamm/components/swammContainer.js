@@ -25,7 +25,7 @@ import {SwammDataGrid} from "./swammDataGrid";
 import {changeLayerProperties} from "../../../actions/layers";
 import {setMenuGroup} from "../../ProjectManager/actionsProjectManager";
 import {bmpByUniqueNameSelector, orgSelector} from "../selectorsSwamm";
-import {saveChanges} from "../../../actions/featuregrid";
+import {setLayer, saveChanges} from "../../../actions/featuregrid";
 import {query} from "../../../actions/wfsquery";
 import {SwammBmpChart} from "./swammBmpChart";
 
@@ -65,17 +65,6 @@ const panelStyle = {
     overflowX: "hidden"
 };
 
-const glyphStyle = {
-    background: "#6aa3789F",
-    borderRadius: "3px",
-    display: "inline",
-    marginRight: "5px",
-    color: "white",
-    borderColor: "white",
-    borderWidth: "1px",
-    fontSize: "10px"
-};
-
 const tableHeaderStyleOrgs = {
     textAlign: "center",
     width: "100px"
@@ -97,6 +86,7 @@ const filterButtonStyle = {
 const bmpProgressButtonStyle = {
     top: "50px",
     left: "20px",
+    minWidth: "135px",
     position: "absolute",
     opacity: "0.7",
     borderRadius: "4px"
@@ -144,7 +134,8 @@ class SwammContainer extends React.Component {
         visibleSwammBmpChart: PropTypes.bool,
         showSwammBmpChart: PropTypes.func,
         clickBmpManager: PropTypes.func,
-        bmpByUniqueNameSelector: PropTypes.func
+        bmpByUniqueNameSelector: PropTypes.func,
+        setLayer: PropTypes.func
     };
 
     static defaultProps = {}
@@ -195,16 +186,81 @@ class SwammContainer extends React.Component {
                     onClick={() => {this.props.clickBmpManager();}}>
                     View BMPs
                 </button>
-                <button
-                    key="swamm-bmp-creator-button"
-                    style={{...buttonStyle, left: 3 * 150 + 20}}
-                    onClick={() => {
-                        this.props.makeBmpForm();
-                        this.props.setMenuGroup(null);
-                    }}
-                >
-                    Create BMPs
-                </button>
+                {this.props.storedBmpForm && !this.props.visibleBmpForm && !this.props.drawingBmp ?
+                    <React.Fragment>
+                        <Button
+                            style={bmpProgressButtonStyle}
+                            bsStyle={"success"}
+                            onClick={() => this.props.showBmpForm()}
+                        >
+                            BMP in progress
+                        </Button>
+                        <button
+                            key="swamm-bmp-creator-button"
+                            style={{...buttonStyle, left: 3 * 150 + 20}}
+                            onClick={() => {
+                                this.props.showBmpForm();
+                                this.props.setMenuGroup(null);
+                            }}
+                        >
+                            Create BMPs
+                        </button>
+                    </React.Fragment>
+                    : this.props.drawingBmp ?
+                        <React.Fragment>
+                            <Button
+                                bsStyle="success"
+                                style={bmpProgressButtonStyle}
+                                onClick={() => {
+                                    this.props.saveChanges();
+                                    this.props.showBmpForm();
+                                }}
+                            >
+                                Save Feature
+                            </Button>
+                            <Button
+                                bsStyle="danger"
+                                style={{...bmpProgressButtonStyle, left: 150 + 20}}
+                                onClick={() => {
+                                    this.props.showBmpForm();
+                                    this.props.setLayer(null);
+                                    this.props.setDrawingBmp(false);
+                                }}
+                            >
+                                Cancel Feature
+                            </Button>
+                            <button
+                                key="swamm-bmp-creator-button"
+                                style={{...buttonStyle, left: 3 * 150 + 20}}
+                                onClick={() => {
+                                    this.props.saveChanges();
+                                    this.props.showBmpForm();
+                                    this.props.setMenuGroup(null);
+                                }}
+                            >
+                                Create BMPs
+                            </button>
+                        </React.Fragment>
+                        : this.props.visibleBmpForm ?
+                            <button
+                                key="swamm-bmp-creator-button"
+                                style={{...buttonStyle, left: 3 * 150 + 20}}
+                                disabled
+                            >
+                                Create BMPs
+                            </button>
+                            :
+                            <button
+                                key="swamm-bmp-creator-button"
+                                style={{...buttonStyle, left: 3 * 150 + 20}}
+                                onClick={() => {
+                                    this.props.makeBmpForm();
+                                    this.props.setMenuGroup(null);
+                                }}
+                            >
+                                Create BMPs
+                            </button>
+                }
                 <button
                     key="swamm-bmp-data-grid-button"
                     style={{...buttonStyle, left: 4 * 150 + 20}}
@@ -312,27 +368,6 @@ class SwammContainer extends React.Component {
                     </div>
                     : null
                 }
-                {this.props.storedBmpForm && !this.props.visibleBmpForm && !this.props.drawingBmp ?
-                    <Button
-                        style={bmpProgressButtonStyle}
-                        bsStyle={"success"}
-                        onClick={() => this.props.showBmpForm()}
-                    >
-                        BMP in progress
-                    </Button>
-                    : this.props.drawingBmp ?
-                        <Button
-                            bsStyle="success"
-                            style={bmpProgressButtonStyle}
-                            onClick={() => {
-                                this.props.saveChanges();
-                                this.props.showBmpForm();
-                            }}
-                        >
-                            Save Feature
-                        </Button>
-                        : null
-                }
             </div>
         );
     }
@@ -439,6 +474,7 @@ const mapDispatchToProps = ( dispatch ) => {
         toggleFootprints: () => dispatch(toggleFootprints()),
         toggleWatersheds: () => dispatch(toggleWatersheds()),
         showBmpForm: () => dispatch(showBmpForm()),
+        setLayer: (layerName) => dispatch(setLayer(layerName)),
         showSwammDataGrid: () => dispatch(showSwammDataGrid()),
         showSwammBmpChart: () => dispatch(showSwammBmpChart()),
         clickBmpManager: () => {

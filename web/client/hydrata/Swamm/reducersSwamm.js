@@ -25,9 +25,8 @@ import {
     UPDATE_BMP_FORM,
     SUBMIT_BMP_FORM_SUCCESS,
     SUBMIT_BMP_FORM_ERROR,
-    CLEAR_SUBMIT_BMP_FORM_ERROR,
-    CLEAR_SUBMIT_BMP_FORM_SUCCESS,
-    SET_DRAWING_BMP
+    SET_DRAWING_BMP,
+    SET_EDITING_BMP
 } from "./actionsSwamm";
 import {
     SET_MENU_GROUP
@@ -280,16 +279,6 @@ export default ( state = initialState, action) => {
             ...state,
             showSubmitBmpFormError: true
         };
-    case CLEAR_SUBMIT_BMP_FORM_ERROR:
-        return {
-            ...state,
-            showSubmitBmpFormError: false
-        };
-    case CLEAR_SUBMIT_BMP_FORM_SUCCESS:
-        return {
-            ...state,
-            showSubmitBmpFormSuccess: false
-        };
     case UPDATE_BMP_FORM:
         if (action?.kv?.type_data?.id) {
             return {
@@ -346,6 +335,16 @@ export default ( state = initialState, action) => {
             ...state,
             drawingBmp: drawingBmp
         };
+    // case SET_EDITING_BMP:
+    //     drawingBmp = false;
+    //     if (action.layerName !== state.drawingBmp) {
+    //         drawingBmp = action.layerName;
+    //     }
+    //     return {
+    //         ...state,
+    //         editingBmpFeatureId: action.editingBmpFeatureId,
+    //         drawingBmp: drawingBmp
+    //     };
     default:
         return state;
     }

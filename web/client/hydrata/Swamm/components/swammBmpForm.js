@@ -1,7 +1,7 @@
 import React from "react";
 import {connect} from "react-redux";
 const PropTypes = require('prop-types');
-import {Modal, Button, Table, ControlLabel, FormControl, FormGroup, Form, Col, Alert} from "react-bootstrap";
+import {Modal, Button, Table, ControlLabel, FormControl, FormGroup, Form, Col} from "react-bootstrap";
 import {
     hideBmpForm,
     showBmpForm,
@@ -10,8 +10,6 @@ import {
     makeDefaultsBmpForm,
     makeExistingBmpForm,
     updateBmpForm,
-    clearSubmitBmpFormError,
-    clearSubmitBmpFormSuccess,
     setDrawingBmp
 } from "../actionsSwamm";
 import {setMenuGroup} from "../../ProjectManager/actionsProjectManager";
@@ -43,8 +41,6 @@ class SwammBmpFormClass extends React.Component {
         showBmpForm: PropTypes.func,
         submitBmpForm: PropTypes.func,
         showSubmitBmpFormSuccess: PropTypes.bool,
-        clearSubmitBmpFormError: PropTypes.func,
-        clearSubmitBmpFormSuccess: PropTypes.func,
         showSubmitBmpFormError: PropTypes.bool,
         storeBmpForm: PropTypes.func,
         thisBmpType: PropTypes.object,
@@ -109,57 +105,11 @@ class SwammBmpFormClass extends React.Component {
                         fontSize: "small"
                     }}
                     dialogClassName="swamm-big-modal"
+                    backdrop={false}
+                    enforceFocus={false}
+                    scrollable
                 >
                     <Modal.Header>
-                        {this.props.showSubmitBmpFormSuccess ?
-                            <Alert
-                                style={{ position: "fixed", top: "10px", right: "10px", padding: "5px"}}
-                                bsStyle="success"
-                            >
-                                Successfully saved BMP data.
-                                <Button
-                                    style={{marginLeft: "30px", opacity: 0.7}}
-                                    bsStyle={"success"}
-                                    bsSize={"sm"}
-                                    onClick={() => {
-                                        this.props.clearSubmitBmpFormSuccess();
-                                    }}
-                                >
-                                    Great.
-                                </Button>
-                            </Alert> :
-                            null
-                        }
-                        {this.props.showSubmitBmpFormError ?
-                            <Alert
-                                style={{ position: "fixed", top: "10px", right: "10px", padding: "5px"}}
-                                bsStyle="danger"
-                            >
-                                Error saving BMP data.
-                                <Button
-                                    style={{marginLeft: "30px", opacity: 0.7}}
-                                    bsStyle={"success"}
-                                    bsSize={"sm"}
-                                    onClick={() => {
-                                        this.props.clearSubmitBmpFormError();
-                                        this.props.submitBmpForm(this.props.storedBmpForm, this.props.mapId);
-                                    }}
-                                >
-                                    Try again
-                                </Button>
-                                <Button
-                                    style={{marginLeft: "30px", opacity: 0.7}}
-                                    bsStyle={"danger"}
-                                    bsSize={"sm"}
-                                    onClick={
-                                        () => this.props.clearSubmitBmpFormError()
-                                    }
-                                >
-                                    Dismiss
-                                </Button>
-                            </Alert> :
-                            null
-                        }
                         <Modal.Title>
                             {this.props.storedBmpForm.id ?
                                 "Edit BMP: " + this.props.storedBmpForm?.type_data?.name + " " + this.props.storedBmpForm.id :
@@ -626,8 +576,6 @@ const mapStateToProps = (state) => {
         statuses: state?.swamm?.statuses,
         thisBmpType: state?.swamm?.bmpTypes.filter((bmpType) => bmpType.id === state?.swamm?.BmpFormBmpTypeId)[0],
         storedBmpForm: state?.swamm?.storedBmpForm || {},
-        showSubmitBmpFormSuccess: state?.swamm?.showSubmitBmpFormSuccess,
-        showSubmitBmpFormError: state?.swamm?.showSubmitBmpFormError,
         thisBmpCode: state?.swamm?.storedBmpForm?.type_data?.full_code,
         creatingNewBmp: state?.swamm?.creatingNewBmp,
         updatingBmp: state?.swamm?.updatingBmp,
@@ -643,8 +591,6 @@ const mapDispatchToProps = ( dispatch ) => {
         hideBmpForm: () => dispatch(hideBmpForm()),
         showBmpForm: () => dispatch(showBmpForm()),
         submitBmpForm: (newBmp, mapId) => dispatch(submitBmpForm(newBmp, mapId)),
-        clearSubmitBmpFormError: () => dispatch(clearSubmitBmpFormError()),
-        clearSubmitBmpFormSuccess: () => dispatch(clearSubmitBmpFormSuccess()),
         updateBmpForm: (kv) => dispatch(updateBmpForm(kv)),
         clearBmpForm: () => dispatch(clearBmpForm()),
         makeDefaultsBmpForm: (bmpType) => dispatch(makeDefaultsBmpForm(bmpType)),
