@@ -25,8 +25,7 @@ import {
     UPDATE_BMP_FORM,
     SUBMIT_BMP_FORM_SUCCESS,
     SUBMIT_BMP_FORM_ERROR,
-    SET_DRAWING_BMP,
-    SET_EDITING_BMP
+    SET_DRAWING_BMP
 } from "./actionsSwamm";
 import {
     SET_MENU_GROUP
@@ -335,16 +334,6 @@ export default ( state = initialState, action) => {
             ...state,
             drawingBmp: drawingBmp
         };
-    // case SET_EDITING_BMP:
-    //     drawingBmp = false;
-    //     if (action.layerName !== state.drawingBmp) {
-    //         drawingBmp = action.layerName;
-    //     }
-    //     return {
-    //         ...state,
-    //         editingBmpFeatureId: action.editingBmpFeatureId,
-    //         drawingBmp: drawingBmp
-    //     };
     default:
         return state;
     }

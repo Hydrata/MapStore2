@@ -2,14 +2,12 @@ import Rx from "rxjs";
 import {QUERY_RESULT, query, FEATURE_TYPE_LOADED} from "../../actions/wfsquery";
 import {
     setDrawingBmp, SET_DRAWING_BMP,
-    setEditingBmp, SET_EDITING_BMP,
     hideBmpForm
 } from "./actionsSwamm";
 import {
     toggleEditMode,
     createNewFeatures,
     startDrawingFeature,
-    startEditingFeature,
     SAVE_SUCCESS
 } from "../../actions/featuregrid";
 import { setHighlightFeaturesPath } from "../../actions/highlight";
