@@ -41,8 +41,8 @@ const MAKE_DEFAULTS_BMP_FORM = 'MAKE_DEFAULTS_BMP_FORM';
 const MAKE_EXISTING_BMP_FORM = 'MAKE_EXISTING_BMP_FORM';
 const UPDATE_BMP_FORM = 'UPDATE_BMP_FORM';
 const SET_DRAWING_BMP = 'SET_DRAWING_BMP';
+const SET_EDITING_BMP = 'SET_EDITING_BMP';
 const uuidv1 = require('uuid/v1');
-const { SHOW_NOTIFICATION } = require('../../actions/notifications');
 
 const fetchSwammBmpTypesSuccess = (config) => {
     return {
@@ -54,7 +54,7 @@ const fetchSwammBmpTypesSuccess = (config) => {
 function fetchSwammBmpTypesError(e) {
     console.log('fetchSwammBmpTypesError', e);
     return {
-        type: SHOW_NOTIFICATION,
+        type: 'SHOW_NOTIFICATION',
         title: 'Fetch Swamm Bmp Types Error',
         autoDismiss: 600,
         position: 'tc',
@@ -96,7 +96,7 @@ const fetchSwammAllBmpsSuccess = (allBmps) => {
 function fetchSwammAllBmpsError(e) {
     console.log('fetchSwammAllBmpsError', e);
     return {
-        type: SHOW_NOTIFICATION,
+        type: 'SHOW_NOTIFICATION',
         title: 'Fetch Swamm All Bmps Error',
         autoDismiss: 600,
         position: 'tc',
@@ -131,7 +131,7 @@ const fetchSwammBmpStatusesSuccess = (statuses) => {
 function fetchSwammBmpStatusesError(e) {
     console.log('fetchSwammBmpStatusesError', e);
     return {
-        type: SHOW_NOTIFICATION,
+        type: 'SHOW_NOTIFICATION',
         title: 'Fetch Swamm Bmp Statuses Error',
         autoDismiss: 600,
         position: 'tc',
@@ -299,17 +299,17 @@ const setDrawingBmp = (layerName) => {
     };
 };
 
-// const setEditingBmp = (featureId) => {
-//     return {
-//         type: SET_EDITING_BMP,
-//         editingBmpFeatureId: featureId,
-//         layerName: featureId.split('.')[0]
-//     };
-// };
+const setEditingBmp = (featureId) => {
+    return {
+        type: SET_EDITING_BMP,
+        editingBmpFeatureId: featureId,
+        layerName: featureId.split('.')[0]
+    };
+};
 
 const submitBmpFormSuccess = (bmp) => {
     return {
-        type: SHOW_NOTIFICATION,
+        type: 'SHOW_NOTIFICATION',
         title: 'Success',
         autoDismiss: 6,
         position: 'tc',
@@ -322,7 +322,7 @@ const submitBmpFormSuccess = (bmp) => {
 function submitBmpFormError(e) {
     console.log('submitBmpFormError', e);
     return {
-        type: SHOW_NOTIFICATION,
+        type: 'SHOW_NOTIFICATION',
         title: 'Submit Bmp Form Error',
         autoDismiss: 600,
         position: 'tc',
@@ -398,6 +398,6 @@ module.exports = {
     MAKE_DEFAULTS_BMP_FORM, makeDefaultsBmpForm,
     MAKE_EXISTING_BMP_FORM, makeExistingBmpForm,
     UPDATE_BMP_FORM, updateBmpForm,
-    SET_DRAWING_BMP, setDrawingBmp
-    // SET_EDITING_BMP, setEditingBmp
+    SET_DRAWING_BMP, setDrawingBmp,
+    SET_EDITING_BMP, setEditingBmp
 };

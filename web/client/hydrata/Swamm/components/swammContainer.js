@@ -25,8 +25,7 @@ import {SwammDataGrid} from "./swammDataGrid";
 import {changeLayerProperties} from "../../../actions/layers";
 import {setMenuGroup} from "../../ProjectManager/actionsProjectManager";
 import {bmpByUniqueNameSelector, orgSelector} from "../selectorsSwamm";
-// import {setLayer, saveChanges} from "../../../actions/featuregrid";
-import {saveChanges} from "../../../actions/featuregrid";
+import {setLayer, saveChanges} from "../../../actions/featuregrid";
 import {query} from "../../../actions/wfsquery";
 import {SwammBmpChart} from "./swammBmpChart";
 
@@ -224,7 +223,7 @@ class SwammContainer extends React.Component {
                                 style={{...bmpProgressButtonStyle, left: 150 + 20}}
                                 onClick={() => {
                                     this.props.showBmpForm();
-                                    // this.props.setLayer(null);
+                                    this.props.setLayer(null);
                                     this.props.setDrawingBmp(false);
                                 }}
                             >
@@ -475,7 +474,7 @@ const mapDispatchToProps = ( dispatch ) => {
         toggleFootprints: () => dispatch(toggleFootprints()),
         toggleWatersheds: () => dispatch(toggleWatersheds()),
         showBmpForm: () => dispatch(showBmpForm()),
-        // setLayer: (layerName) => dispatch(setLayer(layerName)),
+        setLayer: (layerName) => dispatch(setLayer(layerName)),
         showSwammDataGrid: () => dispatch(showSwammDataGrid()),
         showSwammBmpChart: () => dispatch(showSwammBmpChart()),
         clickBmpManager: () => {
