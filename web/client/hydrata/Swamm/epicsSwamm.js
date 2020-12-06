@@ -2,14 +2,12 @@ import Rx from "rxjs";
 import {QUERY_RESULT, query, FEATURE_TYPE_LOADED} from "../../actions/wfsquery";
 import {
     setDrawingBmp, SET_DRAWING_BMP,
-    setEditingBmp, SET_EDITING_BMP,
     hideBmpForm
 } from "./actionsSwamm";
 import {
     toggleEditMode,
     createNewFeatures,
     startDrawingFeature,
-    startEditingFeature,
     SAVE_SUCCESS
 } from "../../actions/featuregrid";
 import { setHighlightFeaturesPath } from "../../actions/highlight";
@@ -21,25 +19,12 @@ export const setBmpDrawingLayer = (action$, store) =>
             return action?.typeName.includes(state?.swamm?.storedBmpForm?.type_data?.full_code);
         })
         .flatMap((action) => Rx.Observable.of(
-            console.log('setBmpDrawingLayer2'),
             query('http://localhost:8080/geoserver/wfs', {featureTypeName: action?.typeName, filterType: 'OGC', ogcVersion: '1.1.0'}, {}, 'querySetNewBmpLayer')
         ));
-
-// export const setBmpEditingLayer = (action$, store) =>
-//     action$.ofType(FEATURE_TYPE_LOADED)
-//         .filter(() => {
-//             const state = store.getState();
-//             return state?.swamm?.editingBmpFeatureId;
-//         })
-//         .flatMap((action) => Rx.Observable.of(
-//             console.log('setBmpEditingLayer done:', action),
-//             // query('http://localhost:8080/geoserver/wfs', {featureTypeName: action?.typeName, filterType: 'OGC', ogcVersion: '1.1.0'}, {}, 'querySetEditBmpFeature')
-//         ));
 
 export const setBmpDrawingFeature = (action$) =>
     action$.ofType(QUERY_RESULT)
         .filter(action => {
-            console.log('heard querySetNewBmpLayer', action);
             return action?.reason === 'querySetNewBmpLayer';
         })
         .flatMap((action) => Rx.Observable.of(
@@ -47,18 +32,6 @@ export const setBmpDrawingFeature = (action$) =>
             setDrawingBmp(action?.filterObj?.featureTypeName),
             hideBmpForm()
         ));
-
-// export const setBmpEditingFeature = (action$) =>
-//     action$.ofType(QUERY_RESULT)
-//         .filter(action => {
-//             return action?.reason === 'querySetEditBmpFeature';
-//         })
-//         .flatMap((action) => Rx.Observable.of(
-//             console.log('QUERY_RESULT heard querySetEditBmpFeature', action),
-//             toggleEditMode(),
-//             // setEditingBmp(action?.),
-//             hideBmpForm()
-//         ));
 
 
 export const startBmpDrawingEpic = (action$) =>
@@ -68,15 +41,6 @@ export const startBmpDrawingEpic = (action$) =>
             startDrawingFeature(),
             setHighlightFeaturesPath('draw.tempFeatures')
         ));
-
-//
-// export const startBmpEditingEpic = (action$) =>
-//     action$.ofType(SET_EDITING_BMP)
-//         .flatMap((action) => Rx.Observable.of(
-//             console.log('startBmpEditingEpic', action),
-//             // startEditingFeature(action?.),
-//             setHighlightFeaturesPath('draw.tempFeatures')
-//         ));
 
 export const saveBmpDrawingFeature = (action$, store) =>
     action$.ofType(SAVE_SUCCESS)
