@@ -2,7 +2,7 @@ import Rx from "rxjs";
 import {QUERY_RESULT, query, FEATURE_TYPE_LOADED} from "../../actions/wfsquery";
 import {
     setDrawingBmp, SET_DRAWING_BMP,
-    hideBmpForm
+    hideBmpForm, submitBmpForm
 } from "./actionsSwamm";
 import {
     toggleEditMode,
@@ -57,5 +57,6 @@ export const saveBmpDrawingFeature = (action$, store) =>
                 'queryGetNewBmpId'
             ),
             setDrawingBmp(null),
-            setHighlightFeaturesPath('highlight.emptyFeatures')
+            setHighlightFeaturesPath('highlight.emptyFeatures'),
+            submitBmpForm(store.getState()?.swamm?.storedBmpForm, store.getState()?.projectManager?.data?.base_map)
         ));
