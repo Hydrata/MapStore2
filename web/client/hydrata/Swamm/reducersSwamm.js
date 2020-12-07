@@ -233,6 +233,9 @@ export default ( state = initialState, action) => {
             }
         };
     case MAKE_EXISTING_BMP_FORM:
+        const outletFid = state?.storedBmpForm?.outlet_fid ? state.storedBmpForm?.outlet_fid : action.bmp?.outlet_fid;
+        const footprintFid = state?.storedBmpForm?.footprint_fid ? state.storedBmpForm?.footprint_fid : action.bmp?.footprint_fid;
+        const watershedFid = state?.storedBmpForm?.watershed_fid ? state.storedBmpForm?.watershed_fid : action.bmp?.watershed_fid;
         const existingForm = {
             ...action.bmp,
             id: action.bmp.id,
@@ -247,7 +250,10 @@ export default ( state = initialState, action) => {
             override_cost_base: action.bmp.override_cost_base,
             override_cost_rate_per_watershed_area: action.bmp.override_cost_rate_per_watershed_area,
             override_cost_rate_per_footprint_area: action.bmp.override_cost_rate_per_footprint_area,
-            notes: ''
+            notes: '',
+            outlet_fid: outletFid,
+            footprint_fid: footprintFid,
+            watershed_fid: watershedFid
         };
         return {
             ...state,
