@@ -10,8 +10,7 @@ import {
     makeDefaultsBmpForm,
     makeExistingBmpForm,
     updateBmpForm,
-    setDrawingBmp,
-    setEditingFeatureId
+    setDrawingBmp
 } from "../actionsSwamm";
 import {setMenuGroup} from "../../ProjectManager/actionsProjectManager";
 import {
@@ -509,7 +508,7 @@ class SwammBmpFormClass extends React.Component {
                             onClick={() => {
                                 this.props.submitBmpForm(this.props.storedBmpForm, this.props.mapId);
                             }}>
-                            Save
+                            Calculate
                         </Button>
                     </Modal.Footer>
                 </Modal>
@@ -564,7 +563,6 @@ class SwammBmpFormClass extends React.Component {
         this.props.setBmpTypesVisibility(fieldValue, true);
     }
     drawBmpStep1(layerName, featureId) {
-        this.props.setEditingFeatureId(featureId);
         const targetLayer = this.props.layers.flat.filter(layer => layer.name === layerName)[0];
         this.props.setLayer(targetLayer?.id);
         this.props.featureTypeSelected('http://localhost:8080/geoserver/wfs', targetLayer?.name);
@@ -598,7 +596,6 @@ const mapDispatchToProps = ( dispatch ) => {
         clearBmpForm: () => dispatch(clearBmpForm()),
         makeDefaultsBmpForm: (bmpType) => dispatch(makeDefaultsBmpForm(bmpType)),
         setLayer: (id) => dispatch(setLayer(id)),
-        setEditingFeatureId: (featureId) => dispatch(setEditingFeatureId(featureId)),
         featureTypeSelected: (url, typeName) => dispatch(featureTypeSelected(url, typeName)),
         toggleEditMode: () => dispatch(toggleEditMode()),
         createNewFeatures: (features) => dispatch(createNewFeatures(features)),

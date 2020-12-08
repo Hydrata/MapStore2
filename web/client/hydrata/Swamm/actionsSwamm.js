@@ -41,9 +41,8 @@ const MAKE_DEFAULTS_BMP_FORM = 'MAKE_DEFAULTS_BMP_FORM';
 const MAKE_EXISTING_BMP_FORM = 'MAKE_EXISTING_BMP_FORM';
 const UPDATE_BMP_FORM = 'UPDATE_BMP_FORM';
 const SET_DRAWING_BMP = 'SET_DRAWING_BMP';
-const SET_EDITING_FEATURE_ID = 'SET_EDITING_FEATURE_ID';
-const CLEAR_EDITING_FEATURE_ID = 'CLEAR_EDITING_FEATURE_ID';
-const SELECT_BMP_FEATURE_FROM_ID = 'SELECT_BMP_FEATURE_FROM_ID';
+const START_DRAWING_BMP = 'START_DRAWING_BMP';
+const CLEAR_DRAWING_BMP = 'CLEAR_DRAWING_BMP';
 
 const uuidv1 = require('uuid/v1');
 const { SHOW_NOTIFICATION } = require('../../actions/notifications');
@@ -296,6 +295,12 @@ const updateBmpForm = (kv) => {
     };
 };
 
+const startDrawingBmp = () => {
+    return {
+        type: START_DRAWING_BMP
+    };
+};
+
 const setDrawingBmp = (layerName) => {
     return {
         type: SET_DRAWING_BMP,
@@ -303,25 +308,9 @@ const setDrawingBmp = (layerName) => {
     };
 };
 
-const setEditingFeatureId = (featureId) => {
-    console.log('setEditingFeatureId', featureId);
+const clearDrawingBmp = () => {
     return {
-        type: SET_EDITING_FEATURE_ID,
-        editingFeatureId: featureId
-    };
-};
-
-const clearEditingFeatureId = () => {
-    return {
-        type: CLEAR_EDITING_FEATURE_ID
-    };
-};
-
-const selectBmpFeatureFromId = (state) => {
-    console.log('selectBmpFeatureFromId', state);
-    return {
-        type: SELECT_BMP_FEATURE_FROM_ID,
-        editingFeature: 'feature'
+        type: CLEAR_DRAWING_BMP
     };
 };
 
@@ -417,7 +406,6 @@ module.exports = {
     MAKE_EXISTING_BMP_FORM, makeExistingBmpForm,
     UPDATE_BMP_FORM, updateBmpForm,
     SET_DRAWING_BMP, setDrawingBmp,
-    SET_EDITING_FEATURE_ID, setEditingFeatureId,
-    CLEAR_EDITING_FEATURE_ID, clearEditingFeatureId,
-    SELECT_BMP_FEATURE_FROM_ID, selectBmpFeatureFromId
+    START_DRAWING_BMP, startDrawingBmp,
+    CLEAR_DRAWING_BMP, clearDrawingBmp
 };

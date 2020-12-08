@@ -26,9 +26,7 @@ import {
     SUBMIT_BMP_FORM_SUCCESS,
     SUBMIT_BMP_FORM_ERROR,
     SET_DRAWING_BMP,
-    SET_EDITING_FEATURE_ID,
-    CLEAR_EDITING_FEATURE_ID,
-    SELECT_BMP_FEATURE_FROM_ID
+    CLEAR_DRAWING_BMP
 } from "./actionsSwamm";
 import {
     SET_MENU_GROUP
@@ -343,19 +341,10 @@ export default ( state = initialState, action) => {
             ...state,
             drawingBmp: drawingBmp
         };
-    case SELECT_BMP_FEATURE_FROM_ID:
-        return {
-            ...state
-        };
-    case SET_EDITING_FEATURE_ID:
+    case CLEAR_DRAWING_BMP:
         return {
             ...state,
-            editingFeatureId: action.editingFeatureId
-        };
-    case CLEAR_EDITING_FEATURE_ID:
-        return {
-            ...state,
-            editingFeatureId: null
+            drawingBmp: null
         };
     default:
         return state;

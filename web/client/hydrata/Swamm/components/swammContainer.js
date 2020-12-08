@@ -15,6 +15,7 @@ import {
     toggleBmpManager,
     makeBmpForm,
     setDrawingBmp,
+    clearDrawingBmp,
     toggleBmpType,
     setBmpType,
     showSwammDataGrid
@@ -121,6 +122,7 @@ class SwammContainer extends React.Component {
         setMenuGroup: PropTypes.func,
         saveChanges: PropTypes.func,
         setDrawingBmp: PropTypes.func,
+        clearDrawingBmp: PropTypes.func,
         drawingBmp: PropTypes.bool,
         query: PropTypes.func,
         queryStore: PropTypes.func,
@@ -224,7 +226,6 @@ class SwammContainer extends React.Component {
                                 onClick={() => {
                                     this.props.showBmpForm();
                                     this.props.setLayer(null);
-                                    this.props.setDrawingBmp(false);
                                 }}
                             >
                                 Cancel Feature
@@ -485,6 +486,7 @@ const mapDispatchToProps = ( dispatch ) => {
         makeBmpForm: (bmpTypeId) => dispatch(makeBmpForm(bmpTypeId)),
         saveChanges: () => dispatch(saveChanges()),
         setDrawingBmp: (layerName) => dispatch(setDrawingBmp(layerName)),
+        clearDrawingBmp: () => dispatch(clearDrawingBmp()),
         query: (url, filterObj, queryOptions, reason) => dispatch(query(url, filterObj, queryOptions, reason)),
         toggleBmpType: (bmpType) => dispatch(toggleBmpType(bmpType)),
         setBmpType: (bmpType, isVisible) => dispatch(setBmpType(bmpType, isVisible))
