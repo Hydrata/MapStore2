@@ -39,14 +39,14 @@ export const setBmpEditFeatureEpic = (action$, store) =>
             console.log('setBmpEditFeature test:', action?.reason === 'querySetNewBmpLayer');
             return action?.reason === 'querySetNewBmpLayer';
         })
-        .pipe(() => Rx.Observable.forkJoin(
-            store.getState()?.query?.result?.features.filter((feature) => feature?.id === store.getState()?.swamm?.editingFeatureId)[0]
-        ))
-        .flatMap(([bmpFeature]) => Rx.Observable.of(
-            toggleEditMode(),
-            selectFeatures(bmpFeature),
-            hideBmpForm()
-        ));
+        // .pipe(() => Rx.Observable.forkJoin(
+        //     store.getState()?.query?.result?.features.filter((feature) => feature?.id === store.getState()?.swamm?.editingFeatureId)[0]
+        // ))
+        // .flatMap(([bmpFeature]) => Rx.Observable.of(
+        //     toggleEditMode(),
+        //     selectFeatures(bmpFeature),
+        //     hideBmpForm()
+        // ));
 
 export const setBmpDrawingFeatureEpic = (action$, store) =>
     action$.ofType(QUERY_RESULT)
