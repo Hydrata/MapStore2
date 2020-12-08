@@ -10,7 +10,8 @@ import {
     makeDefaultsBmpForm,
     makeExistingBmpForm,
     updateBmpForm,
-    setDrawingBmp
+    setDrawingBmp,
+    setEditingFeatureId
 } from "../actionsSwamm";
 import {setMenuGroup} from "../../ProjectManager/actionsProjectManager";
 import {
@@ -60,6 +61,7 @@ class SwammBmpFormClass extends React.Component {
         startDrawingFeature: PropTypes.func,
         saveChanges: PropTypes.func,
         setDrawingBmp: PropTypes.func,
+        setEditingFeatureId: PropTypes.func,
         layers: PropTypes.object,
         query: PropTypes.func,
         mapId: PropTypes.number,
@@ -303,7 +305,7 @@ class SwammBmpFormClass extends React.Component {
                                                 className={"pull-right"}
                                                 bsStyle={"info"}
                                                 style={{opacity: "0.7"}}
-                                                onClick={() => window.alert('not implemented yet')}>
+                                                onClick={() => this.drawBmpStep1(this.props?.thisBmpCode + '_outlet', this.props.storedBmpForm?.outlet_fid)}>
                                             Edit
                                             </Button>
                                         </Col> :
@@ -312,7 +314,7 @@ class SwammBmpFormClass extends React.Component {
                                                 disabled={(!this.props.storedBmpForm?.organisation || !this.props.storedBmpForm.bmpName)}
                                                 bsStyle={(!this.props.storedBmpForm?.organisation || !this.props.storedBmpForm.bmpName) ? "default" : "success" }
                                                 style={{opacity: "0.7"}}
-                                                onClick={() => this.drawBmpStep1(this.props?.thisBmpCode + '_outlet')}>
+                                                onClick={() => this.drawBmpStep1(this.props?.thisBmpCode + '_outlet', null)}>
                                             Locate Outlet
                                             </Button>
                                         </Col>
@@ -561,7 +563,8 @@ class SwammBmpFormClass extends React.Component {
         this.props.makeDefaultsBmpForm(selectedBmpType);
         this.props.setBmpTypesVisibility(fieldValue, true);
     }
-    drawBmpStep1(layerName) {
+    drawBmpStep1(layerName, featureId) {
+        this.props.setEditingFeatureId(featureId);
         const targetLayer = this.props.layers.flat.filter(layer => layer.name === layerName)[0];
         this.props.setLayer(targetLayer?.id);
         this.props.featureTypeSelected('http://localhost:8080/geoserver/wfs', targetLayer?.name);
@@ -595,6 +598,7 @@ const mapDispatchToProps = ( dispatch ) => {
         clearBmpForm: () => dispatch(clearBmpForm()),
         makeDefaultsBmpForm: (bmpType) => dispatch(makeDefaultsBmpForm(bmpType)),
         setLayer: (id) => dispatch(setLayer(id)),
+        setEditingFeatureId: (featureId) => dispatch(setEditingFeatureId(featureId)),
         featureTypeSelected: (url, typeName) => dispatch(featureTypeSelected(url, typeName)),
         toggleEditMode: () => dispatch(toggleEditMode()),
         createNewFeatures: (features) => dispatch(createNewFeatures(features)),

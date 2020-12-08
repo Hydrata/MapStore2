@@ -104,6 +104,7 @@ function closeFeatureGridConfirmed() {
     };
 }
 function selectFeatures(features, append) {
+    console.log('selectFeatures got: ', features, append);
     return {
         type: SELECT_FEATURES,
         features,
