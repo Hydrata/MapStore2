@@ -34,25 +34,6 @@ export const setBmpDrawingLayerEpic = (action$, store) =>
             )
         ));
 
-// export const startBmpEditFeatureEpic = (action$, store) =>
-//     action$.ofType(QUERY_RESULT)
-//         // .filter(() => store.getState()?.editingFeatureId)
-//         .filter(action => {
-//             console.log('setBmpEditFeature: ', store.getState()?.swamm?.editingFeatureId);
-//             console.log('setBmpEditFeature feature: ', store.getState()?.query?.result?.features.filter((feature) => feature?.id === store.getState()?.swamm?.editingFeatureId)[0]);
-//             // store.getState()?.query?.result?.features.filter((feature) => feature?.id === store.getState()?.swamm?.editingFeatureId)[0];
-//             console.log('setBmpEditFeature test:', action?.reason === 'querySetNewBmpLayer');
-//             return action?.reason === 'querySetNewBmpLayer';
-//         });
-// .pipe(() => Rx.Observable.forkJoin(
-//     store.getState()?.query?.result?.features.filter((feature) => feature?.id === store.getState()?.swamm?.editingFeatureId)[0]
-// ))
-// .flatMap(([bmpFeature]) => Rx.Observable.of(
-//     toggleEditMode(),
-//     selectFeatures(bmpFeature),
-//     hideBmpForm()
-// ));
-
 export const startBmpCreateFeatureEpic = (action$, store) =>
     action$.ofType(QUERY_RESULT)
         .filter(() => {
@@ -109,6 +90,16 @@ export const saveBmpDrawingFeatureEpic = (action$, store) =>
                 'queryGetNewBmpId'
             ),
             clearDrawingBmp(),
+            drawStopped(),
+            setHighlightFeaturesPath('highlight.emptyFeatures'),
+            submitBmpForm(store.getState()?.swamm?.storedBmpForm, store.getState()?.projectManager?.data?.base_map)
+        ));
+
+export const saveBmpEditFeatureEpic = (action$, store) =>
+    action$.ofType(SAVE_SUCCESS)
+        .filter(() => store.getState()?.swamm?.editingFeatureId)
+        .flatMap(() => Rx.Observable.of(
+            setEditingFeatureId(null),
             drawStopped(),
             setHighlightFeaturesPath('highlight.emptyFeatures'),
             submitBmpForm(store.getState()?.swamm?.storedBmpForm, store.getState()?.projectManager?.data?.base_map)
