@@ -43,6 +43,8 @@ const UPDATE_BMP_FORM = 'UPDATE_BMP_FORM';
 const SET_DRAWING_BMP = 'SET_DRAWING_BMP';
 const START_DRAWING_BMP = 'START_DRAWING_BMP';
 const CLEAR_DRAWING_BMP = 'CLEAR_DRAWING_BMP';
+const SET_EDITING_FEATURE_ID = 'SET_EDITING_FEATURE_ID';
+const CLEAR_EDITING_FEATURE_ID = 'CLEAR_EDITING_FEATURE_ID';
 
 const uuidv1 = require('uuid/v1');
 const { SHOW_NOTIFICATION } = require('../../actions/notifications');
@@ -314,6 +316,20 @@ const clearDrawingBmp = () => {
     };
 };
 
+const setEditingFeatureId = (featureId) => {
+    console.log('setEditingFeatureId', featureId);
+    return {
+        type: SET_EDITING_FEATURE_ID,
+        editingFeatureId: featureId
+    };
+};
+
+const clearEditingFeatureId = () => {
+    return {
+        type: CLEAR_EDITING_FEATURE_ID
+    };
+};
+
 const submitBmpFormSuccess = (bmp) => {
     return {
         type: SHOW_NOTIFICATION,
@@ -407,5 +423,7 @@ module.exports = {
     UPDATE_BMP_FORM, updateBmpForm,
     SET_DRAWING_BMP, setDrawingBmp,
     START_DRAWING_BMP, startDrawingBmp,
-    CLEAR_DRAWING_BMP, clearDrawingBmp
+    CLEAR_DRAWING_BMP, clearDrawingBmp,
+    SET_EDITING_FEATURE_ID, setEditingFeatureId,
+    CLEAR_EDITING_FEATURE_ID, clearEditingFeatureId
 };

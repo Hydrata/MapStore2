@@ -10,7 +10,8 @@ import {
     makeDefaultsBmpForm,
     makeExistingBmpForm,
     updateBmpForm,
-    setDrawingBmp
+    setDrawingBmp,
+    setEditingFeatureId
 } from "../actionsSwamm";
 import {setMenuGroup} from "../../ProjectManager/actionsProjectManager";
 import {
@@ -340,7 +341,7 @@ class SwammBmpFormClass extends React.Component {
                                                     className={"pull-right"}
                                                     bsStyle={"info"}
                                                     style={{opacity: "0.7"}}
-                                                    onClick={() => window.alert('not implemented yet')}>
+                                                    onClick={() => this.drawBmpStep1(this.props?.thisBmpCode + '_footprint', this.props.storedBmpForm?.footprint_fid)}>
                                                 Edit
                                                 </Button>
                                             </Col>
@@ -379,7 +380,7 @@ class SwammBmpFormClass extends React.Component {
                                                     className={"pull-right"}
                                                     bsStyle={"info"}
                                                     style={{opacity: "0.7"}}
-                                                    onClick={() => window.alert('not implemented yet')}>
+                                                    onClick={() => this.drawBmpStep1(this.props?.thisBmpCode + '_watershed', this.props.storedBmpForm?.watershed_fid)}>
                                                 Edit
                                                 </Button>
                                             </Col>
@@ -508,7 +509,7 @@ class SwammBmpFormClass extends React.Component {
                             onClick={() => {
                                 this.props.submitBmpForm(this.props.storedBmpForm, this.props.mapId);
                             }}>
-                            Calculate
+                            Save
                         </Button>
                     </Modal.Footer>
                 </Modal>
@@ -563,6 +564,7 @@ class SwammBmpFormClass extends React.Component {
         this.props.setBmpTypesVisibility(fieldValue, true);
     }
     drawBmpStep1(layerName, featureId) {
+        this.props.setEditingFeatureId(featureId);
         const targetLayer = this.props.layers.flat.filter(layer => layer.name === layerName)[0];
         this.props.setLayer(targetLayer?.id);
         this.props.featureTypeSelected('http://localhost:8080/geoserver/wfs', targetLayer?.name);
@@ -596,6 +598,7 @@ const mapDispatchToProps = ( dispatch ) => {
         clearBmpForm: () => dispatch(clearBmpForm()),
         makeDefaultsBmpForm: (bmpType) => dispatch(makeDefaultsBmpForm(bmpType)),
         setLayer: (id) => dispatch(setLayer(id)),
+        setEditingFeatureId: (featureId) => dispatch(setEditingFeatureId(featureId)),
         featureTypeSelected: (url, typeName) => dispatch(featureTypeSelected(url, typeName)),
         toggleEditMode: () => dispatch(toggleEditMode()),
         createNewFeatures: (features) => dispatch(createNewFeatures(features)),

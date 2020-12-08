@@ -15,6 +15,7 @@ import {
     toggleBmpManager,
     makeBmpForm,
     setDrawingBmp,
+    setEditingFeatureId,
     clearDrawingBmp,
     toggleBmpType,
     setBmpType,
@@ -124,6 +125,8 @@ class SwammContainer extends React.Component {
         setDrawingBmp: PropTypes.func,
         clearDrawingBmp: PropTypes.func,
         drawingBmp: PropTypes.bool,
+        setEditingFeatureId: PropTypes.func,
+        editingFeatureId: PropTypes.string,
         query: PropTypes.func,
         queryStore: PropTypes.func,
         toggleBmpType: PropTypes.func,
@@ -188,7 +191,7 @@ class SwammContainer extends React.Component {
                     onClick={() => {this.props.clickBmpManager();}}>
                     View BMPs
                 </button>
-                {this.props.storedBmpForm && !this.props.visibleBmpForm && !this.props.drawingBmp ?
+                {this.props.storedBmpForm && !this.props.visibleBmpForm && !this.props.drawingBmp && !this.props.editingFeatureId ?
                     <React.Fragment>
                         <Button
                             style={bmpProgressButtonStyle}
@@ -208,13 +211,15 @@ class SwammContainer extends React.Component {
                             Create BMPs
                         </button>
                     </React.Fragment>
-                    : this.props.drawingBmp ?
+                    : this.props.drawingBmp || this.props.editingFeatureId ?
                         <React.Fragment>
                             <Button
                                 bsStyle="success"
                                 style={bmpProgressButtonStyle}
                                 onClick={() => {
                                     this.props.saveChanges();
+                                    this.props.clearDrawingBmp();
+                                    this.props.setEditingFeatureId(null);
                                     this.props.showBmpForm();
                                 }}
                             >
@@ -226,6 +231,7 @@ class SwammContainer extends React.Component {
                                 onClick={() => {
                                     this.props.showBmpForm();
                                     this.props.setLayer(null);
+                                    this.props.clearDrawingBmp();
                                 }}
                             >
                                 Cancel Feature
@@ -453,6 +459,7 @@ const mapStateToProps = (state) => {
         visibleBmpForm: state?.swamm?.visibleBmpForm,
         storedBmpForm: state?.swamm?.storedBmpForm,
         drawingBmp: state?.swamm?.drawingBmp,
+        editingFeatureId: state?.swamm?.editingFeatureId,
         visibleBmpManager: state?.swamm?.visibleBmpManager,
         visibleSwammDataGrid: state?.swamm?.visibleSwammDataGrid,
         visibleSwammBmpChart: state?.swamm?.visibleSwammBmpChart,
@@ -476,6 +483,7 @@ const mapDispatchToProps = ( dispatch ) => {
         toggleWatersheds: () => dispatch(toggleWatersheds()),
         showBmpForm: () => dispatch(showBmpForm()),
         setLayer: (layerName) => dispatch(setLayer(layerName)),
+        setEditingFeatureId: (featureId) => dispatch(setEditingFeatureId(featureId)),
         showSwammDataGrid: () => dispatch(showSwammDataGrid()),
         showSwammBmpChart: () => dispatch(showSwammBmpChart()),
         clickBmpManager: () => {
