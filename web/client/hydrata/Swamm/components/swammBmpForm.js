@@ -10,8 +10,9 @@ import {
     makeDefaultsBmpForm,
     makeExistingBmpForm,
     updateBmpForm,
-    setDrawingBmp,
-    setEditingFeatureId
+    setDrawingBmpLayerName,
+    setEditingBmpFeatureId,
+    clearEditingBmpFeatureId
 } from "../actionsSwamm";
 import {setMenuGroup} from "../../ProjectManager/actionsProjectManager";
 import {
@@ -60,8 +61,9 @@ class SwammBmpFormClass extends React.Component {
         changeDrawingStatus: PropTypes.func,
         startDrawingFeature: PropTypes.func,
         saveChanges: PropTypes.func,
-        setDrawingBmp: PropTypes.func,
-        setEditingFeatureId: PropTypes.func,
+        setDrawingBmpLayerName: PropTypes.func,
+        setEditingBmpFeatureId: PropTypes.func,
+        clearEditingBmpFeatureId: PropTypes.func,
         layers: PropTypes.object,
         query: PropTypes.func,
         mapId: PropTypes.number,
@@ -564,7 +566,8 @@ class SwammBmpFormClass extends React.Component {
         this.props.setBmpTypesVisibility(fieldValue, true);
     }
     drawBmpStep1(layerName, featureId) {
-        this.props.setEditingFeatureId(featureId);
+        this.props.setDrawingBmpLayerName(layerName);
+        featureId ? this.props.setEditingBmpFeatureId(featureId) : this.props.clearEditingBmpFeatureId;
         const targetLayer = this.props.layers.flat.filter(layer => layer.name === layerName)[0];
         this.props.setLayer(targetLayer?.id);
         this.props.featureTypeSelected('http://localhost:8080/geoserver/wfs', targetLayer?.name);
@@ -598,7 +601,9 @@ const mapDispatchToProps = ( dispatch ) => {
         clearBmpForm: () => dispatch(clearBmpForm()),
         makeDefaultsBmpForm: (bmpType) => dispatch(makeDefaultsBmpForm(bmpType)),
         setLayer: (id) => dispatch(setLayer(id)),
-        setEditingFeatureId: (featureId) => dispatch(setEditingFeatureId(featureId)),
+        setDrawingBmpLayerName: (layerName) => dispatch(setDrawingBmpLayerName(layerName)),
+        setEditingBmpFeatureId: (featureId) => dispatch(setEditingBmpFeatureId(featureId)),
+        clearEditingBmpFeatureId: () => dispatch(clearEditingBmpFeatureId()),
         featureTypeSelected: (url, typeName) => dispatch(featureTypeSelected(url, typeName)),
         toggleEditMode: () => dispatch(toggleEditMode()),
         createNewFeatures: (features) => dispatch(createNewFeatures(features)),
@@ -607,7 +612,6 @@ const mapDispatchToProps = ( dispatch ) => {
         changeDrawingStatus: () => dispatch(changeDrawingStatus()),
         startDrawingFeature: () => dispatch(startDrawingFeature()),
         saveChanges: () => dispatch(saveChanges()),
-        setDrawingBmp: (layerName) => dispatch(setDrawingBmp(layerName)),
         purgeMapInfoResults: () => dispatch(purgeMapInfoResults()),
         makeExistingBmpForm: (bmp) => dispatch(makeExistingBmpForm(bmp))
     };

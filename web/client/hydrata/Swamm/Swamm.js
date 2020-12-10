@@ -1,10 +1,30 @@
 import { createPlugin } from '../../utils/PluginsUtils';
 import swamm from "./reducersSwamm";
 import SwammContainer from "./components/swammContainer";
-import {startBmpCreateFeatureEpic, startBmpDrawFeatureEpic, saveBmpDrawingFeatureEpic, setBmpDrawingLayerEpic, startBmpEditFeatureEpic, saveBmpEditFeatureEpic} from "./epicsSwamm";
+import {
+    startBmpCreateFeatureEpic,
+    setBmpEditingLayerEpic,
+    // startBmpCreateDrawFeatureEpic,
+    saveBmpCreateFeatureEpic,
+    setBmpDrawingLayerEpic,
+    startBmpEditFeatureEpic,
+    saveBmpEditFeatureEpic,
+    finishBmpCreateFeatureEpic,
+    autoSaveBmpFormEpic
+} from "./epicsSwamm";
 
 export default createPlugin('Swamm', {
     component: SwammContainer,
     reducers: {swamm},
-    epics: {startBmpCreateFeatureEpic, startBmpDrawFeatureEpic, saveBmpDrawingFeatureEpic, setBmpDrawingLayerEpic, startBmpEditFeatureEpic, saveBmpEditFeatureEpic}
+    epics: {
+        startBmpCreateFeatureEpic,
+        setBmpEditingLayerEpic,
+        // startBmpCreateDrawFeatureEpic,
+        saveBmpCreateFeatureEpic,
+        setBmpDrawingLayerEpic,
+        startBmpEditFeatureEpic,
+        saveBmpEditFeatureEpic,
+        finishBmpCreateFeatureEpic,
+        autoSaveBmpFormEpic
+    }
 });

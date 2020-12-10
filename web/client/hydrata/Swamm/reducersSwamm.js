@@ -25,17 +25,15 @@ import {
     UPDATE_BMP_FORM,
     SUBMIT_BMP_FORM_SUCCESS,
     SUBMIT_BMP_FORM_ERROR,
-    SET_DRAWING_BMP,
-    CLEAR_DRAWING_BMP,
-    SET_EDITING_FEATURE_ID,
-    CLEAR_EDITING_FEATURE_ID
+    SET_DRAWING_BMP_LAYER_NAME,
+    CLEAR_DRAWING_BMP_LAYER_NAME,
+    SET_EDITING_BMP_FEATURE_ID,
+    CLEAR_EDITING_BMP_FEATURE_ID
 } from "./actionsSwamm";
 import {
     SET_MENU_GROUP
 } from "../ProjectManager/actionsProjectManager";
 import { LOAD_FEATURE_INFO } from "../../actions/mapInfo";
-
-import {QUERY_RESULT} from "../../actions/wfsquery";
 
 const initialState = {
     showOutlets: true,
@@ -46,7 +44,7 @@ const initialState = {
     statuses: [],
     visibleBmpForm: false,
     creatingNewBmp: false,
-    drawingBmp: false
+    drawingBmpLayerName: false
 };
 
 export default ( state = initialState, action) => {
@@ -301,62 +299,70 @@ export default ( state = initialState, action) => {
                 ...action.kv
             }
         };
-    case QUERY_RESULT:
-        if (action.reason === 'queryGetNewBmpId') {
-            console.log('reducer queryGetNewBmpId got action: ', action);
-            let queryGetNewBmpId = null;
-            let shapeId = null;
-            const ids = action.result.features.map(feature => feature.id);
-            // TODO: It would be much better to get this Id from the WFS response XML,
-            //  rather than assume it's the largest one.
-            queryGetNewBmpId = ids.pop();
-            console.log('reducer queryGetNewBmpId: ', queryGetNewBmpId);
-            switch (queryGetNewBmpId.split("_")[3].split(".")[0]) {
-            case "outlet":
-                shapeId = {outlet_fid: queryGetNewBmpId};
-                break;
-            case "footprint":
-                shapeId = {footprint_fid: queryGetNewBmpId};
-                break;
-            case "watershed":
-                shapeId = {watershed_fid: queryGetNewBmpId};
-                break;
-            default:
-                shapeId = {};
-            }
-            console.log('reducer shapeId: ', shapeId);
-            return {
-                ...state,
-                storedBmpForm: {
-                    ...state.storedBmpForm,
-                    ...shapeId
-                }
-            };
+    // case CREATE_BMP_FEATURE_ID:
+    //     return {
+    //         ...state,
+    //         storedBmpForm: {
+    //             ...state.storedBmpForm,
+    //             ...action.shapeId
+    //         }
+    //     };
+    // case QUERY_RESULT:
+    //     if (action.reason === 'queryGetNewBmpId') {
+    //         console.log('reducer queryGetNewBmpId got action: ', action);
+    //         let queryGetNewBmpId = null;
+    //         let shapeId = null;
+    //         const ids = action.result.features.map(feature => feature.id);
+    //         // TODO: It would be much better to get this Id from the WFS response XML,
+    //         //  rather than assume it's the largest one.
+    //         queryGetNewBmpId = ids.pop();
+    //         console.log('reducer queryGetNewBmpId: ', queryGetNewBmpId);
+    //         switch (queryGetNewBmpId.split("_")[3].split(".")[0]) {
+    //         case "outlet":
+    //             shapeId = {outlet_fid: queryGetNewBmpId};
+    //             break;
+    //         case "footprint":
+    //             shapeId = {footprint_fid: queryGetNewBmpId};
+    //             break;
+    //         case "watershed":
+    //             shapeId = {watershed_fid: queryGetNewBmpId};
+    //             break;
+    //         default:
+    //             shapeId = {};
+    //         }
+    //         console.log('reducer shapeId: ', shapeId);
+    //         return {
+    //             ...state,
+    //             storedBmpForm: {
+    //                 ...state.storedBmpForm,
+    //                 ...shapeId
+    //             }
+    //         };
+    //     }
+    //     return state;
+    case SET_DRAWING_BMP_LAYER_NAME:
+        let drawingBmpLayerName = false;
+        if (action.drawingBmpLayerName !== state.drawingBmpLayerName) {
+            drawingBmpLayerName = action.drawingBmpLayerName;
         }
-        return state;
-    case SET_DRAWING_BMP:
-        let drawingBmp = false;
-        if (action.layerName !== state.drawingBmp) {
-            drawingBmp = action.layerName;
-        }
         return {
             ...state,
-            drawingBmp: drawingBmp
+            drawingBmpLayerName: drawingBmpLayerName
         };
-    case CLEAR_DRAWING_BMP:
+    case CLEAR_DRAWING_BMP_LAYER_NAME:
         return {
             ...state,
-            drawingBmp: null
+            drawingBmpLayerName: null
         };
-    case SET_EDITING_FEATURE_ID:
+    case SET_EDITING_BMP_FEATURE_ID:
         return {
             ...state,
-            editingFeatureId: action.editingFeatureId
+            editingBmpFeatureId: action.editingBmpFeatureId
         };
-    case CLEAR_EDITING_FEATURE_ID:
+    case CLEAR_EDITING_BMP_FEATURE_ID:
         return {
             ...state,
-            editingFeatureId: null
+            editingBmpFeatureId: null
         };
     default:
         return state;

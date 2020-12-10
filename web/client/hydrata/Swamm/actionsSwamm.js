@@ -40,11 +40,12 @@ const CLEAR_BMP_FORM = 'CLEAR_BMP_FORM';
 const MAKE_DEFAULTS_BMP_FORM = 'MAKE_DEFAULTS_BMP_FORM';
 const MAKE_EXISTING_BMP_FORM = 'MAKE_EXISTING_BMP_FORM';
 const UPDATE_BMP_FORM = 'UPDATE_BMP_FORM';
-const SET_DRAWING_BMP = 'SET_DRAWING_BMP';
+const SET_DRAWING_BMP_LAYER_NAME = 'SET_DRAWING_BMP_LAYER_NAME';
 const START_DRAWING_BMP = 'START_DRAWING_BMP';
-const CLEAR_DRAWING_BMP = 'CLEAR_DRAWING_BMP';
-const SET_EDITING_FEATURE_ID = 'SET_EDITING_FEATURE_ID';
-const CLEAR_EDITING_FEATURE_ID = 'CLEAR_EDITING_FEATURE_ID';
+const CLEAR_DRAWING_BMP_LAYER_NAME = 'CLEAR_DRAWING_BMP_LAYER_NAME';
+const CREATE_BMP_FEATURE_ID = 'CREATE_BMP_FEATURE_ID';
+const SET_EDITING_BMP_FEATURE_ID = 'SET_EDITING_BMP_FEATURE_ID';
+const CLEAR_EDITING_BMP_FEATURE_ID = 'CLEAR_EDITING_BMP_FEATURE_ID';
 
 const uuidv1 = require('uuid/v1');
 const { SHOW_NOTIFICATION } = require('../../actions/notifications');
@@ -303,30 +304,60 @@ const startDrawingBmp = () => {
     };
 };
 
-const setDrawingBmp = (layerName) => {
+const setDrawingBmpLayerName = (layerName) => {
+    console.log('setDrawingBmpLayerName', layerName);
     return {
-        type: SET_DRAWING_BMP,
-        layerName: layerName
+        type: SET_DRAWING_BMP_LAYER_NAME,
+        drawingBmpLayerName: layerName
     };
 };
 
-const clearDrawingBmp = () => {
+const clearDrawingBmpLayerName = () => {
     return {
-        type: CLEAR_DRAWING_BMP
+        type: CLEAR_DRAWING_BMP_LAYER_NAME
     };
 };
 
-const setEditingFeatureId = (featureId) => {
-    console.log('setEditingFeatureId', featureId);
+const setEditingBmpFeatureId = (featureId) => {
+    console.log('setEditingBmpFeatureId', featureId);
     return {
-        type: SET_EDITING_FEATURE_ID,
-        editingFeatureId: featureId
+        type: SET_EDITING_BMP_FEATURE_ID,
+        editingBmpFeatureId: featureId
     };
 };
 
-const clearEditingFeatureId = () => {
+const createBmpFeatureId = (action) => {
+    console.log('createBmpFeatureId', action);
+    let queryGetNewBmpId = null;
+    let shapeId = null;
+    const ids = action.result.features.map(feature => feature.id);
+    // TODO: It would be much better to get this Id from the WFS response XML,
+    //  rather than assume it's the largest one.
+    queryGetNewBmpId = ids.pop();
+    console.log('createBmpFeatureId queryGetNewBmpId: ', queryGetNewBmpId);
+    switch (queryGetNewBmpId.split("_")[3].split(".")[0]) {
+    case "outlet":
+        shapeId = {outlet_fid: queryGetNewBmpId};
+        break;
+    case "footprint":
+        shapeId = {footprint_fid: queryGetNewBmpId};
+        break;
+    case "watershed":
+        shapeId = {watershed_fid: queryGetNewBmpId};
+        break;
+    default:
+        shapeId = {};
+    }
+    console.log('createBmpFeatureId shapeId: ', shapeId);
     return {
-        type: CLEAR_EDITING_FEATURE_ID
+        type: UPDATE_BMP_FORM,
+        kv: shapeId
+    };
+};
+
+const clearEditingBmpFeatureId = () => {
+    return {
+        type: CLEAR_EDITING_BMP_FEATURE_ID
     };
 };
 
@@ -421,9 +452,10 @@ module.exports = {
     MAKE_DEFAULTS_BMP_FORM, makeDefaultsBmpForm,
     MAKE_EXISTING_BMP_FORM, makeExistingBmpForm,
     UPDATE_BMP_FORM, updateBmpForm,
-    SET_DRAWING_BMP, setDrawingBmp,
     START_DRAWING_BMP, startDrawingBmp,
-    CLEAR_DRAWING_BMP, clearDrawingBmp,
-    SET_EDITING_FEATURE_ID, setEditingFeatureId,
-    CLEAR_EDITING_FEATURE_ID, clearEditingFeatureId
+    SET_DRAWING_BMP_LAYER_NAME, setDrawingBmpLayerName,
+    CLEAR_DRAWING_BMP_LAYER_NAME, clearDrawingBmpLayerName,
+    CREATE_BMP_FEATURE_ID, createBmpFeatureId,
+    SET_EDITING_BMP_FEATURE_ID, setEditingBmpFeatureId,
+    CLEAR_EDITING_BMP_FEATURE_ID, clearEditingBmpFeatureId
 };

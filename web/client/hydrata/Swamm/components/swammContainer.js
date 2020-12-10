@@ -14,9 +14,8 @@ import {
     showSwammBmpChart,
     toggleBmpManager,
     makeBmpForm,
-    setDrawingBmp,
-    setEditingFeatureId,
-    clearDrawingBmp,
+    setEditingBmpFeatureId,
+    clearDrawingBmpLayerName,
     toggleBmpType,
     setBmpType,
     showSwammDataGrid
@@ -27,7 +26,10 @@ import {SwammDataGrid} from "./swammDataGrid";
 import {changeLayerProperties} from "../../../actions/layers";
 import {setMenuGroup} from "../../ProjectManager/actionsProjectManager";
 import {bmpByUniqueNameSelector, orgSelector} from "../selectorsSwamm";
-import {setLayer, saveChanges} from "../../../actions/featuregrid";
+import {setLayer, saveChanges, toggleViewMode} from "../../../actions/featuregrid";
+import {
+    drawStopped
+} from "../../../actions/draw";
 import {query} from "../../../actions/wfsquery";
 import {SwammBmpChart} from "./swammBmpChart";
 
@@ -122,11 +124,11 @@ class SwammContainer extends React.Component {
         showMenuGroup: PropTypes.bool,
         setMenuGroup: PropTypes.func,
         saveChanges: PropTypes.func,
-        setDrawingBmp: PropTypes.func,
-        clearDrawingBmp: PropTypes.func,
-        drawingBmp: PropTypes.bool,
-        setEditingFeatureId: PropTypes.func,
-        editingFeatureId: PropTypes.string,
+        clearDrawingBmpLayerName: PropTypes.func,
+        clearEditingBmpFeatureId: PropTypes.func,
+        drawingBmpLayerName: PropTypes.bool,
+        setEditingBmpFeatureId: PropTypes.func,
+        editingBmpFeatureId: PropTypes.string,
         query: PropTypes.func,
         queryStore: PropTypes.func,
         toggleBmpType: PropTypes.func,
@@ -140,7 +142,9 @@ class SwammContainer extends React.Component {
         showSwammBmpChart: PropTypes.func,
         clickBmpManager: PropTypes.func,
         bmpByUniqueNameSelector: PropTypes.func,
-        setLayer: PropTypes.func
+        setLayer: PropTypes.func,
+        toggleViewMode: PropTypes.func,
+        drawStopped: PropTypes.func
     };
 
     static defaultProps = {}
@@ -191,7 +195,7 @@ class SwammContainer extends React.Component {
                     onClick={() => {this.props.clickBmpManager();}}>
                     View BMPs
                 </button>
-                {this.props.storedBmpForm && !this.props.visibleBmpForm && !this.props.drawingBmp && !this.props.editingFeatureId ?
+                {this.props.storedBmpForm && !this.props.visibleBmpForm && !this.props.drawingBmpLayerName && !this.props.editingBmpFeatureId ?
                     <React.Fragment>
                         <Button
                             style={bmpProgressButtonStyle}
@@ -211,15 +215,13 @@ class SwammContainer extends React.Component {
                             Create BMPs
                         </button>
                     </React.Fragment>
-                    : this.props.drawingBmp || this.props.editingFeatureId ?
+                    : this.props.drawingBmpLayerName || this.props.editingBmpFeatureId ?
                         <React.Fragment>
                             <Button
                                 bsStyle="success"
                                 style={bmpProgressButtonStyle}
                                 onClick={() => {
                                     this.props.saveChanges();
-                                    this.props.clearDrawingBmp();
-                                    this.props.setEditingFeatureId(null);
                                     this.props.showBmpForm();
                                 }}
                             >
@@ -231,7 +233,10 @@ class SwammContainer extends React.Component {
                                 onClick={() => {
                                     this.props.showBmpForm();
                                     this.props.setLayer(null);
-                                    this.props.clearDrawingBmp();
+                                    this.props.toggleViewMode();
+                                    this.props.drawStopped();
+                                    this.props.clearDrawingBmpLayerName();
+                                    this.props.clearEditingBmpFeatureId();
                                 }}
                             >
                                 Cancel Feature
@@ -458,8 +463,8 @@ const mapStateToProps = (state) => {
         layers: state?.layers,
         visibleBmpForm: state?.swamm?.visibleBmpForm,
         storedBmpForm: state?.swamm?.storedBmpForm,
-        drawingBmp: state?.swamm?.drawingBmp,
-        editingFeatureId: state?.swamm?.editingFeatureId,
+        drawingBmpLayerName: state?.swamm?.drawingBmpLayerName,
+        editingBmpFeatureId: state?.swamm?.editingBmpFeatureId,
         visibleBmpManager: state?.swamm?.visibleBmpManager,
         visibleSwammDataGrid: state?.swamm?.visibleSwammDataGrid,
         visibleSwammBmpChart: state?.swamm?.visibleSwammBmpChart,
@@ -483,7 +488,7 @@ const mapDispatchToProps = ( dispatch ) => {
         toggleWatersheds: () => dispatch(toggleWatersheds()),
         showBmpForm: () => dispatch(showBmpForm()),
         setLayer: (layerName) => dispatch(setLayer(layerName)),
-        setEditingFeatureId: (featureId) => dispatch(setEditingFeatureId(featureId)),
+        setEditingBmpFeatureId: (featureId) => dispatch(setEditingBmpFeatureId(featureId)),
         showSwammDataGrid: () => dispatch(showSwammDataGrid()),
         showSwammBmpChart: () => dispatch(showSwammBmpChart()),
         clickBmpManager: () => {
@@ -493,11 +498,12 @@ const mapDispatchToProps = ( dispatch ) => {
         setMenuGroup: (menuGroup) => dispatch(setMenuGroup(menuGroup)),
         makeBmpForm: (bmpTypeId) => dispatch(makeBmpForm(bmpTypeId)),
         saveChanges: () => dispatch(saveChanges()),
-        setDrawingBmp: (layerName) => dispatch(setDrawingBmp(layerName)),
-        clearDrawingBmp: () => dispatch(clearDrawingBmp()),
+        clearDrawingBmpLayerName: () => dispatch(clearDrawingBmpLayerName()),
         query: (url, filterObj, queryOptions, reason) => dispatch(query(url, filterObj, queryOptions, reason)),
         toggleBmpType: (bmpType) => dispatch(toggleBmpType(bmpType)),
-        setBmpType: (bmpType, isVisible) => dispatch(setBmpType(bmpType, isVisible))
+        setBmpType: (bmpType, isVisible) => dispatch(setBmpType(bmpType, isVisible)),
+        toggleViewMode: () => dispatch(toggleViewMode()),
+        drawStopped: () => dispatch(drawStopped())
     };
 };
 
