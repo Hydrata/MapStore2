@@ -1,6 +1,9 @@
 import React from "react";
 import {connect} from "react-redux";
 import {changeLayerProperties} from "../../../actions/layers";
+import "../projectManager.css";
+const PropTypes = require('prop-types');
+const Slider = require('react-nouislider');
 
 const rowStyle = {
     borderBottom: "1px solid #ffffffad",
@@ -28,6 +31,11 @@ const textStyle = {
 };
 
 class MenuDatasetRowClass extends React.Component {
+    static propTypes = {
+        thisLayer: PropTypes.array,
+        dataset: PropTypes.array,
+        toggleLayer: PropTypes.func
+    };
 
     constructor(props) {
         super(props);
@@ -55,6 +63,19 @@ class MenuDatasetRowClass extends React.Component {
                         onClick={() => {this.props.toggleLayer(this.props.thisLayer?.id, this.props.thisLayer?.visibility);}}
                     />
                     <div className="h5" style={textStyle}>{this.props.dataset?.layer_title}</div>
+                </div>
+                <div className="mapstore-slider dataset-transparency with-tooltip">
+                    <Slider
+                        step={1}
+                        start={[100]}
+                        range={{
+                            min: 0,
+                            max: 100
+                        }}
+                        onChange={(values) => {
+                            console.log('slider:  ', values);
+                        }}
+                    />
                 </div>
             </div>
         );

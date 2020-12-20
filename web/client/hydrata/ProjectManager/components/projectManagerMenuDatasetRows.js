@@ -2,6 +2,7 @@ import React from "react";
 import {setMenuGroup} from "../actionsProjectManager";
 import {connect} from "react-redux";
 import {MenuDatasetRow} from "./projectManagerMenuDatasetRow";
+const PropTypes = require('prop-types');
 
 const rowsStyle = {
     borderTop: "1px solid #ffffffad"
@@ -11,6 +12,9 @@ const rowsStyle = {
 const openMenuGroupSelector = (state) => state?.projectManager?.openMenuGroup;
 
 class MenuDatasetRowsClass extends React.Component {
+    static propTypes = {
+        menuDatasets: PropTypes.array
+    };
 
     constructor(props) {
         super(props);
