@@ -34,7 +34,8 @@ class MenuDatasetRowClass extends React.Component {
     static propTypes = {
         thisLayer: PropTypes.array,
         dataset: PropTypes.array,
-        toggleLayer: PropTypes.func
+        toggleLayer: PropTypes.func,
+        setOpacity: PropTypes.func
     };
 
     constructor(props) {
@@ -64,16 +65,16 @@ class MenuDatasetRowClass extends React.Component {
                     />
                     <div className="h5" style={textStyle}>{this.props.dataset?.layer_title}</div>
                 </div>
-                <div className="mapstore-slider dataset-transparency with-tooltip">
+                <div className="mapstore-slider dataset-transparency with-tooltip" onClick={(e) => { e.stopPropagation(); }}>
                     <Slider
                         step={1}
-                        start={[100]}
+                        start={this.props.thisLayer?.opacity * 100}
                         range={{
                             min: 0,
                             max: 100
                         }}
                         onChange={(values) => {
-                            console.log('slider:  ', values);
+                            this.props.setOpacity(this.props.thisLayer?.id, values);
                         }}
                     />
                 </div>
@@ -92,7 +93,8 @@ const mapStateToProps = (state, props) => {
 
 const mapDispatchToProps = ( dispatch ) => {
     return {
-        toggleLayer: (layer, isVisible) => dispatch(changeLayerProperties(layer, {visibility: !isVisible}))
+        toggleLayer: (layer, isVisible) => dispatch(changeLayerProperties(layer, {visibility: !isVisible})),
+        setOpacity: (layer, value) => dispatch(changeLayerProperties(layer, {opacity: parseFloat(value) * 0.01}))
     };
 };
 
