@@ -33,9 +33,11 @@ const textStyle = {
 class MenuDatasetRowClass extends React.Component {
     static propTypes = {
         thisLayer: PropTypes.array,
-        dataset: PropTypes.array,
+        dataset: PropTypes.object,
         toggleLayer: PropTypes.func,
-        setOpacity: PropTypes.func
+        setOpacity: PropTypes.func,
+        displayTitle: PropTypes.string,
+        layer: PropTypes.object
     };
 
     constructor(props) {
@@ -46,7 +48,7 @@ class MenuDatasetRowClass extends React.Component {
     }
 
     render() {
-        if (!this.props.dataset) {
+        if (!this.props.thisLayer) {
             return (
                 <div className={"row"} style={{...rowStyle}}>
                     <div className={"btn-group inline pull-left"} style={{...btnGroupStyle}}>
@@ -63,7 +65,7 @@ class MenuDatasetRowClass extends React.Component {
                         style={{...glyphStyle, "color": this.props.thisLayer?.visibility ? "limegreen" : "red"}}
                         onClick={() => {this.props.toggleLayer(this.props.thisLayer?.id, this.props.thisLayer?.visibility);}}
                     />
-                    <div className="h5" style={textStyle}>{this.props.dataset?.layer_title}</div>
+                    <div className="h5" style={textStyle}>{this.props.displayTitle}</div>
                 </div>
                 <div className="mapstore-slider dataset-transparency with-tooltip" onClick={(e) => { e.stopPropagation(); }}>
                     <Slider
@@ -83,11 +85,13 @@ class MenuDatasetRowClass extends React.Component {
     }
 }
 
-const mapStateToProps = (state, props) => {
+const mapStateToProps = (state, ownProps) => {
+    console.log('ownProps: ', ownProps);
     return {
-        thisLayer: state?.layers?.flat.filter((layer) => {
-            return layer?.id === props.dataset?.layer;
-        })[0]
+        thisLayer: ownProps.layer ? ownProps.layer : state?.layers?.flat.filter((layer) => {
+            return layer?.id === ownProps.dataset?.layer;
+        })[0],
+        displayTitle: ownProps.layer ? ownProps?.layer?.title : ownProps?.dataset?.layer_title
     };
 };
 

@@ -3,23 +3,41 @@ import { connect } from 'react-redux';
 const PropTypes = require('prop-types');
 const { mapIdSelector } = require('../../../selectors/map');
 import {fetchProjectManagerConfig, setMenuGroup} from "../actionsProjectManager";
-import { MenuPanel } from "../components/projectMangerMenuPanel";
+import {MenuDatasetRows} from './projectManagerMenuDatasetRows';
 import LegendPanel from "./legendPanel";
 
 // eslint-disable-next-line camelcase
 const menuGroupsSelector = (state) => state?.projectManager?.data?.map_store_menu_groups || [];
 
-const buttonStyle = {
+const panelStyle = {
     position: "absolute",
     zIndex: 1021,
-    top: 11,
-    width: "135px",
-    backgroundColor: "rgba(0,60,136,0.5)",
+    top: "85px",
+    left: "20px",
+    minWidth: "400px",
+    backgroundColor: "rgba(0,60,136,0.6)",
     borderColor: "rgb(255 255 255 / 70%)",
     borderWidth: "2px",
     padding: "5px 10px",
     fontSize: "12px",
     lineHeight: "1.5",
+    borderRadius: "4px",
+    color: "white",
+    textAlign: "center"
+};
+
+const buttonStyle = {
+    position: "absolute",
+    zIndex: 1021,
+    top: 11,
+    width: "85px",
+    height: "60px",
+    backgroundColor: "rgba(0,60,136,0.5)",
+    borderColor: "rgb(255 255 255 / 70%)",
+    borderWidth: "2px",
+    padding: "3px 5px",
+    fontSize: "12px",
+    lineHeight: "1.3",
     borderRadius: "4px",
     color: "white",
     textAlign: "center"
@@ -34,14 +52,14 @@ class ProjectManagerContainer extends React.Component {
         projectTitle: PropTypes.string,
         isFetching: PropTypes.bool,
         hasPmData: PropTypes.object,
-        openMenuGroup: PropTypes.object,
+        openMenuGroup: PropTypes.string,
         setMenuGroup: PropTypes.func,
         menu: PropTypes.object
     };
 
     static defaultProps = {
         fetchProjectManagerConfig: () => {}
-    }
+    };
 
     constructor(props) {
         super(props);
@@ -65,12 +83,18 @@ class ProjectManagerContainer extends React.Component {
             <div id={"project-manager-container"}>
                 <div>
                     <ul className="menu-groups">
+                        <button
+                            key={'basemaps'}
+                            style={{...buttonStyle, left: 20}}
+                            onClick={() => {this.props.setMenuGroup('basemaps');}}>
+                            BaseMaps
+                        </button>
                         {this.props.menuGroups && this.props.menuGroups.length && this.props.menuGroups.map(
                             (menu, index) => {
                                 return (
                                     <button
                                         key={menu.title}
-                                        style={{...buttonStyle, left: index * 150 + 20}}
+                                        style={{...buttonStyle, left: (index + 1) * 100 + 20}}
                                         onClick={() => {this.props.setMenuGroup(menu);}}>
                                         {menu.title}
                                     </button>
@@ -79,7 +103,13 @@ class ProjectManagerContainer extends React.Component {
                         }
                     </ul>
                 </div>
-                {this.props.openMenuGroup ? <MenuPanel menuGroup={this.props.openMenuGroup}/> : null}
+                {
+                    this.props.openMenuGroup ?
+                        <div style={{...panelStyle}}>
+                            <MenuDatasetRows/>
+                        </div> :
+                        null
+                }
                 <LegendPanel/>
             </div>
         );

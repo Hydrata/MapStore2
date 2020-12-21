@@ -22,7 +22,7 @@
 
 .mapstore-slider.with-tooltip.dataset-transparency .noUi-target.noUi-horizontal .noUi-base .noUi-origin .noUi-handle {
     width: 20px;
-    left: 0;
+    left: -10px;
     border: 2px solid #dddddd;
     border-radius: 10px;
     cursor: default;

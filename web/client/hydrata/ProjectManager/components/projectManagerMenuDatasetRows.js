@@ -13,7 +13,9 @@ const openMenuGroupSelector = (state) => state?.projectManager?.openMenuGroup;
 
 class MenuDatasetRowsClass extends React.Component {
     static propTypes = {
-        menuDatasets: PropTypes.array
+        menuDatasets: PropTypes.array,
+        openMenuGroup: PropTypes.string,
+        baseMaps: PropTypes.array
     };
 
     constructor(props) {
@@ -21,6 +23,15 @@ class MenuDatasetRowsClass extends React.Component {
     }
 
     render() {
+        if (this.props.openMenuGroup === 'basemaps') {
+            return (
+                <div style={rowsStyle}>
+                    {this.props.baseMaps.map((layer) => (
+                        <MenuDatasetRow layer={layer}/>
+                    ))}
+                </div>
+            );
+        }
         if (this.props.menuDatasets.length === 0) {
             return (
                 <div style={rowsStyle}>
@@ -44,6 +55,9 @@ const mapStateToProps = (state) => {
         openMenuGroup: openMenuGroupSelector(state),
         menuDatasets: state?.projectManager?.data?.dataset_set.filter((dataset) => {
             return dataset?.mapstore_menu_group?.id_label === openMenuGroupSelector(state)?.id_label;
+        }),
+        baseMaps: state?.layers?.flat.filter((layer) => {
+            return layer.group === 'background';
         })
     };
 };
