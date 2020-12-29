@@ -296,6 +296,42 @@ class SwammContainer extends React.Component {
                 </button>
                 {this.props.visibleBmpManager ?
                     <div style={{...panelStyle}} id="swamm-bmp-manager">
+                        <hr style={{marginTop: "0"}}/>
+                        <div className="btn-group" role="group" style={{display: "block", margin: "auto"}}>
+                            <button
+                                type="button"
+                                className="btn btn-xs btn-info"
+                                style={this.props.showOutlets ? filterButtonStyle : {
+                                    ...filterButtonStyle,
+                                    "background": "#5609189F"
+                                }}
+                                onClick={() => this.toggleOutlets()}
+                            >
+                                Show Outlets
+                            </button>
+                            <button
+                                type="button"
+                                className="btn btn-xs btn-info"
+                                style={this.props.showFootprints ? filterButtonStyle : {
+                                    ...filterButtonStyle,
+                                    "background": "#5609189F"
+                                }}
+                                onClick={() => this.toggleFootprints()}
+                            >
+                                Show Footprints
+                            </button>
+                            <button
+                                type="button"
+                                className="btn btn-xs btn-info"
+                                style={this.props.showWatersheds ? filterButtonStyle : {
+                                    ...filterButtonStyle,
+                                    "background": "#5609189F"
+                                }}
+                                onClick={() => this.toggleWatersheds()}
+                            >
+                                Show Watersheds
+                            </button>
+                        </div>
                         <table className="table" style={{tableLayout: "fixed", marginBottom: "0"}}>
                             <thead>
                                 <tr>
@@ -324,42 +360,6 @@ class SwammContainer extends React.Component {
                                 ))}
                             </tbody>
                         </table>
-                        <hr style={{marginTop: "0"}}/>
-                        <div className="btn-group" role="group" style={{display: "block", margin: "auto"}}>
-                            <button
-                                type="button"
-                                className="btn btn-xs btn-info"
-                                style={this.props.showOutlets ? filterButtonStyle : {
-                                    ...filterButtonStyle,
-                                    "background": "#5609189F"
-                                }}
-                                onClick={() => this.toggleOutlets()}
-                            >
-                                Outlets
-                            </button>
-                            <button
-                                type="button"
-                                className="btn btn-xs btn-info"
-                                style={this.props.showFootprints ? filterButtonStyle : {
-                                    ...filterButtonStyle,
-                                    "background": "#5609189F"
-                                }}
-                                onClick={() => this.toggleFootprints()}
-                            >
-                                Footprints
-                            </button>
-                            <button
-                                type="button"
-                                className="btn btn-xs btn-info"
-                                style={this.props.showWatersheds ? filterButtonStyle : {
-                                    ...filterButtonStyle,
-                                    "background": "#5609189F"
-                                }}
-                                onClick={() => this.toggleWatersheds()}
-                            >
-                                Watersheds
-                            </button>
-                        </div>
                     </div>
                     : null
                 }
