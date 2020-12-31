@@ -4,6 +4,7 @@ const FETCH_PROJECT_MANAGER_CONFIG = 'FETCH_PROJECT_MANAGER_CONFIG';
 const FETCH_PROJECT_MANAGER_CONFIG_ERROR = 'FETCH_PROJECT_MANAGER_CONFIG_ERROR';
 const FETCH_PROJECT_MANAGER_CONFIG_SUCCESS = 'FETCH_PROJECT_MANAGER_CONFIG_SUCCESS';
 const SET_MENU_GROUP = 'SET_MENU_GROUP';
+const SET_ORG_VISIBILITY = 'SET_ORG_VISIBILITY';
 
 const fetchProjectManagerConfigSuccess = (config) => {
     return {
@@ -42,9 +43,22 @@ function setMenuGroup(menuGroup) {
     };
 }
 
+const setOrgVisibility = (org, isVisible) => {
+    console.log('setOrgVisibility:', org, isVisible);
+    return (dispatch) => {
+        dispatch({
+            type: 'SET_ORG_VISIBILITY',
+            org: org,
+            isVisible: isVisible
+        });
+    };
+};
+
+
 module.exports = {
     FETCH_PROJECT_MANAGER_CONFIG, fetchProjectManagerConfig,
     FETCH_PROJECT_MANAGER_CONFIG_ERROR, fetchProjectManagerConfigError,
     FETCH_PROJECT_MANAGER_CONFIG_SUCCESS, fetchProjectManagerConfigSuccess,
-    SET_MENU_GROUP, setMenuGroup
+    SET_MENU_GROUP, setMenuGroup,
+    SET_ORG_VISIBILITY, setOrgVisibility
 };

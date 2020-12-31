@@ -1,4 +1,9 @@
-import { FETCH_PROJECT_MANAGER_CONFIG_SUCCESS, FETCH_PROJECT_MANAGER_CONFIG, SET_MENU_GROUP } from "./actionsProjectManager";
+import {
+    FETCH_PROJECT_MANAGER_CONFIG_SUCCESS,
+    FETCH_PROJECT_MANAGER_CONFIG,
+    SET_MENU_GROUP,
+    SET_ORG_VISIBILITY
+} from "./actionsProjectManager";
 
 export default ( state = {}, action) => {
     switch (action.type) {
@@ -23,6 +28,22 @@ export default ( state = {}, action) => {
         return {
             ...state,
             openMenuGroup: action.payload
+        };
+    case SET_ORG_VISIBILITY:
+        return {
+            ...state,
+            data: {
+                ...state.data,
+                organisations: state?.data?.organisations?.map(org => {
+                    if (org.id === action.org.id) {
+                        return {
+                            ...org,
+                            visibility: action.isVisible
+                        };
+                    }
+                    return org;
+                })
+            }
         };
     default:
         return state;

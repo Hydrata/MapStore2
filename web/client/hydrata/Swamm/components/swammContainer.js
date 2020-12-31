@@ -24,8 +24,11 @@ import {SwammBmpToggler} from "./swammBmpToggler";
 import {SwammBmpForm} from "./swammBmpForm";
 import {SwammDataGrid} from "./swammDataGrid";
 import {changeLayerProperties} from "../../../actions/layers";
-import {setMenuGroup} from "../../ProjectManager/actionsProjectManager";
-import {bmpByUniqueNameSelector, orgSelector} from "../selectorsSwamm";
+import {
+    setMenuGroup,
+    setOrgVisibility
+} from "../../ProjectManager/actionsProjectManager";
+import {bmpByUniqueNameSelector} from "../selectorsSwamm";
 import {setLayer, saveChanges, toggleViewMode} from "../../../actions/featuregrid";
 import {
     drawStopped
@@ -48,6 +51,15 @@ const buttonStyle = {
     borderRadius: "4px",
     color: "white",
     textAlign: "center"
+};
+
+const glyphStyle = {
+    background: "#ffffff",
+    borderRadius: "3px",
+    display: "block",
+    margin: "auto",
+    color: "limegreen",
+    fontSize: "10px"
 };
 
 const panelStyle = {
@@ -105,7 +117,7 @@ class SwammContainer extends React.Component {
         statuses: PropTypes.array,
         swammData: PropTypes.array,
         mapId: PropTypes.number,
-        orgs: PropTypes.array,
+        organisations: PropTypes.array,
         bmpUniqueNames: PropTypes.array,
         bmpTypes: PropTypes.array,
         allBmps: PropTypes.array,
@@ -134,6 +146,7 @@ class SwammContainer extends React.Component {
         queryStore: PropTypes.func,
         toggleBmpType: PropTypes.func,
         setBmpType: PropTypes.func,
+        setOrgVisibility: PropTypes.func,
         filters: PropTypes.object,
         fetchingBmps: PropTypes.bool,
         visibleBmpManager: PropTypes.bool,
@@ -296,7 +309,6 @@ class SwammContainer extends React.Component {
                 </button>
                 {this.props.visibleBmpManager ?
                     <div style={{...panelStyle}} id="swamm-bmp-manager">
-                        <hr style={{marginTop: "0"}}/>
                         <div className="btn-group" role="group" style={{display: "block", margin: "auto"}}>
                             <button
                                 type="button"
@@ -336,9 +348,14 @@ class SwammContainer extends React.Component {
                             <thead>
                                 <tr>
                                     <th style={tableHeaderStyleTypes}>BMP Type</th>
-                                    {this.props.orgs.map((bmpType) => (
-                                        <th key={bmpType.id} style={tableHeaderStyleOrgs}>
-                                            {bmpType.name}
+                                    {this.props.organisations.map((org) => (
+                                        <th key={org.id} style={tableHeaderStyleOrgs}>
+                                            {org.name}
+                                            <button
+                                                className={"btn glyphicon " + (org.visibility ? "glyphicon-ok" : "glyphicon-remove")}
+                                                style={{...glyphStyle, "color": org.visibility ? "limegreen" : "red"}}
+                                                onClick={() => this.setBmpOrgsVisibility(org.name, !org.visibility)}
+                                            />
                                         </th>
                                     ))}
                                 </tr>
@@ -349,7 +366,7 @@ class SwammContainer extends React.Component {
                                         <td className="h5" style={{"padding": "3px"}}>
                                             {bmpName.name}
                                         </td>
-                                        {this.props.orgs.map((org) => (
+                                        {this.props.organisations.map((org) => (
                                             <td key={org.id}>
                                                 <SwammBmpToggler
                                                     bmpCode={this.props.projectCode + '_' + org.code + '_' + bmpName.code.slice(bmpName.code.length - 3)}
@@ -397,7 +414,7 @@ class SwammContainer extends React.Component {
                 }
             });
         });
-    }
+    };
 
     toggleFootprints = () => {
         this.props.toggleFootprints();
@@ -410,7 +427,7 @@ class SwammContainer extends React.Component {
                 }
             });
         });
-    }
+    };
 
     toggleWatersheds = () => {
         this.props.toggleWatersheds();
@@ -423,7 +440,7 @@ class SwammContainer extends React.Component {
                 }
             });
         });
-    }
+    };
 
     setBmpTypesVisibility = (bmpTypeName, visible) => {
         if (!this.props.showOutlets) {this.toggleOutlets();}
@@ -446,13 +463,42 @@ class SwammContainer extends React.Component {
                 this.props.filters.showWatersheds ? this.props.toggleLayer(watershedLayer.id, true) : this.props.toggleLayer(watershedLayer.id, false);
             }
         });
+    };
+
+    setBmpOrgsVisibility = (bmpOrgName, visible) => {
+        this.props.organisations.filter((orgToTest) => {
+            return orgToTest.name === bmpOrgName;
+        }).map((orgToSet) => {
+            this.props.setOrgVisibility(orgToSet, visible);
+        });
+        this.props.bmpTypes.filter(
+            (bmpTypeToTest) => {
+                return bmpOrgName === bmpTypeToTest.organisation.name;
+            }
+        ).map((bmpTypeToSet) => {
+            const outletLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpTypeToSet.full_code + '_outlet';})[0];
+            const footprintLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpTypeToSet.full_code + '_footprint';})[0];
+            const watershedLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpTypeToSet.full_code + '_watershed';})[0];
+            this.props.setBmpType(bmpTypeToSet, visible);
+            // if the BMP Type is "not visible", make sure none of it's layers are visible either:
+            if (!visible) {
+                this.props.toggleLayer(outletLayer.id, false);
+                this.props.toggleLayer(footprintLayer.id, false);
+                this.props.toggleLayer(watershedLayer.id, false);
+            // otherwise, set the layer visibility based on the filters:
+            } else {
+                this.props.filters.showOutlets ? this.props.toggleLayer(outletLayer.id, true) : this.props.toggleLayer(outletLayer.id, false);
+                this.props.filters.showFootprints ? this.props.toggleLayer(footprintLayer.id, true) : this.props.toggleLayer(footprintLayer.id, false);
+                this.props.filters.showWatersheds ? this.props.toggleLayer(watershedLayer.id, true) : this.props.toggleLayer(watershedLayer.id, false);
+            }
+        });
     }
 }
 
 const mapStateToProps = (state) => {
     return {
         mapId: mapIdSelector(state),
-        orgs: orgSelector(state),
+        organisations: state?.projectManager?.data?.organisations,
         bmpUniqueNames: bmpByUniqueNameSelector(state),
         bmpTypes: state?.swamm?.bmpTypes,
         allBmps: state?.swamm?.allBmps,
@@ -503,6 +549,7 @@ const mapDispatchToProps = ( dispatch ) => {
         query: (url, filterObj, queryOptions, reason) => dispatch(query(url, filterObj, queryOptions, reason)),
         toggleBmpType: (bmpType) => dispatch(toggleBmpType(bmpType)),
         setBmpType: (bmpType, isVisible) => dispatch(setBmpType(bmpType, isVisible)),
+        setOrgVisibility: (org, isVisible) => dispatch(setOrgVisibility(org, isVisible)),
         toggleViewMode: () => dispatch(toggleViewMode()),
         drawStopped: () => dispatch(drawStopped())
     };
