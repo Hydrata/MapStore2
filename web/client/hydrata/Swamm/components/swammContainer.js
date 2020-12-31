@@ -351,11 +351,11 @@ class SwammContainer extends React.Component {
                                     {this.props.organisations.map((org) => (
                                         <th key={org.id} style={tableHeaderStyleOrgs}>
                                             {org.name}
-                                            <button
-                                                className={"btn glyphicon " + (org.visibility ? "glyphicon-ok" : "glyphicon-remove")}
-                                                style={{...glyphStyle, "color": org.visibility ? "limegreen" : "red"}}
-                                                onClick={() => this.setBmpOrgsVisibility(org.name, !org.visibility)}
-                                            />
+                                            {/*<button*/}
+                                            {/*    className={"btn glyphicon " + (org.visibility ? "glyphicon-ok" : "glyphicon-remove")}*/}
+                                            {/*    style={{...glyphStyle, "color": org.visibility ? "limegreen" : "red"}}*/}
+                                            {/*    onClick={() => this.setBmpOrgsVisibility(org.name, !org.visibility)}*/}
+                                            {/*/>*/}
                                         </th>
                                     ))}
                                 </tr>
