@@ -344,18 +344,13 @@ class SwammContainer extends React.Component {
                                 Show Watersheds
                             </button>
                         </div>
-                        <table className="table" style={{tableLayout: "fixed", marginBottom: "0"}}>
+                        <table className="table check1" style={{tableLayout: "fixed", marginBottom: "0"}}>
                             <thead>
                                 <tr>
                                     <th style={tableHeaderStyleTypes}>BMP Type</th>
                                     {this.props.organisations.map((org) => (
                                         <th key={org.id} style={tableHeaderStyleOrgs}>
                                             {org.name}
-                                            <button
-                                                className={"btn glyphicon " + (org.visibility ? "glyphicon-ok" : "glyphicon-remove")}
-                                                style={{...glyphStyle, "color": org.visibility ? "limegreen" : "red"}}
-                                                onClick={() => this.setBmpOrgsVisibility(org.name, !org.visibility)}
-                                            />
                                         </th>
                                     ))}
                                 </tr>
