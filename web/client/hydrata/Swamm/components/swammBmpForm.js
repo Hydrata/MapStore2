@@ -557,8 +557,6 @@ class SwammBmpFormClass extends React.Component {
         let fieldValue = event.target.value;
         let kv = {[fieldName]: fieldValue};
         const selectedBmpType = this.props.bmpTypes.filter(
-            bmpType => bmpType?.organisation?.id === this.props.storedBmpForm?.organisation?.id
-        ).filter(
             bmpType => bmpType.name === fieldValue
         )[0];
         this.props.updateBmpForm(kv);
