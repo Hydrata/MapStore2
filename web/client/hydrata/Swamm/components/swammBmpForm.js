@@ -71,7 +71,8 @@ class SwammBmpFormClass extends React.Component {
         bmpUniqueNames: PropTypes.array,
         thisBmpCode: PropTypes.string,
         setBmpTypesVisibility: PropTypes.func,
-        setHighlightFeaturesPath: PropTypes.func
+        setHighlightFeaturesPath: PropTypes.func,
+        projectData: PropTypes.object
     };
 
     static defaultProps = {
@@ -307,7 +308,7 @@ class SwammBmpFormClass extends React.Component {
                                                 className={"pull-right"}
                                                 bsStyle={"info"}
                                                 style={{opacity: "0.7"}}
-                                                onClick={() => this.drawBmpStep1(this.props?.thisBmpCode + '_outlet', this.props.storedBmpForm?.outlet_fid)}>
+                                                onClick={() => this.drawBmpStep1(this.props?.projectData?.code + '_bmp_outlet', this.props.storedBmpForm?.outlet_fid)}>
                                             Edit
                                             </Button>
                                         </Col> :
@@ -316,7 +317,7 @@ class SwammBmpFormClass extends React.Component {
                                                 disabled={(!this.props.storedBmpForm?.organisation || !this.props.storedBmpForm.bmpName)}
                                                 bsStyle={(!this.props.storedBmpForm?.organisation || !this.props.storedBmpForm.bmpName) ? "default" : "success" }
                                                 style={{opacity: "0.7"}}
-                                                onClick={() => this.drawBmpStep1(this.props?.thisBmpCode + '_outlet', null)}>
+                                                onClick={() => this.drawBmpStep1(this.props.projectData?.code + '_bmp_outlet', null)}>
                                             Locate Outlet
                                             </Button>
                                         </Col>
@@ -343,7 +344,7 @@ class SwammBmpFormClass extends React.Component {
                                                     className={"pull-right"}
                                                     bsStyle={"info"}
                                                     style={{opacity: "0.7"}}
-                                                    onClick={() => this.drawBmpStep1(this.props?.thisBmpCode + '_footprint', this.props.storedBmpForm?.footprint_fid)}>
+                                                    onClick={() => this.drawBmpStep1(this.props?.projectData?.code + '_bmp_footprint', this.props.storedBmpForm?.footprint_fid)}>
                                                 Edit
                                                 </Button>
                                             </Col>
@@ -354,7 +355,7 @@ class SwammBmpFormClass extends React.Component {
                                                     disabled={(!this.props.storedBmpForm?.organisation || !this.props.storedBmpForm.bmpName)}
                                                     bsStyle={(!this.props.storedBmpForm?.organisation || !this.props.storedBmpForm.bmpName) ? "default" : "success" }
                                                     style={{opacity: "0.7"}}
-                                                    onClick={() => this.drawBmpStep1(this.props?.thisBmpCode + '_footprint')}>
+                                                    onClick={() => this.drawBmpStep1(this.props?.projectData?.code + '_bmp_footprint')}>
                                                 Draw footprint
                                                 </Button>
                                             </Col>
@@ -382,7 +383,7 @@ class SwammBmpFormClass extends React.Component {
                                                     className={"pull-right"}
                                                     bsStyle={"info"}
                                                     style={{opacity: "0.7"}}
-                                                    onClick={() => this.drawBmpStep1(this.props?.thisBmpCode + '_watershed', this.props.storedBmpForm?.watershed_fid)}>
+                                                    onClick={() => this.drawBmpStep1(this.props?.projectData?.code + '_bmp_watershed', this.props.storedBmpForm?.watershed_fid)}>
                                                 Edit
                                                 </Button>
                                             </Col>
@@ -393,7 +394,7 @@ class SwammBmpFormClass extends React.Component {
                                                     disabled={(!this.props.storedBmpForm?.organisation || !this.props.storedBmpForm.bmpName)}
                                                     bsStyle={(!this.props.storedBmpForm?.organisation || !this.props.storedBmpForm.bmpName) ? "default" : "success" }
                                                     style={{opacity: "0.7"}}
-                                                    onClick={() => this.drawBmpStep1(this.props?.thisBmpCode + '_watershed')} bsSize={"small"}>
+                                                    onClick={() => this.drawBmpStep1(this.props?.projectData?.code + '_bmp_watershed')} bsSize={"small"}>
                                                 Draw watershed
                                                 </Button>
                                             </Col>
@@ -575,6 +576,7 @@ class SwammBmpFormClass extends React.Component {
 const mapStateToProps = (state) => {
     return {
         mapId: state?.projectManager?.data?.base_map,
+        projectData: state?.projectManager?.data,
         bmpUniqueNames: bmpByUniqueNameSelector(state).map(bmpType => bmpType.name),
         bmpTypes: state?.swamm?.bmpTypes,
         statuses: state?.swamm?.statuses,
