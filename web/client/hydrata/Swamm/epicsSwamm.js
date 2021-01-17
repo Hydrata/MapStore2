@@ -32,8 +32,8 @@ export const setBmpDrawingLayerEpic = (action$, store) =>
         .filter((action) => {
             console.log('setBmpDrawingLayerEpic1a', store.getState()?.projectManager?.data?.code + '_bmp_');
             console.log('setBmpDrawingLayerEpic1b', action?.typeName);
-            console.log('setBmpDrawingLayerEpic1', action?.typeName.includes(store.getState()?.projectManager?.data?.code + '_bmp_'));
-            return action?.typeName.includes(store.getState()?.projectManager?.data?.code + '_bmp_');
+            console.log('setBmpDrawingLayerEpic1', action?.typeName?.includes(store.getState()?.projectManager?.data?.code + '_bmp_'));
+            return action?.typeName?.includes(store.getState()?.projectManager?.data?.code + '_bmp_');
         })
         .flatMap((action) => Rx.Observable.of(
             query(
@@ -51,11 +51,11 @@ export const setBmpDrawingLayerEpic = (action$, store) =>
 export const setBmpEditingLayerEpic = (action$, store) =>
     action$.ofType(FEATURE_TYPE_SELECTED)
         .filter((action) => {
-            debugger;
+            // debugger;
             console.log('setBmpEditingLayerEpic1a', (store.getState()?.projectManager?.data?.code + '_bmp_'));
             console.log('setBmpEditingLayerEpic1b', action?.typeName);
-            console.log('setBmpEditingLayerEpic1', action?.typeName.includes((store.getState()?.projectManager?.data?.code + '_bmp_')));
-            return action?.typeName.includes(store.getState()?.projectManager?.data?.code + '_bmp_');
+            console.log('setBmpEditingLayerEpic1', action?.typeName?.includes((store.getState()?.projectManager?.data?.code + '_bmp_')));
+            return action?.typeName?.includes(store.getState()?.projectManager?.data?.code + '_bmp_');
         })
         .filter(() => {
             console.log('setBmpEditingLayerEpic2', store.getState()?.swamm?.editingBmpFeatureId);

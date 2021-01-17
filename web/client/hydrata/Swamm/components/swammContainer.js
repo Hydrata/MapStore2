@@ -140,7 +140,7 @@ class SwammContainer extends React.Component {
         saveChanges: PropTypes.func,
         clearDrawingBmpLayerName: PropTypes.func,
         clearEditingBmpFeatureId: PropTypes.func,
-        drawingBmpLayerName: PropTypes.bool,
+        drawingBmpLayerName: PropTypes.string,
         setEditingBmpFeatureId: PropTypes.func,
         editingBmpFeatureId: PropTypes.string,
         query: PropTypes.func,
@@ -433,56 +433,56 @@ class SwammContainer extends React.Component {
     // };
 
     setBmpTypesVisibility = (bmpTypeName, visible) => {
-        if (!this.props.showOutlets) {this.toggleOutlets();}
-        if (!this.props.showFootprints) {this.toggleFootprints();}
-        if (!this.props.showWatersheds) {this.toggleWatersheds();}
-        this.props.bmpTypes.filter((bmpTypeToTest) => bmpTypeName === bmpTypeToTest.name).map((bmpTypeToSet) => {
-            const outletLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpTypeToSet.full_code + '_outlet';})[0];
-            const footprintLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpTypeToSet.full_code + '_footprint';})[0];
-            const watershedLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpTypeToSet.full_code + '_watershed';})[0];
-            this.props.setBmpType(bmpTypeToSet, visible);
-            // if the BMP Type is "not visible", make sure none of it's layers are visible either:
-            if (!visible) {
-                this.props.toggleLayer(outletLayer.id, false);
-                this.props.toggleLayer(footprintLayer.id, false);
-                this.props.toggleLayer(watershedLayer.id, false);
-            // otherwise, set the layer visibility based on the filters:
-            } else {
-                this.props.filters.showOutlets ? this.props.toggleLayer(outletLayer.id, true) : this.props.toggleLayer(outletLayer.id, false);
-                this.props.filters.showFootprints ? this.props.toggleLayer(footprintLayer.id, true) : this.props.toggleLayer(footprintLayer.id, false);
-                this.props.filters.showWatersheds ? this.props.toggleLayer(watershedLayer.id, true) : this.props.toggleLayer(watershedLayer.id, false);
-            }
-        });
+        // if (!this.props.showOutlets) {this.toggleOutlets();}
+        // if (!this.props.showFootprints) {this.toggleFootprints();}
+        // if (!this.props.showWatersheds) {this.toggleWatersheds();}
+        // this.props.bmpTypes.filter((bmpTypeToTest) => bmpTypeName === bmpTypeToTest.name).map((bmpTypeToSet) => {
+        //     const outletLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpTypeToSet.full_code + '_outlet';})[0];
+        //     const footprintLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpTypeToSet.full_code + '_footprint';})[0];
+        //     const watershedLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpTypeToSet.full_code + '_watershed';})[0];
+        //     this.props.setBmpType(bmpTypeToSet, visible);
+        //     // if the BMP Type is "not visible", make sure none of it's layers are visible either:
+        //     if (!visible) {
+        //         this.props.toggleLayer(outletLayer.id, false);
+        //         this.props.toggleLayer(footprintLayer.id, false);
+        //         this.props.toggleLayer(watershedLayer.id, false);
+        //     // otherwise, set the layer visibility based on the filters:
+        //     } else {
+        //         this.props.filters.showOutlets ? this.props.toggleLayer(outletLayer.id, true) : this.props.toggleLayer(outletLayer.id, false);
+        //         this.props.filters.showFootprints ? this.props.toggleLayer(footprintLayer.id, true) : this.props.toggleLayer(footprintLayer.id, false);
+        //         this.props.filters.showWatersheds ? this.props.toggleLayer(watershedLayer.id, true) : this.props.toggleLayer(watershedLayer.id, false);
+        //     }
+        // });
     };
 
-    setBmpOrgsVisibility = (bmpOrgName, visible) => {
-        this.props.organisations.filter((orgToTest) => {
-            return orgToTest.name === bmpOrgName;
-        }).map((orgToSet) => {
-            this.props.setOrgVisibility(orgToSet, visible);
-        });
-        this.props.bmpTypes.filter(
-            (bmpTypeToTest) => {
-                return bmpOrgName === bmpTypeToTest.organisation.name;
-            }
-        ).map((bmpTypeToSet) => {
-            const outletLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpTypeToSet.full_code + '_outlet';})[0];
-            const footprintLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpTypeToSet.full_code + '_footprint';})[0];
-            const watershedLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpTypeToSet.full_code + '_watershed';})[0];
-            this.props.setBmpType(bmpTypeToSet, visible);
-            // if the BMP Type is "not visible", make sure none of it's layers are visible either:
-            if (!visible) {
-                this.props.toggleLayer(outletLayer.id, false);
-                this.props.toggleLayer(footprintLayer.id, false);
-                this.props.toggleLayer(watershedLayer.id, false);
-            // otherwise, set the layer visibility based on the filters:
-            } else {
-                this.props.filters.showOutlets ? this.props.toggleLayer(outletLayer.id, true) : this.props.toggleLayer(outletLayer.id, false);
-                this.props.filters.showFootprints ? this.props.toggleLayer(footprintLayer.id, true) : this.props.toggleLayer(footprintLayer.id, false);
-                this.props.filters.showWatersheds ? this.props.toggleLayer(watershedLayer.id, true) : this.props.toggleLayer(watershedLayer.id, false);
-            }
-        });
-    }
+    // setBmpOrgsVisibility = (bmpOrgName, visible) => {
+    //     this.props.organisations.filter((orgToTest) => {
+    //         return orgToTest.name === bmpOrgName;
+    //     }).map((orgToSet) => {
+    //         this.props.setOrgVisibility(orgToSet, visible);
+    //     });
+    //     this.props.bmpTypes.filter(
+    //         (bmpTypeToTest) => {
+    //             return bmpOrgName === bmpTypeToTest.organisation.name;
+    //         }
+    //     ).map((bmpTypeToSet) => {
+    //         const outletLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpTypeToSet.full_code + '_outlet';})[0];
+    //         const footprintLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpTypeToSet.full_code + '_footprint';})[0];
+    //         const watershedLayer = this.props?.layers?.flat.filter((layer) => {return layer?.name === bmpTypeToSet.full_code + '_watershed';})[0];
+    //         this.props.setBmpType(bmpTypeToSet, visible);
+    //         // if the BMP Type is "not visible", make sure none of it's layers are visible either:
+    //         if (!visible) {
+    //             this.props.toggleLayer(outletLayer.id, false);
+    //             this.props.toggleLayer(footprintLayer.id, false);
+    //             this.props.toggleLayer(watershedLayer.id, false);
+    //         // otherwise, set the layer visibility based on the filters:
+    //         } else {
+    //             this.props.filters.showOutlets ? this.props.toggleLayer(outletLayer.id, true) : this.props.toggleLayer(outletLayer.id, false);
+    //             this.props.filters.showFootprints ? this.props.toggleLayer(footprintLayer.id, true) : this.props.toggleLayer(footprintLayer.id, false);
+    //             this.props.filters.showWatersheds ? this.props.toggleLayer(watershedLayer.id, true) : this.props.toggleLayer(watershedLayer.id, false);
+    //         }
+    //     });
+    // }
 }
 
 const mapStateToProps = (state) => {
