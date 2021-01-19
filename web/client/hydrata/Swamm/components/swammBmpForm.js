@@ -554,15 +554,15 @@ class SwammBmpFormClass extends React.Component {
         this.props.updateBmpForm(kv);
     }
     handleBmpChange(event) {
-        const fieldName = event.target.name;
+        // const fieldName = event.target.name;
         let fieldValue = event.target.value;
-        let kv = {[fieldName]: fieldValue};
+        // let kv = {[fieldName]: fieldValue};
+        // this.props.updateBmpForm(kv);
         const selectedBmpType = this.props.bmpTypes.filter(
             bmpType => bmpType.name === fieldValue
         )[0];
-        this.props.updateBmpForm(kv);
         this.props.makeDefaultsBmpForm(selectedBmpType);
-        this.props.setBmpTypesVisibility(fieldValue, true);
+        // this.props.setBmpTypesVisibility(fieldValue, true);
     }
     drawBmpStep1(layerName, featureId) {
         this.props.setDrawingBmpLayerName(layerName);

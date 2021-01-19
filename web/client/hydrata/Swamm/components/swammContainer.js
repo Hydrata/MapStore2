@@ -214,7 +214,7 @@ class SwammContainer extends React.Component {
                 {this.props.storedBmpForm && !this.props.visibleBmpForm && !this.props.drawingBmpLayerName && !this.props.editingBmpFeatureId ?
                     <React.Fragment>
                         <Button
-                            style={bmpProgressButtonStyle}
+                            style={{...bmpProgressButtonStyle, left: 20, top: 80}}
                             bsStyle={"success"}
                             onClick={() => this.props.showBmpForm()}
                         >
@@ -235,7 +235,7 @@ class SwammContainer extends React.Component {
                         <React.Fragment>
                             <Button
                                 bsStyle="success"
-                                style={bmpProgressButtonStyle}
+                                style={{...bmpProgressButtonStyle, top: 80}}
                                 onClick={() => {
                                     this.props.saveChanges();
                                     this.props.showBmpForm();
@@ -245,7 +245,7 @@ class SwammContainer extends React.Component {
                             </Button>
                             <Button
                                 bsStyle="danger"
-                                style={{...bmpProgressButtonStyle, left: 100 + 20}}
+                                style={{...bmpProgressButtonStyle, left: 140 + 20, top: 80}}
                                 onClick={() => {
                                     this.props.showBmpForm();
                                     this.props.setLayer(null);

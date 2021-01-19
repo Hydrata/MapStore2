@@ -335,7 +335,7 @@ const createBmpFeatureId = (action) => {
     //  rather than assume it's the largest one.
     queryGetNewBmpId = ids.pop();
     console.log('createBmpFeatureId queryGetNewBmpId: ', queryGetNewBmpId);
-    switch (queryGetNewBmpId.split("_")[3].split(".")[0]) {
+    switch (queryGetNewBmpId.split("_")[2].split(".")[0]) {
     case "outlet":
         shapeId = {outlet_fid: queryGetNewBmpId};
         break;

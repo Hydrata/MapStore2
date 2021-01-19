@@ -214,6 +214,7 @@ export default ( state = initialState, action) => {
         const defaultsForm = {
             // ...action.bmpType,
             id: null,
+            bmpName: action.bmpType.name,
             type: action.bmpType.id,
             type_data: action.bmpType,
             project: action.bmpType.project.id,
@@ -244,7 +245,7 @@ export default ( state = initialState, action) => {
             type: action.bmp.type_data.id,
             type_data: action.bmp.type_data,
             project: action.bmp.project,
-            organisation: action.bmp.type_data.organisation,
+            organisation: state?.storedBmpForm?.organisation,
             override_n_redratio: action.bmp.override_n_redratio,
             override_p_redratio: action.bmp.override_p_redratio,
             override_s_redratio: action.bmp.override_s_redratio,
