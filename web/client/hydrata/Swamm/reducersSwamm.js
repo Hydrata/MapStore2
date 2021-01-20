@@ -52,9 +52,9 @@ export default ( state = initialState, action) => {
     case LOAD_FEATURE_INFO:
         const possibleBmpFeatures = action?.data?.features?.map((feature) => {
             if (
-                /([a-zA-Z0-9]{3}_){3}outlet/.test(feature.id) ||
-                /([a-zA-Z0-9]{3}_){3}footprint/.test(feature.id) ||
-                /([a-zA-Z0-9]{3}_){3}watershed/.test(feature.id)
+                /([a-zA-Z0-9]{3}_){2}outlet/.test(feature.id) ||
+                /([a-zA-Z0-9]{3}_){2}footprint/.test(feature.id) ||
+                /([a-zA-Z0-9]{3}_){2}watershed/.test(feature.id)
             ) { return feature;}
             return null;
         });
