@@ -36,7 +36,6 @@ class MenuDatasetRowClass extends React.Component {
         dataset: PropTypes.object,
         toggleLayer: PropTypes.func,
         setOpacity: PropTypes.func,
-        displayTitle: PropTypes.string,
         layer: PropTypes.object
     };
 
@@ -65,7 +64,7 @@ class MenuDatasetRowClass extends React.Component {
                         style={{...glyphStyle, "color": this.props.thisLayer?.visibility ? "limegreen" : "red"}}
                         onClick={() => {this.props.toggleLayer(this.props.thisLayer?.id, this.props.thisLayer?.visibility);}}
                     />
-                    <div className="h5" style={textStyle}>{this.props.displayTitle}</div>
+                    <div className="h5" style={textStyle}>{this.props.thisLayer.title}</div>
                 </div>
                 <div className="mapstore-slider dataset-transparency with-tooltip" onClick={(e) => { e.stopPropagation(); }}>
                     <Slider
@@ -90,8 +89,7 @@ const mapStateToProps = (state, ownProps) => {
     return {
         thisLayer: ownProps.layer ? ownProps.layer : state?.layers?.flat.filter((layer) => {
             return layer?.id === ownProps.dataset?.layer;
-        })[0],
-        displayTitle: ownProps.layer ? ownProps?.layer?.title : ownProps?.dataset?.layer_title
+        })[0]
     };
 };
 
