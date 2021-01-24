@@ -2,17 +2,22 @@ import Rx from "rxjs";
 import {
     QUERY_RESULT,
     query,
+    createQuery,
     FEATURE_TYPE_LOADED,
     FEATURE_TYPE_SELECTED,
-    resetQuery
+    resetQuery,
+    featureTypeSelected
 } from "../../actions/wfsquery";
+import {
+    isDescribeLoaded
+} from "../../selectors/query"
 import {
     clearDrawingBmpLayerName, CLEAR_DRAWING_BMP_LAYER_NAME,
     // startDrawingBmp, START_DRAWING_BMP,
     hideBmpForm,
     submitBmpForm,
     clearEditingBmpFeatureId, CLEAR_EDITING_BMP_FEATURE_ID,
-    createBmpFeatureId
+    createBmpFeatureId, SHOW_SWAMM_FEATURE_GRID
 } from "./actionsSwamm";
 import {
     toggleEditMode,
@@ -20,12 +25,35 @@ import {
     createNewFeatures,
     startDrawingFeature,
     selectFeatures,
+    setLayer,
+    openFeatureGrid,
     SAVE_SUCCESS
 } from "../../actions/featuregrid";
 import {
     drawStopped
 } from "../../actions/draw";
 import { setHighlightFeaturesPath } from "../../actions/highlight";
+
+import { get } from 'lodash';
+import {reset} from '../../actions/queryform';
+
+
+const createInitialQueryFlow = (action$, store, {url, name, id} = {}) => {
+    const filterObj = get(store.getState(), `featuregrid.advancedFilters["${id}"]`);
+    const createInitialQuery = () => createQuery(url, filterObj || {
+        featureTypeName: name,
+        filterType: 'OGC',
+        ogcVersion: '1.1.0'
+    });
+
+    if (isDescribeLoaded(store.getState(), name)) {
+        return Rx.Observable.of(createInitialQuery(), featureTypeSelected(url, name));
+    }
+    return Rx.Observable.of(featureTypeSelected(url, name)).merge(
+        action$.ofType(FEATURE_TYPE_LOADED).filter(({typeName} = {}) => typeName === name)
+            .map(createInitialQuery)
+    );
+};
 
 export const setBmpDrawingLayerEpic = (action$, store) =>
     action$.ofType(FEATURE_TYPE_LOADED)
@@ -184,3 +212,20 @@ export const autoSaveBmpFormEpic = (action$, store) =>
         .flatMap(() => Rx.Observable.of(
             submitBmpForm(store.getState()?.swamm?.storedBmpForm, store.getState()?.projectManager?.data?.base_map)
         ));
+
+export const showBmpFeatureGridEpic = (action$, store) =>
+    action$.ofType(SHOW_SWAMM_FEATURE_GRID)
+        .flatMap( (action) => {
+            console.log('epic heard: SHOW_SWAMM_FEATURE_GRID');
+            const currentTypeName = get(store.getState(), "query.typeName");
+            console.log('store.getState(): ', store.getState());
+            console.log('action: ', action);
+            return Rx.Observable.of(
+                ...(currentTypeName !== action?.layer.name ? [reset()] : []),
+                // setControlProperty('drawer', 'enabled', false),
+                setLayer(action?.layer.id),
+                openFeatureGrid(),
+            ).merge(
+                createInitialQueryFlow(action$, store, action?.layer)
+            );
+        });

@@ -18,7 +18,8 @@ import {
     clearDrawingBmpLayerName,
     toggleBmpType,
     setBmpType,
-    showSwammDataGrid
+    showSwammDataGrid,
+    showSwammFeatureGrid
 } from "../actionsSwamm";
 import {SwammBmpToggler} from "./swammBmpToggler";
 import {SwammBmpForm} from "./swammBmpForm";
@@ -152,6 +153,7 @@ class SwammContainer extends React.Component {
         fetchingBmps: PropTypes.bool,
         visibleBmpManager: PropTypes.bool,
         visibleSwammDataGrid: PropTypes.bool,
+        showSwammFeatureGrid: PropTypes.func,
         showSwammDataGrid: PropTypes.func,
         visibleSwammBmpChart: PropTypes.bool,
         showSwammBmpChart: PropTypes.func,
@@ -160,7 +162,9 @@ class SwammContainer extends React.Component {
         setLayer: PropTypes.func,
         toggleViewMode: PropTypes.func,
         drawStopped: PropTypes.func,
-        bmpDataLayer: PropTypes.object
+        bmpOutletLayer: PropTypes.object,
+        bmpFootrprintLayer: PropTypes.object,
+        bmpWatershedLayer: PropTypes.object
     };
 
     static defaultProps = {};
@@ -207,7 +211,7 @@ class SwammContainer extends React.Component {
             <div id={"swamm-container"}>
                 <button
                     key="swamm-bmp-viewer-button"
-                    style={{...buttonStyle, left: 3 * 100 + 20}}
+                    style={{...buttonStyle, display: 'none', left: 3 * 100 + 20}}
                     onClick={() => {this.props.clickBmpManager();}}>
                     View BMPs
                 </button>
@@ -293,7 +297,7 @@ class SwammContainer extends React.Component {
                     key="swamm-bmp-data-grid-button"
                     style={{...buttonStyle, left: 5 * 100 + 20}}
                     onClick={() => {
-                        this.props.showSwammDataGrid();
+                        this.props.showSwammFeatureGrid(this.props.bmpOutletLayer);
                         this.props.setMenuGroup(null);
                     }}
                 >
@@ -498,7 +502,9 @@ const mapStateToProps = (state) => {
         showWatersheds: state?.swamm?.showWatersheds,
         projectCode: state?.projectManager?.data?.code,
         layers: state?.layers,
-        bmpDataLayer: state?.layers?.flat?.filter((layer) => layer.name === state?.projectManager?.data?.code + "_bmp_data")[0],
+        bmpOutletLayer: state?.layers?.flat?.filter((layer) => layer.name === state?.projectManager?.data?.code + "_bmp_outlet")[0],
+        bmpFootprintLayer: state?.layers?.flat?.filter((layer) => layer.name === state?.projectManager?.data?.code + "_bmp_footprint")[0],
+        bmpWatershedLayer: state?.layers?.flat?.filter((layer) => layer.name === state?.projectManager?.data?.code + "_bmp_watershed")[0],
         visibleBmpForm: state?.swamm?.visibleBmpForm,
         storedBmpForm: state?.swamm?.storedBmpForm,
         drawingBmpLayerName: state?.swamm?.drawingBmpLayerName,
@@ -528,6 +534,7 @@ const mapDispatchToProps = ( dispatch ) => {
         setLayer: (layerName) => dispatch(setLayer(layerName)),
         setEditingBmpFeatureId: (featureId) => dispatch(setEditingBmpFeatureId(featureId)),
         showSwammDataGrid: () => dispatch(showSwammDataGrid()),
+        showSwammFeatureGrid: (layer) => dispatch(showSwammFeatureGrid(layer)),
         showSwammBmpChart: () => dispatch(showSwammBmpChart()),
         clickBmpManager: () => {
             dispatch(toggleBmpManager());

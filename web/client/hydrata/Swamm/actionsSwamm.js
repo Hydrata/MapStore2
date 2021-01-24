@@ -17,6 +17,7 @@ const HIDE_SWAMM_BMP_CHART = 'HIDE_SWAMM_BMP_CHART';
 
 const SHOW_SWAMM_DATA_GRID = 'SHOW_SWAMM_DATA_GRID';
 const HIDE_SWAMM_DATA_GRID = 'HIDE_SWAMM_DATA_GRID';
+const SHOW_SWAMM_FEATURE_GRID = 'SHOW_SWAMM_FEATURE_GRID';
 
 const SHOW_BMP_MANAGER = 'SHOW_BMP_MANAGER';
 const HIDE_BMP_MANAGER = 'HIDE_BMP_MANAGER';
@@ -235,6 +236,13 @@ const showSwammDataGrid = () => {
     };
 };
 
+const showSwammFeatureGrid = (layer) => {
+    return {
+        type: SHOW_SWAMM_FEATURE_GRID,
+        layer
+    };
+};
+
 const hideSwammDataGrid = () => {
     return {
         type: HIDE_SWAMM_DATA_GRID
@@ -442,6 +450,7 @@ module.exports = {
     HIDE_BMP_FORM, hideBmpForm,
     SHOW_SWAMM_DATA_GRID, showSwammDataGrid,
     HIDE_SWAMM_DATA_GRID, hideSwammDataGrid,
+    SHOW_SWAMM_FEATURE_GRID, showSwammFeatureGrid,
     SHOW_SWAMM_BMP_CHART, showSwammBmpChart,
     HIDE_SWAMM_BMP_CHART, hideSwammBmpChart,
     SHOW_BMP_MANAGER, showBmpManager,

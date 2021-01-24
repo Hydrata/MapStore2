@@ -4,13 +4,13 @@ import SwammContainer from "./components/swammContainer";
 import {
     startBmpCreateFeatureEpic,
     setBmpEditingLayerEpic,
-    // startBmpCreateDrawFeatureEpic,
     saveBmpCreateFeatureEpic,
     setBmpDrawingLayerEpic,
     startBmpEditFeatureEpic,
     saveBmpEditFeatureEpic,
     finishBmpCreateFeatureEpic,
-    autoSaveBmpFormEpic
+    autoSaveBmpFormEpic,
+    showBmpFeatureGridEpic
 } from "./epicsSwamm";
 
 export default createPlugin('Swamm', {
@@ -19,12 +19,12 @@ export default createPlugin('Swamm', {
     epics: {
         startBmpCreateFeatureEpic,
         setBmpEditingLayerEpic,
-        // startBmpCreateDrawFeatureEpic,
         saveBmpCreateFeatureEpic,
         setBmpDrawingLayerEpic,
         startBmpEditFeatureEpic,
         saveBmpEditFeatureEpic,
         finishBmpCreateFeatureEpic,
-        autoSaveBmpFormEpic
+        autoSaveBmpFormEpic,
+        showBmpFeatureGridEpic
     }
 });
