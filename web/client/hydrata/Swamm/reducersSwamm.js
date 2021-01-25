@@ -246,6 +246,7 @@ export default ( state = initialState, action) => {
             type_data: action.bmp.type_data,
             project: action.bmp.project,
             organisation: state?.storedBmpForm?.organisation,
+            organisation_id: state?.storedBmpForm?.organisation.id,
             override_n_redratio: action.bmp.override_n_redratio,
             override_p_redratio: action.bmp.override_p_redratio,
             override_s_redratio: action.bmp.override_s_redratio,
@@ -291,6 +292,16 @@ export default ( state = initialState, action) => {
             return {
                 ...state,
                 BmpFormBmpTypeId: action.kv.type_data.id
+            };
+        }
+        if (action?.kv?.organisation?.id) {
+            return {
+                ...state,
+                storedBmpForm: {
+                    ...state.storedBmpForm,
+                    ...action.kv,
+                    organisation_id: action?.kv?.organisation?.id
+                }
             };
         }
         return  {
