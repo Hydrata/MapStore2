@@ -30,6 +30,7 @@ import {featureTypeSelected, createQuery, query} from "../../../actions/wfsquery
 import "../../ProjectManager/projectManager.css";
 import {isInt} from "../../Utils/utils";
 import {bmpByUniqueNameSelector, orgSelector} from "../selectorsSwamm";
+import {changeLayerProperties} from "../../../actions/layers";
 
 class SwammBmpFormClass extends React.Component {
     static propTypes = {
@@ -72,7 +73,11 @@ class SwammBmpFormClass extends React.Component {
         thisBmpCode: PropTypes.string,
         setBmpTypesVisibility: PropTypes.func,
         setHighlightFeaturesPath: PropTypes.func,
-        projectData: PropTypes.object
+        projectData: PropTypes.object,
+        toggleLayer: PropTypes.func,
+        bmpOutletLayer: PropTypes.object,
+        bmpFootprintLayer: PropTypes.object,
+        bmpWatershedLayer: PropTypes.object
     };
 
     static defaultProps = {
@@ -91,6 +96,9 @@ class SwammBmpFormClass extends React.Component {
             this.props.purgeMapInfoResults();
             this.props.setMenuGroup(null);
         }
+        this.props.toggleLayer(this.props.bmpOutletLayer?.id, true);
+        this.props.toggleLayer(this.props.bmpFootprintLayer?.id, true);
+        this.props.toggleLayer(this.props.bmpWatershedLayer?.id, true);
     }
 
     componentDidUpdate() {
@@ -584,6 +592,9 @@ const mapStateToProps = (state) => {
         thisBmpType: state?.swamm?.bmpTypes.filter((bmpType) => bmpType.id === state?.swamm?.BmpFormBmpTypeId)[0],
         storedBmpForm: state?.swamm?.storedBmpForm || {},
         thisBmpCode: state?.swamm?.storedBmpForm?.type_data?.full_code,
+        bmpOutletLayer: state?.layers?.flat?.filter((layer) => layer.name === state?.projectManager?.data?.code + "_bmp_outlet")[0],
+        bmpFootprintLayer: state?.layers?.flat?.filter((layer) => layer.name === state?.projectManager?.data?.code + "_bmp_footprint")[0],
+        bmpWatershedLayer: state?.layers?.flat?.filter((layer) => layer.name === state?.projectManager?.data?.code + "_bmp_watershed")[0],
         creatingNewBmp: state?.swamm?.creatingNewBmp,
         updatingBmp: state?.swamm?.updatingBmp,
         orgs: orgSelector(state),
@@ -607,6 +618,7 @@ const mapDispatchToProps = ( dispatch ) => {
         clearEditingBmpFeatureId: () => dispatch(clearEditingBmpFeatureId()),
         featureTypeSelected: (url, typeName) => dispatch(featureTypeSelected(url, typeName)),
         toggleEditMode: () => dispatch(toggleEditMode()),
+        toggleLayer: (layerId, isVisible) => dispatch(changeLayerProperties(layerId, {visibility: isVisible})),
         createNewFeatures: (features) => dispatch(createNewFeatures(features)),
         createQuery: (searchUrl, filterObj) => dispatch(createQuery(searchUrl, filterObj)),
         query: (url, filterObj, queryOptions, reason) => dispatch(query(url, filterObj, queryOptions, reason)),
