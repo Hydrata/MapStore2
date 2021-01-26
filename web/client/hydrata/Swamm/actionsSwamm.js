@@ -338,20 +338,24 @@ const createBmpFeatureId = (action) => {
     console.log('createBmpFeatureId', action);
     let queryGetNewBmpId = null;
     let shapeId = null;
-    const ids = action.result.features.map(feature => feature.id);
+    const ids = action.result.features.map(feature => feature.id.split('.')[1]);
     // TODO: It would be much better to get this Id from the WFS response XML,
     //  rather than assume it's the largest one.
-    queryGetNewBmpId = ids.pop();
+    queryGetNewBmpId = Math.max(...ids);
+    const featureBmpType = action.filterObj.featureTypeName.split("_")[2];
     console.log('createBmpFeatureId queryGetNewBmpId: ', queryGetNewBmpId);
-    switch (queryGetNewBmpId.split("_")[2].split(".")[0]) {
+    console.log('createBmpFeatureId featureBmpType: ', featureBmpType);
+    const featureId = action.filterObj.featureTypeName + '.' + queryGetNewBmpId;
+    console.log('createBmpFeatureId assigning: ', featureId);
+    switch (featureBmpType) {
     case "outlet":
-        shapeId = {outlet_fid: queryGetNewBmpId};
+        shapeId = {outlet_fid: featureId};
         break;
     case "footprint":
-        shapeId = {footprint_fid: queryGetNewBmpId};
+        shapeId = {footprint_fid: featureId};
         break;
     case "watershed":
-        shapeId = {watershed_fid: queryGetNewBmpId};
+        shapeId = {watershed_fid: featureId};
         break;
     default:
         shapeId = {};
@@ -364,6 +368,7 @@ const createBmpFeatureId = (action) => {
 };
 
 const clearEditingBmpFeatureId = () => {
+    console.log('clearEditingBmpFeatureId');
     return {
         type: CLEAR_EDITING_BMP_FEATURE_ID
     };

@@ -573,6 +573,8 @@ class SwammBmpFormClass extends React.Component {
         // this.props.setBmpTypesVisibility(fieldValue, true);
     }
     drawBmpStep1(layerName, featureId) {
+        console.log('drawBmpStep1 layerName', layerName);
+        console.log('drawBmpStep1 featureId', featureId);
         this.props.setDrawingBmpLayerName(layerName);
         featureId ? this.props.setEditingBmpFeatureId(featureId) : this.props.clearEditingBmpFeatureId();
         const targetLayer = this.props.layers.flat.filter(layer => layer.name === layerName)[0];
