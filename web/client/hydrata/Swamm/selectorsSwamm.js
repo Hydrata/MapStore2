@@ -40,8 +40,35 @@ export const bmpSpeedDialSelector = (state) => {
     );
     const mapId = state?.projectManager?.data?.base_map;
     const targets = {
-        699: {
-            mapId: 699,
+        9: {
+            mapId: 9,
+            currentNitrogenLoad: 1960104,
+            currentPhosphorusLoad: 40696,
+            currentSedimentLoad: 35334,
+            percentNitrogenReductionTarget: 40,
+            percentPhosphorusReductionTarget: 66,
+            percentSedimentReductionTarget: 25
+        },
+        30: {
+            mapId: 30,
+            currentNitrogenLoad: 1960104,
+            currentPhosphorusLoad: 40696,
+            currentSedimentLoad: 35334,
+            percentNitrogenReductionTarget: 40,
+            percentPhosphorusReductionTarget: 66,
+            percentSedimentReductionTarget: 25
+        },
+        327: {
+            mapId: 327,
+            currentNitrogenLoad: 1960104,
+            currentPhosphorusLoad: 40696,
+            currentSedimentLoad: 35334,
+            percentNitrogenReductionTarget: 40,
+            percentPhosphorusReductionTarget: 66,
+            percentSedimentReductionTarget: 25
+        },
+        331: {
+            mapId: 331,
             currentNitrogenLoad: 1960104,
             currentPhosphorusLoad: 40696,
             currentSedimentLoad: 35334,
@@ -58,17 +85,8 @@ export const bmpSpeedDialSelector = (state) => {
             percentPhosphorusReductionTarget: 66,
             percentSedimentReductionTarget: 25
         },
-        9: {
-            mapId: 9,
-            currentNitrogenLoad: 1960104,
-            currentPhosphorusLoad: 40696,
-            currentSedimentLoad: 35334,
-            percentNitrogenReductionTarget: 40,
-            percentPhosphorusReductionTarget: 66,
-            percentSedimentReductionTarget: 25
-        },
-        30: {
-            mapId: 30,
+        699: {
+            mapId: 699,
             currentNitrogenLoad: 1960104,
             currentPhosphorusLoad: 40696,
             currentSedimentLoad: 35334,
