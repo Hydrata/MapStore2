@@ -8,14 +8,15 @@ import {
     resetQuery,
     featureTypeSelected
 } from "../../actions/wfsquery";
-import {
-    isDescribeLoaded
-} from "../../selectors/query"
+// import {
+//     isDescribeLoaded
+// } from "../../selectors/query";
 import {
     clearDrawingBmpLayerName, CLEAR_DRAWING_BMP_LAYER_NAME,
     // startDrawingBmp, START_DRAWING_BMP,
     hideBmpForm,
     submitBmpForm,
+    UPDATE_BMP_FORM,
     clearEditingBmpFeatureId, CLEAR_EDITING_BMP_FEATURE_ID,
     createBmpFeatureId, SHOW_SWAMM_FEATURE_GRID
 } from "./actionsSwamm";
@@ -46,9 +47,9 @@ const createInitialQueryFlow = (action$, store, {url, name, id} = {}) => {
         ogcVersion: '1.1.0'
     });
 
-    if (isDescribeLoaded(store.getState(), name)) {
-        return Rx.Observable.of(createInitialQuery(), featureTypeSelected(url, name));
-    }
+    // if (isDescribeLoaded(store.getState(), name)) {
+    //     return Rx.Observable.of(createInitialQuery(), featureTypeSelected(url, name));
+    // }
     return Rx.Observable.of(featureTypeSelected(url, name)).merge(
         action$.ofType(FEATURE_TYPE_LOADED).filter(({typeName} = {}) => typeName === name)
             .map(createInitialQuery)
@@ -208,10 +209,15 @@ export const saveBmpEditFeatureEpic = (action$, store) =>
         ));
 
 export const autoSaveBmpFormEpic = (action$, store) =>
-    action$.ofType(CLEAR_EDITING_BMP_FEATURE_ID, CLEAR_DRAWING_BMP_LAYER_NAME)
-        .flatMap(() => Rx.Observable.of(
-            submitBmpForm(store.getState()?.swamm?.storedBmpForm, store.getState()?.projectManager?.data?.base_map)
-        ));
+    action$.ofType(UPDATE_BMP_FORM)
+        .flatMap(() => {
+            if (store.getState()?.swamm?.storedBmpForm?.organisation && store.getState()?.swamm?.storedBmpForm?.bmpName) {
+                return Rx.Observable.of(
+                    submitBmpForm(store.getState()?.swamm?.storedBmpForm, store.getState()?.projectManager?.data?.base_map)
+                );
+            }
+            return null;
+        });
 
 export const showBmpFeatureGridEpic = (action$, store) =>
     action$.ofType(SHOW_SWAMM_FEATURE_GRID)

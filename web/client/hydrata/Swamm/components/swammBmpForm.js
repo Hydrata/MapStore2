@@ -520,7 +520,7 @@ class SwammBmpFormClass extends React.Component {
                             onClick={() => {
                                 this.props.submitBmpForm(this.props.storedBmpForm, this.props.mapId);
                             }}>
-                            Save
+                            Calculate
                         </Button>
                     </Modal.Footer>
                 </Modal>
