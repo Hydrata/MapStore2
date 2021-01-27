@@ -12,12 +12,11 @@ import {
 //     isDescribeLoaded
 // } from "../../selectors/query";
 import {
-    clearDrawingBmpLayerName, CLEAR_DRAWING_BMP_LAYER_NAME,
-    // startDrawingBmp, START_DRAWING_BMP,
+    clearDrawingBmpLayerName,
     hideBmpForm,
     submitBmpForm,
     UPDATE_BMP_FORM,
-    clearEditingBmpFeatureId, CLEAR_EDITING_BMP_FEATURE_ID,
+    clearEditingBmpFeatureId,
     createBmpFeatureId, SHOW_SWAMM_FEATURE_GRID
 } from "./actionsSwamm";
 import {
@@ -57,38 +56,12 @@ const createInitialQueryFlow = (action$, store, {url, name, id} = {}) => {
 };
 
 export const setBmpDrawingLayerEpic = (action$, store) =>
-    action$.ofType(FEATURE_TYPE_LOADED)
+    action$.ofType(FEATURE_TYPE_SELECTED)
         .filter((action) => {
             console.log('setBmpDrawingLayerEpic1a', store.getState()?.projectManager?.data?.code + '_bmp_');
             console.log('setBmpDrawingLayerEpic1b', action?.typeName);
             console.log('setBmpDrawingLayerEpic1', action?.typeName?.includes(store.getState()?.projectManager?.data?.code + '_bmp_'));
             return action?.typeName?.includes(store.getState()?.projectManager?.data?.code + '_bmp_');
-        })
-        .flatMap((action) => Rx.Observable.of(
-            query(
-                'http://localhost:8080/geoserver/wfs',
-                {
-                    featureTypeName: action?.typeName,
-                    filterType: 'OGC',
-                    ogcVersion: '1.1.0'
-                },
-                {},
-                'querySetNewBmpLayer'
-            )
-        ));
-
-export const setBmpEditingLayerEpic = (action$, store) =>
-    action$.ofType(FEATURE_TYPE_SELECTED)
-        .filter((action) => {
-            // debugger;
-            console.log('setBmpEditingLayerEpic1a', (store.getState()?.projectManager?.data?.code + '_bmp_'));
-            console.log('setBmpEditingLayerEpic1b', action?.typeName);
-            console.log('setBmpEditingLayerEpic1', action?.typeName?.includes((store.getState()?.projectManager?.data?.code + '_bmp_')));
-            return action?.typeName?.includes(store.getState()?.projectManager?.data?.code + '_bmp_');
-        })
-        .filter(() => {
-            console.log('setBmpEditingLayerEpic2', store.getState()?.swamm?.editingBmpFeatureId);
-            return store.getState()?.swamm?.editingBmpFeatureId;
         })
         .flatMap((action) => Rx.Observable.of(
             query(
@@ -160,16 +133,6 @@ export const startBmpEditFeatureEpic = (action$, store) =>
             resetQuery()
         ));
 
-
-// export const startBmpCreateDrawFeatureEpic = (action$) =>
-//     action$.ofType(START_DRAWING_BMP)
-//         .flatMap(() => Rx.Observable.of(
-//             console.log('startBmpCreateDrawFeatureEpic'),
-//             createNewFeatures([{}]),
-//             startDrawingFeature(),
-//             setHighlightFeaturesPath('draw.tempFeatures')
-//         ));
-
 export const saveBmpCreateFeatureEpic = (action$, store) =>
     action$.ofType(SAVE_SUCCESS)
         .filter(() => {
@@ -205,7 +168,6 @@ export const saveBmpEditFeatureEpic = (action$, store) =>
             drawStopped(),
             toggleViewMode(),
             setHighlightFeaturesPath('highlight.emptyFeatures'),
-            // submitBmpForm(store.getState()?.swamm?.storedBmpForm, store.getState()?.projectManager?.data?.base_map)
         ));
 
 export const autoSaveBmpFormEpic = (action$, store) =>
