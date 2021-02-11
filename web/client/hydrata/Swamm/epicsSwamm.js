@@ -136,8 +136,12 @@ export const startBmpEditFeatureEpic = (action$, store) =>
 export const saveBmpCreateFeatureEpic = (action$, store) =>
     action$.ofType(SAVE_SUCCESS)
         .filter(() => {
-            console.log('saveBmpCreateFeatureEpic', store.getState()?.swamm?.drawingBmpLayerName);
+            console.log('saveBmpCreateFeatureEpic1', store.getState()?.swamm?.drawingBmpLayerName);
             return store.getState()?.swamm?.drawingBmpLayerName;
+        })
+        .filter(() => {
+            console.log('saveBmpCreateFeatureEpic2', !store.getState()?.swamm?.editingBmpFeatureId);
+            return !store.getState()?.swamm?.editingBmpFeatureId;
         })
         .flatMap(() => Rx.Observable.of(
             query('http://localhost:8080/geoserver/wfs',
@@ -154,7 +158,7 @@ export const saveBmpCreateFeatureEpic = (action$, store) =>
             drawStopped(),
             toggleViewMode(),
             setHighlightFeaturesPath('highlight.emptyFeatures'),
-            // submitBmpForm(store.getState()?.swamm?.storedBmpForm, store.getState()?.projectManager?.data?.base_map)
+            submitBmpForm(store.getState()?.swamm?.storedBmpForm, store.getState()?.projectManager?.data?.base_map),
         ));
 
 export const saveBmpEditFeatureEpic = (action$, store) =>
@@ -168,6 +172,7 @@ export const saveBmpEditFeatureEpic = (action$, store) =>
             drawStopped(),
             toggleViewMode(),
             setHighlightFeaturesPath('highlight.emptyFeatures'),
+            submitBmpForm(store.getState()?.swamm?.storedBmpForm, store.getState()?.projectManager?.data?.base_map),
         ));
 
 export const autoSaveBmpFormEpic = (action$, store) =>

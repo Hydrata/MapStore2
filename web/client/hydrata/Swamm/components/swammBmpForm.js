@@ -167,21 +167,30 @@ class SwammBmpFormClass extends React.Component {
                                     <Col componentClass={ControlLabel} sm={6}>
                                       BMP Type
                                     </Col>
-                                    <Col sm={5}>
-                                        <FormControl
-                                            inline="true"
-                                            componentClass="select"
-                                            name="bmpName"
-                                            value={this.props.storedBmpForm?.bmpName}
-                                            onChange={this.handleBmpChange}
-                                        >
-                                            <option key="1" value="select">Select BMP Type</option>
-                                            {this.props.bmpUniqueNames.map((bmpName) => {
-                                                return <option key={bmpName} value={bmpName}>{bmpName}</option>;
-                                            })}
-                                        </FormControl>
-                                        <FormControl.Feedback />
-                                    </Col>
+                                    {this.props.storedBmpForm.id ?
+                                        <Col sm={5}>
+                                            <FormControl
+                                                inline="true"
+                                                readOnly="true"
+                                                type={"string"}
+                                                value={this.props.storedBmpForm?.bmpName}
+                                            />
+                                        </Col> :
+                                        <Col sm={5}>
+                                            <FormControl
+                                                inline="true"
+                                                componentClass="select"
+                                                name="bmpName"
+                                                value={this.props.storedBmpForm?.bmpName}
+                                                onChange={this.handleBmpChange}
+                                            >
+                                                <option key="1" value="select">Select BMP Type</option>
+                                                {this.props.bmpUniqueNames.map((bmpName) => {
+                                                    return <option key={bmpName} value={bmpName}>{bmpName}</option>;
+                                                })}
+                                            </FormControl>
+                                            <FormControl.Feedback />
+                                        </Col>}
                                 </FormGroup>
                                 <FormGroup controlId="formControlsSelectStatus" bsSize={"small"}>
                                     <Col componentClass={ControlLabel} sm={6}>

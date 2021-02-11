@@ -335,10 +335,11 @@ const setEditingBmpFeatureId = (featureId) => {
 };
 
 const createBmpFeatureId = (action) => {
-    console.log('createBmpFeatureId', action);
+    console.log('createBmpFeatureId action:', action);
     let queryGetNewBmpId = null;
     let shapeId = null;
     const ids = action.result.features.map(feature => feature.id.split('.')[1]);
+    console.log('createBmpFeatureId ids:', ids);
     // TODO: It would be much better to get this Id from the WFS response XML,
     //  rather than assume it's the largest one.
     queryGetNewBmpId = Math.max(...ids);
