@@ -140,7 +140,7 @@ export const saveBmpCreateFeatureEpic = (action$, store) =>
             return store.getState()?.swamm?.drawingBmpLayerName;
         })
         .filter(() => {
-            console.log('saveBmpCreateFeatureEpic2', !store.getState()?.swamm?.editingBmpFeatureId);
+            console.log('WARNING: saveBmpCreateFeatureEpic2', !store.getState()?.swamm?.editingBmpFeatureId);
             return !store.getState()?.swamm?.editingBmpFeatureId;
         })
         .flatMap(() => Rx.Observable.of(
@@ -169,6 +169,7 @@ export const saveBmpEditFeatureEpic = (action$, store) =>
         })
         .flatMap(() => Rx.Observable.of(
             clearEditingBmpFeatureId(),
+            clearDrawingBmpLayerName(),
             drawStopped(),
             toggleViewMode(),
             setHighlightFeaturesPath('highlight.emptyFeatures'),

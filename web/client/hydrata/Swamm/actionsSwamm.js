@@ -336,17 +336,17 @@ const setEditingBmpFeatureId = (featureId) => {
 
 const createBmpFeatureId = (action) => {
     console.log('createBmpFeatureId action:', action);
-    let queryGetNewBmpId = null;
+    let newBmpId = null;
     let shapeId = null;
     const ids = action.result.features.map(feature => feature.id.split('.')[1]);
     console.log('createBmpFeatureId ids:', ids);
     // TODO: It would be much better to get this Id from the WFS response XML,
     //  rather than assume it's the largest one.
-    queryGetNewBmpId = Math.max(...ids);
+    newBmpId = Math.max(...ids);
     const featureBmpType = action.filterObj.featureTypeName.split("_")[2];
-    console.log('createBmpFeatureId queryGetNewBmpId: ', queryGetNewBmpId);
+    console.log('createBmpFeatureId newBmpId: ', newBmpId);
     console.log('createBmpFeatureId featureBmpType: ', featureBmpType);
-    const featureId = action.filterObj.featureTypeName + '.' + queryGetNewBmpId;
+    const featureId = action.filterObj.featureTypeName + '.' + newBmpId;
     console.log('createBmpFeatureId assigning: ', featureId);
     switch (featureBmpType) {
     case "outlet":
