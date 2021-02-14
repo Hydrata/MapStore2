@@ -403,6 +403,7 @@ function submitBmpFormError(e) {
 const submitBmpForm = (newBmp, mapId) => {
     if (newBmp.id) {
         return (dispatch) => {
+            console.log('updating existing BMP: ', newBmp);
             return axios.patch(`/swamm/api/${mapId}/bmps/${newBmp.id}/`, newBmp
             ).then(
                 response => {
@@ -418,6 +419,7 @@ const submitBmpForm = (newBmp, mapId) => {
         };
     }
     return (dispatch) => {
+        console.log('creating new BMP: ', newBmp);
         return axios.post(`/swamm/api/${mapId}/bmps/`, newBmp
         ).then(
             response => {

@@ -505,6 +505,14 @@ class SwammBmpFormClass extends React.Component {
                                     </tr>
                                 </tbody>
                             </Table>
+                            {this.props.storedBmpForm?.created_by ?
+                                <p>Created by: {this.props.storedBmpForm?.created_by} on {new Date(this.props.storedBmpForm?.created_at).toLocaleString()}</p> :
+                                null
+                            }
+                            {this.props.storedBmpForm?.updated_by ?
+                                <p>Updated by: {this.props.storedBmpForm?.updated_by} on {new Date(this.props.storedBmpForm?.updated_at).toLocaleString()}</p> :
+                                null
+                            }
                         </Col>
                     </Modal.Body>
                     <Modal.Footer>
