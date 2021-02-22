@@ -16,12 +16,12 @@ import {
     makeBmpForm,
     setEditingBmpFeatureId,
     clearDrawingBmpLayerName,
+    clearEditingBmpFeatureId,
     toggleBmpType,
     setBmpType,
     showSwammDataGrid,
     showSwammFeatureGrid
 } from "../actionsSwamm";
-import {SwammBmpToggler} from "./swammBmpToggler";
 import {SwammBmpForm} from "./swammBmpForm";
 import {SwammDataGrid} from "./swammDataGrid";
 import {changeLayerProperties} from "../../../actions/layers";
@@ -544,6 +544,7 @@ const mapDispatchToProps = ( dispatch ) => {
         makeBmpForm: (bmpTypeId) => dispatch(makeBmpForm(bmpTypeId)),
         saveChanges: () => dispatch(saveChanges()),
         clearDrawingBmpLayerName: () => dispatch(clearDrawingBmpLayerName()),
+        clearEditingBmpFeatureId: () => dispatch(clearEditingBmpFeatureId()),
         query: (url, filterObj, queryOptions, reason) => dispatch(query(url, filterObj, queryOptions, reason)),
         toggleBmpType: (bmpType) => dispatch(toggleBmpType(bmpType)),
         setBmpType: (bmpType, isVisible) => dispatch(setBmpType(bmpType, isVisible)),
