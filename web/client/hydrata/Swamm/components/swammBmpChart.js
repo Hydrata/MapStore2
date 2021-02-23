@@ -154,9 +154,9 @@ class SwammBmpChartClass extends React.Component {
                                                                     key={bmp.id}
                                                                     stackId="n"
                                                                     dataKey={(bmp.id + "." + pollutant.load_red_total_key)}
-                                                                    fill={bmp.type_data.colour + '60'}
+                                                                    fill={bmp.type_data.colour}
                                                                     stroke={"white"}
-                                                                    strokeWidth={1}
+                                                                    strokeWidth={0}
                                                                     name="Name"
                                                                     onMouseOver={() => {
                                                                         this.setState({
