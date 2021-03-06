@@ -1,7 +1,9 @@
 import React from "react";
 import {connect} from "react-redux";
 const PropTypes = require('prop-types');
+import { Table, Button, Form, FormGroup, FormControl, ControlLabel, HelpBlock } from 'react-bootstrap';
 import {fetchScenarioOverview, showScenarioOverview, hideScenarioOverview} from '../actionsScenarios';
+import '../scenarios.css';
 
 const scenarioOverviewPanelStyle = {
     position: "absolute",
@@ -23,6 +25,13 @@ const scenarioOverviewPanelStyle = {
     maxHeight: "92%"
 };
 
+const formControlStyle = {
+    border: 'none',
+    textAlign: 'center',
+    background: 'none',
+    color: 'white'
+};
+
 class ScenarioOverviewClass extends React.Component {
     static propTypes = {
         data: PropTypes.array,
@@ -31,7 +40,8 @@ class ScenarioOverviewClass extends React.Component {
         showScenarioOverview: PropTypes.func,
         hideScenarioOverview: PropTypes.func,
         scenarioOverview: PropTypes.object,
-        scenarioList: PropTypes.array
+        scenarioList: PropTypes.array,
+        fields: PropTypes.array
     };
 
     static defaultProps = {}
@@ -39,20 +49,18 @@ class ScenarioOverviewClass extends React.Component {
     constructor(props) {
         super(props);
         this.state = {};
+        this.handleChange = this.handleChange.bind(this);
     }
 
     componentDidMount() {
         if (!this.props.mapId && !this.isFetching) {
-            console.log('***1');
             this.isFetching = false;
         }
         if (this.props.mapId && this.props.scenarioOverview?.slug && !(this.props.scenarioOverview?.scenario === {}) && !this.isFetching) {
-            console.log('***2');
             this.props.fetchScenarioOverview(this.props.mapId, this.props.scenarioOverview?.slug);
             this.isFetching = true;
         }
         if (this.props.mapId && this.props.scenarioOverview?.slug) {
-            console.log('***3');
             this.isFetching = false;
         }
     }
@@ -62,10 +70,10 @@ class ScenarioOverviewClass extends React.Component {
 
     render() {
         return (
-            <div style={scenarioOverviewPanelStyle} id={'ScenarioOverview'}>
+            <div style={scenarioOverviewPanelStyle} id={'ScenarioOverview'} className={'container'}>
                 <div className={"row"}>
                     <h5
-                        style={{textAlign: 'left'}}
+                        style={{textAlign: 'left', marginLeft: '10px'}}
                     >
                         Scenarios - {this.props.scenarioOverview.title}
                     </h5>
@@ -79,15 +87,86 @@ class ScenarioOverviewClass extends React.Component {
                     }}
                     onClick={() => this.props.hideScenarioOverview()}
                 />
-                {this.props.scenarioList?.map((scen) => {
-                    return (
-                        <div className={'row'}>
-                            <pre>{JSON.stringify(scen, null, 2) }</pre>
+                <div className={'scenario-table'}>
+                    <div className={'scenario-table-header-group'}>
+                        <div className={'scenario-table-row'}>
+                            {this.props?.fields?.filter((field) => field.widget !== 'resultButton').map((field) => {
+                                return (
+                                    <div className={'scenario-table-cell'} key={field.name}>
+                                        {field.label}
+                                    </div>);
+                            })}
+                            <div className={'scenario-table-cell'}>Save</div>
+                            <div className={'scenario-table-cell'}>Run</div>
+                            {this.props?.fields?.filter((field) => field.widget === 'resultButton').map((field) => {
+                                return (
+                                    <div className={'scenario-table-cell'} key={field.name}>
+                                        {field.label}
+                                    </div>);
+                            })}
                         </div>
-                    );
-                })}
+                    </div>
+                    {this.props.scenarioList?.map((scen) => {
+                        return (
+                            <div className={'scenario-table-row'}>
+                                {this.props?.fields?.filter((field) => field.widget !== 'resultButton')
+                                    .map((field) => {
+                                        return (
+                                            <div className={'scenario-table-cell'}>
+                                                <input
+                                                    key={field.name}
+                                                    style={formControlStyle}
+                                                    type={field.widget}
+                                                    value={this.props.scenarioList.filter((scenToCheck) => scen === scenToCheck)[0][field.name]}
+                                                    onChange={(e) => this.handleChange(e, scen)}
+                                                />
+                                            </div>
+                                        );
+                                    })}
+                                <div className={'scenario-button scenario-table-cell'}>
+                                    <Button
+                                        bsStyle="success"
+                                        bsSize="xsmall"
+                                        onClick={() => console.log('save')}
+                                        style={{'borderRadius': '3px'}}
+                                    >
+                                        Save
+                                    </Button>
+                                </div>
+                                <div className={'scenario-button scenario-table-cell'}>
+                                    <Button
+                                        bsStyle="success"
+                                        bsSize="xsmall"
+                                        onClick={() => console.log('run')}
+                                        style={{'borderRadius': '3px'}}
+                                    >
+                                        Run
+                                    </Button>
+                                </div>
+                                {this.props?.fields?.filter((field) => field.widget === 'resultButton')
+                                    .map((field) => {
+                                        return (
+                                            <div className={'scenario-table-cell'}>
+                                                <input
+                                                    key={field.name}
+                                                    style={formControlStyle}
+                                                    type={field.widget}
+                                                    value={this.props.scenarioList.filter((scenToCheck) => scen === scenToCheck)[0][field.name]}
+                                                    onChange={(e) => this.handleChange(e, scen)}
+                                                />
+                                            </div>);
+                                    })}
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
         );
+    }
+
+    handleChange = (e, scenario) => {
+        console.log('changeme:', scenario);
+        console.log('value', e.target.value);
     }
 }
 
@@ -95,7 +174,8 @@ const mapStateToProps = (state) => {
     return {
         mapId: state?.projectManager?.data?.base_map,
         scenarioOverview: state?.scenarios?.scenarioOverview,
-        scenarioList: state?.scenarios?.scenarioOverview?.scenarios || []
+        scenarioList: state?.scenarios?.scenarioOverview?.scenarios || [],
+        fields: state?.scenarios?.config?.filter((scen) => state?.scenarios?.scenarioOverview?.slug === scen.slug)[0]?.fields
     };
 };
 

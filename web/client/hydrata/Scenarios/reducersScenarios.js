@@ -52,6 +52,7 @@ export default ( state = {}, action) => {
     case SHOW_SCENARIO_OVERVIEW:
         return {
             ...state,
+            activeScenario: action?.slug,
             visibleScenarioOverview: true,
             scenarioOverview: {
                 ...state.scenarioOverview,
@@ -62,6 +63,7 @@ export default ( state = {}, action) => {
     case HIDE_SCENARIO_OVERVIEW:
         return {
             ...state,
+            activeScenario: null,
             visibleScenarioOverview: false,
             scenarioOverview: {
                 ...state.scenarioOverview,
