@@ -6,9 +6,22 @@ import {
     SHOW_SCENARIO_MANAGER,
     HIDE_SCENARIO_MANAGER,
     SHOW_SCENARIO_OVERVIEW,
-    HIDE_SCENARIO_OVERVIEW
-
+    HIDE_SCENARIO_OVERVIEW,
+    CREATE_SCENARIO,
+    UPDATE_SCENARIO,
+    SAVE_SCENARIO_SUCCESS,
+    RUN_SCENARIO,
+    RUN_SCENARIO_SUCCESS,
+    DELETE_SCENARIO,
+    DELETE_SCENARIO_SUCCESS
 } from "./actionsScenarios";
+
+const widgetDefaults = {
+    'number': 0,
+    'text': '',
+    'select': '',
+    'resultButton': ''
+};
 
 export default ( state = {}, action) => {
     switch (action.type) {
@@ -70,6 +83,61 @@ export default ( state = {}, action) => {
                 title: null,
                 slug: null,
                 scenarios: []
+            }
+        };
+    case UPDATE_SCENARIO:
+        return {
+            ...state,
+            scenarioOverview: {
+                ...state.scenarioOverview,
+                scenarios: state.scenarioOverview.scenarios.map((scen) => {
+                    if (scen.id === action.scenario.id) {
+                        action.scenario.unsaved = true;
+                        return action.scenario;
+                    }
+                    return scen;
+                })
+            }
+        };
+    case SAVE_SCENARIO_SUCCESS:
+        return {
+            ...state,
+            scenarioOverview: {
+                ...state.scenarioOverview,
+                scenarios: state.scenarioOverview.scenarios.map((scen) => {
+                    if (scen && !scen.id) {
+                        return action.scenario;
+                    }
+                    if (scen.id === action.scenario.id) {
+                        action.scenario.unsaved = false;
+                        return action.scenario;
+                    }
+                    return scen;
+                })
+            }
+        };
+    case DELETE_SCENARIO_SUCCESS:
+        return {
+            ...state,
+            scenarioOverview: {
+                ...state.scenarioOverview,
+                scenarios: state.scenarioOverview.scenarios.filter((scen) => scen?.id !== action.scenario.id)
+            }
+        };
+    case CREATE_SCENARIO:
+        const newScenario = {};
+        action.fields.map((field) => {
+            newScenario[field.name] = widgetDefaults[field.widget];
+            newScenario.project = action.projectId;
+            newScenario.slug = state.config.activeScenario;
+            newScenario.unsaved = true;
+            newScenario.state = 'active';
+        });
+        return {
+            ...state,
+            scenarioOverview: {
+                ...state.scenarioOverview,
+                scenarios: [...state.scenarioOverview.scenarios, newScenario]
             }
         };
     default:

@@ -2,7 +2,16 @@ import React from "react";
 import {connect} from "react-redux";
 const PropTypes = require('prop-types');
 import { Table, Button, Form, FormGroup, FormControl, ControlLabel, HelpBlock } from 'react-bootstrap';
-import {fetchScenarioOverview, showScenarioOverview, hideScenarioOverview} from '../actionsScenarios';
+import {
+    fetchScenarioOverview,
+    showScenarioOverview,
+    hideScenarioOverview,
+    updateScenario,
+    saveScenario,
+    createScenario,
+    runScenario,
+    deleteScenario
+} from '../actionsScenarios';
 import '../scenarios.css';
 
 const scenarioOverviewPanelStyle = {
@@ -39,9 +48,16 @@ class ScenarioOverviewClass extends React.Component {
         fetchScenarioOverview: PropTypes.func,
         showScenarioOverview: PropTypes.func,
         hideScenarioOverview: PropTypes.func,
+        updateScenario: PropTypes.func,
         scenarioOverview: PropTypes.object,
         scenarioList: PropTypes.array,
-        fields: PropTypes.array
+        datasetList: PropTypes.array,
+        fields: PropTypes.array,
+        saveScenario: PropTypes.func,
+        createScenario: PropTypes.func,
+        runScenario: PropTypes.func,
+        deleteScenario: PropTypes.func,
+        projectId: PropTypes.func
     };
 
     static defaultProps = {}
@@ -98,6 +114,7 @@ class ScenarioOverviewClass extends React.Component {
                             })}
                             <div className={'scenario-table-cell'}>Save</div>
                             <div className={'scenario-table-cell'}>Run</div>
+                            <div className={'scenario-table-cell'}>Delete</div>
                             {this.props?.fields?.filter((field) => field.widget === 'resultButton').map((field) => {
                                 return (
                                     <div className={'scenario-table-cell'} key={field.name}>
@@ -113,13 +130,37 @@ class ScenarioOverviewClass extends React.Component {
                                     .map((field) => {
                                         return (
                                             <div className={'scenario-table-cell'}>
-                                                <input
-                                                    key={field.name}
-                                                    style={formControlStyle}
-                                                    type={field.widget}
-                                                    value={this.props.scenarioList.filter((scenToCheck) => scen === scenToCheck)[0][field.name]}
-                                                    onChange={(e) => this.handleChange(e, scen)}
-                                                />
+                                                {(() => {
+                                                    if (field.widget === 'select') {
+                                                        return (
+                                                            <select
+                                                                id={field.name}
+                                                                key={field.name}
+                                                                style={formControlStyle}
+                                                                value={this.props.scenarioList.filter((scenToCheck) => scen === scenToCheck)[0][field.name]}
+                                                                onChange={(e) => this.handleChange(e, scen)}
+                                                            >
+                                                                {
+                                                                    this.props.datasetList.map((dataset) => {
+                                                                        return (
+                                                                            <option value={dataset.id}>{dataset?.layer_title}</option>
+                                                                        );
+                                                                    })
+                                                                }
+                                                            </select>
+                                                        );
+                                                    }
+                                                    return (
+                                                        <input
+                                                            id={field.name}
+                                                            key={field.name}
+                                                            style={formControlStyle}
+                                                            type={field.widget}
+                                                            value={this.props.scenarioList.filter((scenToCheck) => scen === scenToCheck)[0][field.name]}
+                                                            onChange={(e) => this.handleChange(e, scen)}
+                                                        />
+                                                    );
+                                                })()}
                                             </div>
                                         );
                                     })}
@@ -127,8 +168,9 @@ class ScenarioOverviewClass extends React.Component {
                                     <Button
                                         bsStyle="success"
                                         bsSize="xsmall"
-                                        onClick={() => console.log('save')}
+                                        onClick={() => this.props.saveScenario(this.props.mapId, scen)}
                                         style={{'borderRadius': '3px'}}
+                                        className={scen.unsaved ? null : 'disabled'}
                                     >
                                         Save
                                     </Button>
@@ -137,10 +179,22 @@ class ScenarioOverviewClass extends React.Component {
                                     <Button
                                         bsStyle="success"
                                         bsSize="xsmall"
-                                        onClick={() => console.log('run')}
+                                        onClick={() => this.props.runScenario(this.props.mapId, scen)}
                                         style={{'borderRadius': '3px'}}
+                                        className={scen.unsaved ? 'disabled' : null}
                                     >
                                         Run
+                                    </Button>
+                                </div>
+                                <div className={'scenario-button scenario-table-cell'}>
+                                    <Button
+                                        bsStyle="danger"
+                                        bsSize="xsmall"
+                                        onClick={() => {if (window.confirm('Are you sure?')) { this.props.deleteScenario(this.props.mapId, scen);}}}
+                                        style={{'borderRadius': '3px', 'opacity': 0.7}}
+                                        className={scen.unsaved ? 'disabled' : null}
+                                    >
+                                        Delete
                                     </Button>
                                 </div>
                                 {this.props?.fields?.filter((field) => field.widget === 'resultButton')
@@ -148,6 +202,7 @@ class ScenarioOverviewClass extends React.Component {
                                         return (
                                             <div className={'scenario-table-cell'}>
                                                 <input
+                                                    id={field.name}
                                                     key={field.name}
                                                     style={formControlStyle}
                                                     type={field.widget}
@@ -159,22 +214,37 @@ class ScenarioOverviewClass extends React.Component {
                             </div>
                         );
                     })}
+                    <div className={'scenario-table-row'}>
+                        <div className={'scenario-button scenario-table-cell'}>
+                            <Button
+                                bsStyle="success"
+                                bsSize="xsmall"
+                                onClick={() => this.props.createScenario(this.props.fields, this.props.projectId)}
+                                style={{'borderRadius': '3px'}}
+                            >
+                                New
+                            </Button>
+                        </div>
+                    </div>
                 </div>
             </div>
         );
     }
 
     handleChange = (e, scenario) => {
-        console.log('changeme:', scenario);
-        console.log('value', e.target.value);
+        const kv = {};
+        kv[e.target.id] = e.target.value;
+        this.props.updateScenario(scenario, kv);
     }
 }
 
 const mapStateToProps = (state) => {
     return {
         mapId: state?.projectManager?.data?.base_map,
+        projectId: state?.projectManager?.data?.id,
         scenarioOverview: state?.scenarios?.scenarioOverview,
         scenarioList: state?.scenarios?.scenarioOverview?.scenarios || [],
+        datasetList: state?.projectManager?.data?.dataset_set,
         fields: state?.scenarios?.config?.filter((scen) => state?.scenarios?.scenarioOverview?.slug === scen.slug)[0]?.fields
     };
 };
@@ -183,6 +253,11 @@ const mapDispatchToProps = ( dispatch ) => {
     return {
         fetchScenarioOverview: (mapId, slug) => dispatch(fetchScenarioOverview(mapId, slug)),
         showScenarioOverview: (slug) => dispatch(showScenarioOverview(slug)),
+        updateScenario: (scenario, kv) => dispatch(updateScenario(scenario, kv)),
+        saveScenario: (mapId, scenario) => dispatch(saveScenario(mapId, scenario)),
+        runScenario: (mapId, scenario) => dispatch(runScenario(mapId, scenario)),
+        deleteScenario: (mapId, scenario) => dispatch(deleteScenario(mapId, scenario)),
+        createScenario: (fields, projectId) => dispatch(createScenario(fields, projectId)),
         hideScenarioOverview: () => dispatch(hideScenarioOverview())
     };
 };
