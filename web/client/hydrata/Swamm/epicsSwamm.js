@@ -181,7 +181,7 @@ export const autoSaveBmpFormEpic = (action$, store) =>
         .flatMap(() => {
             if (store.getState()?.swamm?.storedBmpForm?.organisation && store.getState()?.swamm?.storedBmpForm?.bmpName) {
                 return Rx.Observable.of(
-                    submitBmpForm(store.getState()?.swamm?.storedBmpForm, store.getState()?.projectManager?.data?.base_map)
+                    // submitBmpForm(store.getState()?.swamm?.storedBmpForm, store.getState()?.projectManager?.data?.base_map)
                 );
             }
             return null;
