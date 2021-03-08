@@ -201,13 +201,13 @@ class SwammBmpChartClass extends React.Component {
 
     pollutants = [
         {
-            name: 'Nitrogen',
-            load_red_total_key: 'n_load_reduction',
+            name: 'Phosphorus',
+            load_red_total_key: 'p_load_reduction',
             units: 'lbs/year'
         },
         {
-            name: 'Phosphorus',
-            load_red_total_key: 'p_load_reduction',
+            name: 'Nitrogen',
+            load_red_total_key: 'n_load_reduction',
             units: 'lbs/year'
         },
         {
