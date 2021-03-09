@@ -50,7 +50,7 @@ class SwammBmpChartClass extends React.Component {
             >
                 <Modal.Header>
                     <Modal.Title style={{textAlign: "center"}}>
-                        <h4 style={{padding: "0", margin: "0"}}>Management Dashboard</h4>
+                        <h4 style={{padding: "0", margin: "0"}}>Total Operational BMPs</h4>
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body style={{padding: "0", margin: "0"}}>
@@ -127,7 +127,8 @@ class SwammBmpChartClass extends React.Component {
                                                         </ResponsiveContainer>
                                                     </div>
                                                 </Col>
-                                                <Col sm={9}>
+                                                <Col sm={7}>
+
                                                     <h4 style={{textAlign: "center"}}>
                                                         Current {pollutant.name} Load Reductions ({pollutant.units})
                                                     </h4>
@@ -183,22 +184,19 @@ class SwammBmpChartClass extends React.Component {
                                 }
                             </Col>
                             <Col sm={2}>
-                                <Row>
-                                    <Legend
-                                        layer={this.props.layerForLegend}
-                                        legendHeight={15}
-                                        legendWidth={15}
-                                        legendOptions={"dpi:300"}
-                                        style={{
-                                            display: "block",
-                                            marginLeft: "auto",
-                                            marginRight: "auto",
-                                            maxWidth: "80%",
-                                            maxHeight: "auto",
-                                            width: "20%"
-                                        }}
-                                    />
-                                </Row>
+                                <Legend
+                                    layer={this.props.layerForLegend}
+                                    legendHeight={20}
+                                    legendWidth={20}
+                                    legendOptions={"dpi:300"}
+                                    style={{
+                                        display: "block",
+                                        marginLeft: "auto",
+                                        marginRight: "auto",
+                                        maxHeight: "auto",
+                                        maxWidth: "100%"
+                                    }}
+                                />
                             </Col>
                         </Row>
                     </Grid>
