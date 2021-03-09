@@ -147,7 +147,8 @@ const runScenario = (mapId, scenario) => {
         return axios.post(`/scenarios/api/${mapId}/${scenario.slug}/${scenario.id}/run/`, scenario
         ).then(
             response => {
-                dispatch(runScenarioSuccess(response.data));
+                dispatch(runScenarioSuccess(scenario));
+                dispatch(fetchScenarioOverview(mapId, scenario.slug));
             }
         ).catch(
             e => {

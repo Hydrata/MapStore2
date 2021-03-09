@@ -192,7 +192,7 @@ class SwammBmpChartClass extends React.Component {
                                     marginLeft: "auto",
                                     marginRight: "auto",
                                     maxHeight: "auto",
-                                    maxWidth: "80%"
+                                    maxWidth: "120%"
                                 }}
                             />
                         </Col>

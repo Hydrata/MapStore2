@@ -129,7 +129,7 @@ export default ( state = {}, action) => {
         action.fields.map((field) => {
             newScenario[field.name] = widgetDefaults[field.widget];
             newScenario.project = action.projectId;
-            newScenario.slug = state.config.activeScenario;
+            newScenario.slug = state.activeScenario;
             newScenario.unsaved = true;
             newScenario.state = 'active';
         });
