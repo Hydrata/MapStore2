@@ -10,7 +10,7 @@ export const bmpByUniqueNameSelector = (state) => state?.swamm?.bmpTypes ?
 export const bmpDashboardDataSelector = (state) => {
     let bmps = state?.swamm?.allBmps ? state?.swamm?.allBmps : [];
     let outputObj = {};
-    bmps.map((bmp) => {
+    bmps.filter((bmp) => bmp.status === 'Operational').map((bmp) => {
         outputObj[bmp.id] = {
             ...bmp
         };
