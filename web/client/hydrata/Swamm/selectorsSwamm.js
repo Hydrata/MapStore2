@@ -58,6 +58,15 @@ export const bmpSpeedDialSelector = (state) => {
             percentPhosphorusReductionTarget: 66,
             percentSedimentReductionTarget: 25
         },
+        419: {
+            mapId: 419,
+            currentNitrogenLoad: 1960104,
+            currentPhosphorusLoad: 40696,
+            currentSedimentLoad: 35334,
+            percentNitrogenReductionTarget: 40,
+            percentPhosphorusReductionTarget: 66,
+            percentSedimentReductionTarget: 25
+        },
         327: {
             mapId: 327,
             currentNitrogenLoad: 1960104,
@@ -96,6 +105,15 @@ export const bmpSpeedDialSelector = (state) => {
         },
         704: {
             mapId: 704,
+            currentNitrogenLoad: 1960104,
+            currentPhosphorusLoad: 40696,
+            currentSedimentLoad: 35334,
+            percentNitrogenReductionTarget: 40,
+            percentPhosphorusReductionTarget: 66,
+            percentSedimentReductionTarget: 25
+        },
+        794: {
+            mapId: 794,
             currentNitrogenLoad: 1960104,
             currentPhosphorusLoad: 40696,
             currentSedimentLoad: 35334,

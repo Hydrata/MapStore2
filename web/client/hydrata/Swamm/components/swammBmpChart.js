@@ -55,150 +55,147 @@ class SwammBmpChartClass extends React.Component {
                 </Modal.Header>
                 <Modal.Body style={{padding: "0", margin: "0"}}>
                     <Grid>
-                        <Row>
-                            <Col sm={10}>
-                                {
-                                    this.pollutants.map(pollutant => {
-                                        return (
-                                            <Row
-                                                className={"container well"}
-                                                style={{padding: 0}}
-                                                key={pollutant.name + "-dashboard"}
-                                            >
-                                                <Col sm={3}>
-                                                    <h4 style={{fontSize: "16px"}}>
-                                                        {pollutant.name} Reduction Progress
-                                                    </h4>
-                                                    <div style={{width: '100%', height: circleSize / 1.2}}>
-                                                        <ResponsiveContainer>
-                                                            <PieChart
-                                                                key={'asdf'}
-                                                                width={circleSize * 1.5}
-                                                                height={circleSize}
+                        <Col sm={10}>
+                            {
+                                this.pollutants.map(pollutant => {
+                                    return (
+                                        <Row
+                                            className={"container well"}
+                                            style={{padding: 0}}
+                                            key={pollutant.name + "-dashboard"}
+                                        >
+                                            <Col sm={3}>
+                                                <h4 style={{fontSize: "16px"}}>
+                                                    {pollutant.name} Reduction Progress
+                                                </h4>
+                                                <div style={{width: '100%', height: circleSize / 1.2}}>
+                                                    <ResponsiveContainer>
+                                                        <PieChart
+                                                            key={'asdf'}
+                                                            width={circleSize * 1.5}
+                                                            height={circleSize}
+                                                        >
+                                                            <Pie
+                                                                data={this.props.speedDialData[`percent${pollutant.name}Target`]}
+                                                                dataKey="value"
+                                                                cx={circleSize / 1.3}
+                                                                cy={circleSize / 2}
+                                                                innerRadius={circleSize / 3}
+                                                                outerRadius={circleSize / 2}
+                                                                fill="#82ca9d"
+                                                                startAngle={180}
+                                                                endAngle={0}
+                                                                isAnimationActive={false}
                                                             >
-                                                                <Pie
-                                                                    data={this.props.speedDialData[`percent${pollutant.name}Target`]}
-                                                                    dataKey="value"
-                                                                    cx={circleSize / 1.3}
-                                                                    cy={circleSize / 2}
-                                                                    innerRadius={circleSize / 3}
-                                                                    outerRadius={circleSize / 2}
-                                                                    fill="#82ca9d"
-                                                                    startAngle={180}
-                                                                    endAngle={0}
-                                                                    isAnimationActive={false}
-                                                                >
-                                                                    <Cell fill={"#25215e"} cornerRadius={5}/>
-                                                                    <Cell fill={"#97b3c3"} cornerRadius={5}/>
-                                                                </Pie>
-                                                                <text
-                                                                    x={circleSize / 1.3}
-                                                                    y={circleSize / 2 - 10}
-                                                                    textAnchor="middle"
-                                                                    fontSize={circleSize / 5}
-                                                                    dominantBaseline="middle"
-                                                                    className="progress-label"
-                                                                >
-                                                                    {this.props.speedDialData[`percent${pollutant.name}Target`]?.[0]?.value.toFixed(1)}%
-                                                                </text>
-                                                                <text
-                                                                    x={circleSize / 1.3}
-                                                                    y={circleSize / 2 + 20}
-                                                                    textAnchor="middle"
-                                                                    fontSize={circleSize / 10}
-                                                                    dominantBaseline="middle"
-                                                                    className="progress-label"
-                                                                >
-                                                                    Progress: {formatMoney(this.props?.speedDialData[`totalBmp${pollutant.name}Reduction`], 0) + ' ' +
-                                                                    pollutant.units}
-                                                                </text>
-                                                                <text
-                                                                    x={circleSize / 1.3}
-                                                                    y={circleSize / 2 + 40}
-                                                                    textAnchor="middle"
-                                                                    fontSize={circleSize / 10}
-                                                                    dominantBaseline="middle"
-                                                                    className="progress-label"
-                                                                >
-                                                                    Target: {formatMoney(this.props?.speedDialData[`target${pollutant.name}LoadReduction`], 0) + ' ' +
-                                                                    pollutant.units}
-                                                                </text>
-                                                            </PieChart>
-                                                        </ResponsiveContainer>
-                                                    </div>
-                                                </Col>
-                                                <Col sm={7}>
-
-                                                    <h4 style={{textAlign: "center"}}>
-                                                        Current {pollutant.name} Load Reductions ({pollutant.units})
-                                                    </h4>
-                                                    <div style={{width: '100%', height: 100}}>
-                                                        <ResponsiveContainer>
-                                                            <BarChart
-                                                                width={600}
-                                                                height={100}
-                                                                data={this.props.dashboardData}
-                                                                margin={{top: 10, right: 0, left: 0, bottom: 10}}
-                                                                layout="vertical"
-                                                                maxBarSize={100}
+                                                                <Cell fill={"#25215e"} cornerRadius={5}/>
+                                                                <Cell fill={"#97b3c3"} cornerRadius={5}/>
+                                                            </Pie>
+                                                            <text
+                                                                x={circleSize / 1.3}
+                                                                y={circleSize / 2 - 10}
+                                                                textAnchor="middle"
+                                                                fontSize={circleSize / 5}
+                                                                dominantBaseline="middle"
+                                                                className="progress-label"
                                                             >
-                                                                <XAxis type="number"/>
-                                                                <YAxis type="category" hide/>
-                                                                <CartesianGrid strokeDasharray="3 3" vertical={false} horizontal={false}/>
-                                                                <Tooltip
-                                                                    content={<CustomTooltip
-                                                                        tooltipBarId={this.state.tooltipBarId}
-                                                                        tooltipPollutantKey={this.state.tooltipPollutantKey}
-                                                                    />}
-                                                                />
-                                                                {Object.keys(this.props.dashboardData[0])
-                                                                    .sort((keyA, keyB) => this.props.dashboardData[0][keyA]?.type - this.props.dashboardData[0][keyB]?.type)
-                                                                    .map(key => {
-                                                                        const bmp = this.props.dashboardData[0][key];
-                                                                        return (
-                                                                            <Bar
-                                                                                key={bmp.id}
-                                                                                stackId="n"
-                                                                                dataKey={(bmp.id + "." + pollutant.load_red_total_key)}
-                                                                                fill={bmp.type_data.colour}
-                                                                                stroke={"white"}
-                                                                                strokeWidth={0}
-                                                                                name="Name"
-                                                                                onMouseOver={() => {
-                                                                                    this.setState({
-                                                                                        tooltipBarId: bmp.id,
-                                                                                        tooltipPollutantKey: pollutant.load_red_total_key
-                                                                                    });
-                                                                                }}
-                                                                            />
-                                                                        );
-                                                                    })
-                                                                }
-                                                            </BarChart>
-                                                        </ResponsiveContainer>
-                                                    </div>
-                                                </Col>
-                                            </Row>
-                                        );
-                                    })
-                                }
-                            </Col>
-                            <Col sm={2}>
-                                <Legend
-                                    layer={this.props.layerForLegend}
-                                    legendHeight={20}
-                                    legendWidth={20}
-                                    legendOptions={"dpi:300"}
-                                    style={{
-                                        display: "block",
-                                        marginLeft: "auto",
-                                        marginRight: "auto",
-                                        maxHeight: "auto",
-                                        maxWidth: "100%"
-                                    }}
-                                />
-                            </Col>
-                        </Row>
+                                                                {this.props.speedDialData[`percent${pollutant.name}Target`]?.[0]?.value.toFixed(1)}%
+                                                            </text>
+                                                            <text
+                                                                x={circleSize / 1.3}
+                                                                y={circleSize / 2 + 20}
+                                                                textAnchor="middle"
+                                                                fontSize={circleSize / 10}
+                                                                dominantBaseline="middle"
+                                                                className="progress-label"
+                                                            >
+                                                                Progress: {formatMoney(this.props?.speedDialData[`totalBmp${pollutant.name}Reduction`], 0) + ' ' +
+                                                                pollutant.units}
+                                                            </text>
+                                                            <text
+                                                                x={circleSize / 1.3}
+                                                                y={circleSize / 2 + 40}
+                                                                textAnchor="middle"
+                                                                fontSize={circleSize / 10}
+                                                                dominantBaseline="middle"
+                                                                className="progress-label"
+                                                            >
+                                                                Target: {formatMoney(this.props?.speedDialData[`target${pollutant.name}LoadReduction`], 0) + ' ' +
+                                                                pollutant.units}
+                                                            </text>
+                                                        </PieChart>
+                                                    </ResponsiveContainer>
+                                                </div>
+                                            </Col>
+                                            <Col sm={7}>
+                                                <h4 style={{textAlign: "center"}}>
+                                                    Current {pollutant.name} Load Reductions ({pollutant.units})
+                                                </h4>
+                                                <div style={{width: '100%', height: 100}}>
+                                                    <ResponsiveContainer>
+                                                        <BarChart
+                                                            width={600}
+                                                            height={100}
+                                                            data={this.props.dashboardData}
+                                                            margin={{top: 10, right: 0, left: 0, bottom: 10}}
+                                                            layout="vertical"
+                                                            maxBarSize={100}
+                                                        >
+                                                            <XAxis type="number"/>
+                                                            <YAxis type="category" hide/>
+                                                            <CartesianGrid strokeDasharray="3 3" vertical={false} horizontal={false}/>
+                                                            <Tooltip
+                                                                content={<CustomTooltip
+                                                                    tooltipBarId={this.state.tooltipBarId}
+                                                                    tooltipPollutantKey={this.state.tooltipPollutantKey}
+                                                                />}
+                                                            />
+                                                            {Object.keys(this.props.dashboardData[0])
+                                                                .sort((keyA, keyB) => this.props.dashboardData[0][keyA]?.type - this.props.dashboardData[0][keyB]?.type)
+                                                                .map(key => {
+                                                                    const bmp = this.props.dashboardData[0][key];
+                                                                    return (
+                                                                        <Bar
+                                                                            key={bmp.id}
+                                                                            stackId="n"
+                                                                            dataKey={(bmp.id + "." + pollutant.load_red_total_key)}
+                                                                            fill={bmp.type_data.colour}
+                                                                            stroke={"white"}
+                                                                            strokeWidth={0}
+                                                                            name="Name"
+                                                                            onMouseOver={() => {
+                                                                                this.setState({
+                                                                                    tooltipBarId: bmp.id,
+                                                                                    tooltipPollutantKey: pollutant.load_red_total_key
+                                                                                });
+                                                                            }}
+                                                                        />
+                                                                    );
+                                                                })
+                                                            }
+                                                        </BarChart>
+                                                    </ResponsiveContainer>
+                                                </div>
+                                            </Col>
+                                        </Row>
+                                    );
+                                })
+                            }
+                        </Col>
+                        <Col sm={2}>
+                            <Legend
+                                layer={this.props.layerForLegend}
+                                legendHeight={20}
+                                legendWidth={20}
+                                legendOptions={"dpi:300"}
+                                style={{
+                                    display: "block",
+                                    marginLeft: "auto",
+                                    marginRight: "auto",
+                                    maxHeight: "auto",
+                                    maxWidth: "80%"
+                                }}
+                            />
+                        </Col>
                     </Grid>
                 </Modal.Body>
                 <Modal.Footer>
