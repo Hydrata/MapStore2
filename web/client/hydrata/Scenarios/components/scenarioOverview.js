@@ -1,7 +1,9 @@
 import React from "react";
+import * as d3 from "d3";
 import {connect} from "react-redux";
 const PropTypes = require('prop-types');
 import { Table, Button, Form, FormGroup, FormControl, ControlLabel, HelpBlock } from 'react-bootstrap';
+import {D3Container} from './d3Container';
 import {
     fetchScenarioOverview,
     showScenarioOverview,
@@ -156,7 +158,11 @@ class ScenarioOverviewClass extends React.Component {
                                                             key={field.name}
                                                             style={formControlStyle}
                                                             type={field.widget}
-                                                            value={this.props.scenarioList.filter((scenToCheck) => scen === scenToCheck)[0][field.name]}
+                                                            value={
+                                                                this.props.scenarioList.filter(
+                                                                    (scenToCheck) => scen === scenToCheck
+                                                                )[0][field.name]
+                                                            }
                                                             onChange={(e) => this.handleChange(e, scen)}
                                                         />
                                                     );
@@ -201,14 +207,13 @@ class ScenarioOverviewClass extends React.Component {
                                     .map((field) => {
                                         return (
                                             <div className={'scenario-table-cell'}>
-                                                <input
-                                                    id={field.name}
-                                                    key={field.name}
-                                                    style={formControlStyle}
-                                                    type={field.widget}
-                                                    value={this.props.scenarioList.filter((scenToCheck) => scen === scenToCheck)[0][field.name]}
-                                                    onChange={(e) => this.handleChange(e, scen)}
-                                                />
+                                                <div style={{'maxHeight': '80px', 'overflowX': 'hidden', 'overflowY': 'scroll', 'textAlign': 'left'}}>
+                                                    {
+                                                        JSON.stringify(this.props.scenarioList.filter(
+                                                            (scenToCheck) => scen === scenToCheck
+                                                        )[0][field.name], null, 2)
+                                                    }
+                                                </div>
                                             </div>);
                                     })}
                             </div>
@@ -226,6 +231,10 @@ class ScenarioOverviewClass extends React.Component {
                             </Button>
                         </div>
                     </div>
+                </div>
+                <div style={{'textAlign': 'left'}}>
+                    <h4>D3 form to build queries and interpret results:</h4>
+                    <D3Container/>
                 </div>
             </div>
         );
