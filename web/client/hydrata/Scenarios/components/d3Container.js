@@ -5,7 +5,7 @@ import Scatterplot from "./Scatterplot";
 
 export class D3Container extends React.Component {
     state = {
-        width: 800,
+        width: 1000,
         height: 600,
         data: d3.range(50).map(_ => [Math.random(), Math.random()])
     };
@@ -22,8 +22,8 @@ export class D3Container extends React.Component {
     render() {
         const { width, height, data } = this.state;
         return (
-            <div>
-                <svg width="800" height="600" onClick={this.onClick}>
+            <div style={{'border': '1px white solid'}}>
+                <svg width={width} height={height} onClick={this.onClick}>
                     <Scatterplot
                         x={50}
                         y={50}
