@@ -12,6 +12,7 @@ const SHOW_SCENARIO_OVERVIEW = 'SHOW_SCENARIO_OVERVIEW';
 const HIDE_SCENARIO_OVERVIEW = 'HIDE_SCENARIO_OVERVIEW';
 const UPDATE_SCENARIO = 'UPDATE_SCENARIO';
 const CREATE_SCENARIO = 'CREATE_SCENARIO';
+const SELECT_SCENARIO = 'SELECT_SCENARIO';
 const SAVE_SCENARIO = 'SAVE_SCENARIO';
 const SAVE_SCENARIO_SUCCESS = 'SAVE_SCENARIO_SUCCESS';
 const SAVE_SCENARIO_ERROR = 'SAVE_SCENARIO_ERROR';
@@ -222,6 +223,13 @@ const hideScenarioOverview = () => {
     };
 };
 
+const selectScenario = (scenario) => {
+    return {
+        type: SELECT_SCENARIO,
+        scenario
+    };
+};
+
 const updateScenario = (scenario, kv) => {
     return {
         type: UPDATE_SCENARIO,
@@ -245,6 +253,7 @@ module.exports = {
     HIDE_SCENARIO_OVERVIEW, hideScenarioOverview,
     UPDATE_SCENARIO, updateScenario,
     CREATE_SCENARIO, createScenario,
+    SELECT_SCENARIO, selectScenario,
     SAVE_SCENARIO, saveScenario,
     SAVE_SCENARIO_SUCCESS, saveScenarioSuccess,
     SAVE_SCENARIO_ERROR, saveScenarioError,

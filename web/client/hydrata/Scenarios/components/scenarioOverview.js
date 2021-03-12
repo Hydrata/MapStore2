@@ -1,5 +1,4 @@
 import React from "react";
-import * as d3 from "d3";
 import {connect} from "react-redux";
 const PropTypes = require('prop-types');
 import { Table, Button, Form, FormGroup, FormControl, ControlLabel, HelpBlock } from 'react-bootstrap';
@@ -11,6 +10,7 @@ import {
     updateScenario,
     saveScenario,
     createScenario,
+    selectScenario,
     runScenario,
     deleteScenario
 } from '../actionsScenarios';
@@ -57,6 +57,7 @@ class ScenarioOverviewClass extends React.Component {
         fields: PropTypes.array,
         saveScenario: PropTypes.func,
         createScenario: PropTypes.func,
+        selectScenario: PropTypes.func,
         runScenario: PropTypes.func,
         deleteScenario: PropTypes.func,
         projectId: PropTypes.func
@@ -108,6 +109,9 @@ class ScenarioOverviewClass extends React.Component {
                 <div className={'scenario-table'}>
                     <div className={'scenario-table-header-group'}>
                         <div className={'scenario-table-row'}>
+                            <div className={'scenario-table-cell'} key={'scenario-selector'}>
+                                Select
+                            </div>
                             {this.props?.fields?.filter((field) => field.widget !== 'resultButton').map((field) => {
                                 return (
                                     <div className={'scenario-table-cell'} key={field.name}>
@@ -128,6 +132,16 @@ class ScenarioOverviewClass extends React.Component {
                     {this.props.scenarioList?.map((scen) => {
                         return (
                             <div className={'scenario-table-row'}>
+                                <div className={'scenario-table-cell'}>
+                                    <input
+                                        id={'scenario-selector-box'}
+                                        style={formControlStyle}
+                                        type={'radio'}
+                                        name={'scenario-selector'}
+                                        value={false}
+                                        onChange={() => this.props.selectScenario(scen)}
+                                    />
+                                </div>
                                 {this.props?.fields?.filter((field) => field.widget !== 'resultButton')
                                     .map((field) => {
                                         return (
@@ -207,7 +221,7 @@ class ScenarioOverviewClass extends React.Component {
                                     .map((field) => {
                                         return (
                                             <div className={'scenario-table-cell'}>
-                                                <div style={{'maxHeight': '80px', 'overflowX': 'hidden', 'overflowY': 'scroll', 'textAlign': 'left'}}>
+                                                <div style={{'maxHeight': '80px', 'overflowX': 'hidden', 'overflowY': 'auto', 'textAlign': 'left', 'padding-left': '5px'}}>
                                                     {
                                                         JSON.stringify(this.props.scenarioList.filter(
                                                             (scenToCheck) => scen === scenToCheck
@@ -253,6 +267,7 @@ const mapStateToProps = (state) => {
         projectId: state?.projectManager?.data?.id,
         scenarioOverview: state?.scenarios?.scenarioOverview,
         scenarioList: state?.scenarios?.scenarioOverview?.scenarios || [],
+        selectedScenario: state?.scenario?.selectedScenario,
         datasetList: state?.projectManager?.data?.dataset_set,
         fields: state?.scenarios?.config?.filter((scen) => state?.scenarios?.scenarioOverview?.slug === scen.slug)[0]?.fields
     };
@@ -266,6 +281,7 @@ const mapDispatchToProps = ( dispatch ) => {
         saveScenario: (mapId, scenario) => dispatch(saveScenario(mapId, scenario)),
         runScenario: (mapId, scenario) => dispatch(runScenario(mapId, scenario)),
         deleteScenario: (mapId, scenario) => dispatch(deleteScenario(mapId, scenario)),
+        selectScenario: (scenario) => dispatch(selectScenario(scenario)),
         createScenario: (fields, projectId) => dispatch(createScenario(fields, projectId)),
         hideScenarioOverview: () => dispatch(hideScenarioOverview())
     };

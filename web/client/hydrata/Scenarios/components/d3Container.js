@@ -1,38 +1,76 @@
 import React from "react";
 import * as d3 from "d3";
+const PropTypes = require('prop-types');
+import {connect} from "react-redux";
 
-import Scatterplot from "./Scatterplot";
+// import Scatterplot from "./Scatterplot";
+import Dag from "./Dag";
 
-export class D3Container extends React.Component {
-    state = {
-        width: 1000,
-        height: 600,
-        data: d3.range(50).map(_ => [Math.random(), Math.random()])
+class D3ContainerClass extends React.Component {
+    static propTypes = {
+        data: PropTypes.array,
+        selectedScenario: PropTypes.object
     };
 
-    onClick = () => {
-        const { width, height } = this.state;
-        this.setState({
-            width: width * 1.0,
-            height: height * 1.0,
+    static defaultProps = {}
+
+    constructor(props) {
+        super(props);
+        this.state = {
             data: d3.range(50).map(_ => [Math.random(), Math.random()])
-        });
+        };
+        this.handleChange = this.handleChange.bind(this);
+    }
+
+    componentDidMount() {
+    }
+
+    componentDidUpdate() {
+    }
+
+    onClick = () => {
+        console.log('clicked graph');
     };
 
     render() {
-        const { width, height, data } = this.state;
         return (
             <div style={{'border': '1px white solid'}}>
-                <svg width={width} height={height} onClick={this.onClick}>
-                    <Scatterplot
+                <svg width={1100} height={700} onClick={this.onClick}>
+                    <Dag
                         x={50}
                         y={50}
-                        width={width}
-                        height={height}
-                        data={data}
+                        width={1000}
+                        height={600}
+                        data={this.props.data}
                     />
                 </svg>
             </div>
         );
     }
+
+    handleChange = (e) => {
+        console.log('handleChange', e);
+    }
 }
+
+const mapStateToProps = (state) => {
+    const latestResult = state?.scenarios?.selectedScenario?.latest_result || {};
+    const data = latestResult[Object.keys(latestResult)?.[0]];
+    return {
+        mapId: state?.projectManager?.data?.base_map,
+        projectId: state?.projectManager?.data?.id,
+        selectedScenario: state?.scenarios?.selectedScenario,
+        data: data || []
+    };
+};
+
+const mapDispatchToProps = ( dispatch ) => {
+    return {
+    };
+};
+
+const D3Container = connect(mapStateToProps, mapDispatchToProps)(D3ContainerClass);
+
+export {
+    D3Container
+};

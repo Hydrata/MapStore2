@@ -8,6 +8,7 @@ import {
     SHOW_SCENARIO_OVERVIEW,
     HIDE_SCENARIO_OVERVIEW,
     CREATE_SCENARIO,
+    SELECT_SCENARIO,
     UPDATE_SCENARIO,
     SAVE_SCENARIO_SUCCESS,
     RUN_SCENARIO,
@@ -65,7 +66,7 @@ export default ( state = {}, action) => {
     case SHOW_SCENARIO_OVERVIEW:
         return {
             ...state,
-            activeScenario: action?.slug,
+            activeScenarioClass: action?.slug,
             visibleScenarioOverview: true,
             scenarioOverview: {
                 ...state.scenarioOverview,
@@ -76,7 +77,7 @@ export default ( state = {}, action) => {
     case HIDE_SCENARIO_OVERVIEW:
         return {
             ...state,
-            activeScenario: null,
+            activeScenarioClass: null,
             visibleScenarioOverview: false,
             scenarioOverview: {
                 ...state.scenarioOverview,
@@ -124,12 +125,17 @@ export default ( state = {}, action) => {
                 scenarios: state.scenarioOverview.scenarios.filter((scen) => scen?.id !== action.scenario.id)
             }
         };
+    case SELECT_SCENARIO:
+        return {
+            ...state,
+            selectedScenario: action.scenario
+        };
     case CREATE_SCENARIO:
         const newScenario = {};
         action.fields.map((field) => {
             newScenario[field.name] = widgetDefaults[field.widget];
             newScenario.project = action.projectId;
-            newScenario.slug = state.activeScenario;
+            newScenario.slug = state.activeScenarioClass;
             newScenario.unsaved = true;
             newScenario.state = 'active';
         });

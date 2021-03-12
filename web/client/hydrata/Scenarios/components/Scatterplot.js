@@ -1,7 +1,7 @@
 import React from "react";
 import * as d3 from "d3";
 
-// import Axis from "./Axis";
+import Axis from "./Axis";
 
 class Scatterplot extends React.PureComponent {
     state = {
@@ -55,8 +55,8 @@ class Scatterplot extends React.PureComponent {
                             </text>
                         </React.Fragment>
                 )}
-                {/*<Axis x={0} y={0} scale={yScale} type="Left" />*/}
-                {/*<Axis x={0} y={height} scale={xScale} type="Bottom" />*/}
+                <Axis x={0} y={0} scale={yScale} type="Left" />
+                <Axis x={0} y={height} scale={xScale} type="Bottom" />
             </g>
         );
     }
