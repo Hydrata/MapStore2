@@ -1,10 +1,7 @@
 import React from "react";
-import * as d3 from "d3";
+import ForceGraph3D from "react-force-graph-3d";
 const PropTypes = require('prop-types');
 import {connect} from "react-redux";
-
-// import Scatterplot from "./Scatterplot";
-import Dag from "./Dag";
 
 class D3ContainerClass extends React.Component {
     static propTypes = {
@@ -17,7 +14,8 @@ class D3ContainerClass extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            data: d3.range(50).map(_ => [Math.random(), Math.random()])
+            'containerWidth': 1000,
+            'containerHeight': 600
         };
         this.handleChange = this.handleChange.bind(this);
     }
@@ -35,15 +33,21 @@ class D3ContainerClass extends React.Component {
     render() {
         return (
             <div style={{'border': '1px white solid'}}>
-                <svg width={1100} height={700} onClick={this.onClick}>
-                    <Dag
-                        x={50}
-                        y={50}
-                        width={1000}
-                        height={600}
-                        data={this.props.data}
-                    />
-                </svg>
+                <ForceGraph3D
+                    graphData={this.props.data}
+                    width={this.state.containerWidth}
+                    height={this.state.containerHeight}
+                    backgroundColor={'#003c8800'}
+                    nodeLabel={'name'}
+                    nodeColor={'yellow'}
+                    nodeOpacity={0.90}
+                    nodeResolution={16}
+                    linkColor={'red'}
+                    linkOpacity={0.90}
+                    linkDirectionalArrowLength={4}
+                    linkDirectionalParticles={0.5}
+                    linkDirectionalParticleWidth={1}
+                />
             </div>
         );
     }
@@ -55,12 +59,29 @@ class D3ContainerClass extends React.Component {
 
 const mapStateToProps = (state) => {
     const latestResult = state?.scenarios?.selectedScenario?.latest_result || {};
-    const data = latestResult[Object.keys(latestResult)?.[0]];
+    let nodesList = latestResult[Object.keys(latestResult)?.[0]] || ["asx_200", "vegetation_structure", "radiation"];
+    let data = {"nodes": [], "links": []};
+    if (typeof(nodesList?.[0]) === 'string') {
+        data.nodes = nodesList?.map((d, index) => {
+            return {
+                "id": index,
+                "name": d
+            };
+        });
+        for (let i = 0; i < nodesList.length - 1; i++) {
+            data.links.push({
+                "id": i,
+                "source": i,
+                "target": i + 1
+            });
+        }
+    }
+    console.log('data:', data);
     return {
         mapId: state?.projectManager?.data?.base_map,
         projectId: state?.projectManager?.data?.id,
         selectedScenario: state?.scenarios?.selectedScenario,
-        data: data || []
+        data: data
     };
 };
 

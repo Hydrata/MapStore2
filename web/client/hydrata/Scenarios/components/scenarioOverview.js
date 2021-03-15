@@ -221,7 +221,7 @@ class ScenarioOverviewClass extends React.Component {
                                     .map((field) => {
                                         return (
                                             <div className={'scenario-table-cell'}>
-                                                <div style={{'maxHeight': '80px', 'overflowX': 'hidden', 'overflowY': 'auto', 'textAlign': 'left', 'padding-left': '5px'}}>
+                                                <div style={{'maxHeight': '80px', 'overflowX': 'hidden', 'overflowY': 'auto', 'textAlign': 'left', 'paddingLeft': '5px'}}>
                                                     {
                                                         JSON.stringify(this.props.scenarioList.filter(
                                                             (scenToCheck) => scen === scenToCheck
