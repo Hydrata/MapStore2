@@ -2,7 +2,6 @@ import React from "react";
 import ForceGraph3D from "react-force-graph-3d";
 const PropTypes = require('prop-types');
 import {connect} from "react-redux";
-import lesMisarblesData from "./lesMiserables.json";
 
 class D3ContainerClass extends React.Component {
     static propTypes = {
