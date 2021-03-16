@@ -42,7 +42,7 @@ class D3ContainerClass extends React.Component {
                     graphData={this.props.data}
                     width={this.state.containerWidth}
                     height={this.state.containerHeight}
-                    backgroundColor={'#003c8800'}
+                    backgroundColor={'#00000080'}
                     nodeVal={'value'}
                     nodeLabel={false}
                     nodeOpacity={0.90}
