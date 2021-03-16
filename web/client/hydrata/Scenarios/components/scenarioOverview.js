@@ -97,6 +97,10 @@ class ScenarioOverviewClass extends React.Component {
                         Scenarios - {this.props.scenarioOverview.title}
                     </h5>
                 </div>
+                <div style={{'textAlign': 'left'}}>
+                    <h4>D3 form to build queries and interpret results:</h4>
+                    <D3Container/>
+                </div>
                 <span
                     className={"btn glyphicon glyphicon-remove"}
                     style={{
@@ -245,10 +249,6 @@ class ScenarioOverviewClass extends React.Component {
                             </Button>
                         </div>
                     </div>
-                </div>
-                <div style={{'textAlign': 'left'}}>
-                    <h4>D3 form to build queries and interpret results:</h4>
-                    <D3Container/>
                 </div>
             </div>
         );
