@@ -2,6 +2,7 @@ import React from "react";
 import ForceGraph3D from "react-force-graph-3d";
 const PropTypes = require('prop-types');
 import {connect} from "react-redux";
+import lesMisarblesData from "./lesMiserables.json";
 
 class D3ContainerClass extends React.Component {
     static propTypes = {
@@ -14,7 +15,7 @@ class D3ContainerClass extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            'containerWidth': 1000,
+            'containerWidth': 1100,
             'containerHeight': 600
         };
         this.handleChange = this.handleChange.bind(this);
@@ -42,11 +43,12 @@ class D3ContainerClass extends React.Component {
                     nodeColor={'yellow'}
                     nodeOpacity={0.90}
                     nodeResolution={16}
+                    nodeAutoColorBy={'group'}
                     linkColor={'red'}
                     linkOpacity={0.90}
                     linkDirectionalArrowLength={4}
-                    linkDirectionalParticles={0.5}
-                    linkDirectionalParticleWidth={1}
+                    linkDirectionalParticles={0.2}
+                    linkDirectionalParticleWidth={2}
                 />
             </div>
         );
@@ -58,9 +60,12 @@ class D3ContainerClass extends React.Component {
 }
 
 const mapStateToProps = (state) => {
+    let data = {"nodes": [], "links": []};
     const latestResult = state?.scenarios?.selectedScenario?.latest_result || {};
     let nodesList = latestResult[Object.keys(latestResult)?.[0]] || ["asx_200", "vegetation_structure", "radiation"];
-    let data = {"nodes": [], "links": []};
+    console.log('latestResult:', latestResult);
+    console.log('nodesList:', nodesList);
+    // case for SKAI API:
     if (typeof(nodesList?.[0]) === 'string') {
         data.nodes = nodesList?.map((d, index) => {
             return {
@@ -73,6 +78,25 @@ const mapStateToProps = (state) => {
                 "id": i,
                 "source": i,
                 "target": i + 1
+            });
+        }
+    }
+    // case for well-formed nodes & links:
+    // debugger;
+    if (Array.isArray(latestResult?.nodes) && Array.isArray(latestResult?.links)) {
+        data = latestResult;
+        if (!data.nodes[0]?.id) {
+            console.log('Array.isArray data:', data);
+            data.nodes.map((node, index) => {
+                data.links.map((link) => {
+                    if (link.source === node.name) {
+                        link.source = index;
+                    }
+                    if (link.target === node.name) {
+                        link.target = index;
+                    }
+                });
+                node.id = index;
             });
         }
     }
