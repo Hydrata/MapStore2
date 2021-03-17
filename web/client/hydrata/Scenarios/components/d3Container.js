@@ -65,6 +65,7 @@ class D3ContainerClass extends React.Component {
                     linkColor={'red'}
                     linkOpacity={0.90}
                     linkWidth={1}
+                    linkCurvature={[0.3]}
                     linkAutoColorBy={'group'}
                     linkDirectionalArrowLength={6}
                     linkDirectionalParticles={0.5}
