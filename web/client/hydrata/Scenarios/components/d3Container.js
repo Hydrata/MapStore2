@@ -6,7 +6,7 @@ const PropTypes = require('prop-types');
 import {connect} from "react-redux";
 import '../scenarios.css';
 
-class D3ContainerClass extends React.Component {
+class DagContainerClass extends React.Component {
     static propTypes = {
         data: PropTypes.array,
         selectedScenario: PropTypes.object
@@ -65,7 +65,7 @@ class D3ContainerClass extends React.Component {
                     linkColor={'red'}
                     linkOpacity={0.90}
                     linkWidth={1}
-                    linkCurvature={[0.3]}
+                    linkCurvature={[0.05]}
                     linkAutoColorBy={'group'}
                     linkDirectionalArrowLength={6}
                     linkDirectionalParticles={0.5}
@@ -135,8 +135,8 @@ const mapDispatchToProps = ( dispatch ) => {
     };
 };
 
-const D3Container = connect(mapStateToProps, mapDispatchToProps)(D3ContainerClass);
+const DagContainer = connect(mapStateToProps, mapDispatchToProps)(DagContainerClass);
 
 export {
-    D3Container
+    DagContainer
 };

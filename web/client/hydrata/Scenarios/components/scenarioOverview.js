@@ -2,7 +2,7 @@ import React from "react";
 import {connect} from "react-redux";
 const PropTypes = require('prop-types');
 import { Table, Button, Form, FormGroup, FormControl, ControlLabel, HelpBlock } from 'react-bootstrap';
-import {D3Container} from './d3Container';
+import {DagContainer} from './d3Container';
 import {
     fetchScenarioOverview,
     showScenarioOverview,
@@ -97,10 +97,13 @@ class ScenarioOverviewClass extends React.Component {
                         Scenarios - {this.props.scenarioOverview.title}
                     </h5>
                 </div>
-                <div style={{'textAlign': 'left'}}>
-                    <h4>D3 form to build queries and interpret results:</h4>
-                    <D3Container/>
-                </div>
+                {(this.props.scenarioOverview.slug === 'skai') ?
+                    <div style={{'textAlign': 'left'}}>
+                        <h4>D3 form to build queries and interpret results:</h4>
+                        <DagContainer/>
+                    </div> :
+                    null
+                }
                 <span
                     className={"btn glyphicon glyphicon-remove"}
                     style={{
