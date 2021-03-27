@@ -3,7 +3,7 @@ import {
     FETCH_SCENARIOS_CONFIG,
     FETCH_SCENARIO_OVERVIEW_SUCCESS,
     FETCH_SCENARIO_OVERVIEW,
-    SHOW_SCENARIO_MANAGER,
+    TOGGLE_SCENARIO_MANAGER,
     HIDE_SCENARIO_MANAGER,
     SHOW_SCENARIO_OVERVIEW,
     HIDE_SCENARIO_OVERVIEW,
@@ -53,10 +53,10 @@ export default ( state = {}, action) => {
                 scenarios: action.data
             }
         };
-    case SHOW_SCENARIO_MANAGER:
+    case TOGGLE_SCENARIO_MANAGER:
         return {
             ...state,
-            visibleScenarioManager: true
+            visibleScenarioManager: !state.visibleScenarioManager
         };
     case HIDE_SCENARIO_MANAGER:
         return {

@@ -32,7 +32,7 @@ class MenuDatasetRowsClass extends React.Component {
                 </div>
             );
         }
-        if (this.props.menuDatasets.length === 0) {
+        if (this.props.menuDatasets?.length === 0) {
             return (
                 <div style={rowsStyle}>
                     <MenuDatasetRow dataset={null}/>
@@ -41,7 +41,7 @@ class MenuDatasetRowsClass extends React.Component {
         }
         return (
             <div style={rowsStyle}>
-                {this.props.menuDatasets.map((dataset) => (
+                {this.props.menuDatasets?.map((dataset) => (
                     <MenuDatasetRow dataset={dataset}/>
                 ))}
             </div>

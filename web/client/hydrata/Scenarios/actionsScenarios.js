@@ -6,7 +6,7 @@ const FETCH_SCENARIOS_CONFIG_SUCCESS = 'FETCH_SCENARIOS_CONFIG_SUCCESS';
 const FETCH_SCENARIO_OVERVIEW = 'FETCH_SCENARIO_OVERVIEW';
 const FETCH_SCENARIO_OVERVIEW_ERROR = 'FETCH_SCENARIO_OVERVIEW_ERROR';
 const FETCH_SCENARIO_OVERVIEW_SUCCESS = 'FETCH_SCENARIO_OVERVIEW_SUCCESS';
-const SHOW_SCENARIO_MANAGER = 'SHOW_SCENARIO_MANAGER';
+const TOGGLE_SCENARIO_MANAGER = 'TOGGLE_SCENARIO_MANAGER';
 const HIDE_SCENARIO_MANAGER = 'HIDE_SCENARIO_MANAGER';
 const SHOW_SCENARIO_OVERVIEW = 'SHOW_SCENARIO_OVERVIEW';
 const HIDE_SCENARIO_OVERVIEW = 'HIDE_SCENARIO_OVERVIEW';
@@ -197,9 +197,9 @@ const createScenario = (fields, projectId) => {
     };
 };
 
-const showScenarioManager = () => {
+const toggleScenarioManager = () => {
     return {
-        type: SHOW_SCENARIO_MANAGER
+        type: TOGGLE_SCENARIO_MANAGER
     };
 };
 
@@ -247,7 +247,7 @@ module.exports = {
     FETCH_SCENARIO_OVERVIEW, fetchScenarioOverview,
     FETCH_SCENARIO_OVERVIEW_ERROR, fetchScenarioOverviewError,
     FETCH_SCENARIO_OVERVIEW_SUCCESS, fetchScenarioOverviewSuccess,
-    SHOW_SCENARIO_MANAGER, showScenarioManager,
+    TOGGLE_SCENARIO_MANAGER, toggleScenarioManager,
     HIDE_SCENARIO_MANAGER, hideScenarioManager,
     SHOW_SCENARIO_OVERVIEW, showScenarioOverview,
     HIDE_SCENARIO_OVERVIEW, hideScenarioOverview,

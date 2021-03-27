@@ -103,13 +103,19 @@ class ProjectManagerContainer extends React.Component {
                         }
                     </ul>
                 </div>
-                {
-                    this.props.openMenuGroup ?
+                {(() => {
+                    console.log('openMenuGroup:', this.props.openMenuGroup);
+                    switch (this.props?.openMenuGroup) {
+                    case null: return null;
+                    case undefined: return null;
+                    case "app_scenario": return <div id={"app-scenario-empty-div"}/>;
+                    default: return (
                         <div style={{...panelStyle}}>
                             <MenuDatasetRows/>
-                        </div> :
-                        null
-                }
+                        </div>
+                    );
+                    }
+                })()}
                 <LegendPanel/>
             </div>
         );

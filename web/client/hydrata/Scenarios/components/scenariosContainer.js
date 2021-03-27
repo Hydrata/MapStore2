@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 const PropTypes = require('prop-types');
 const { mapIdSelector } = require('../../../selectors/map');
 import {setMenuGroup } from "../../ProjectManager/actionsProjectManager";
-import {fetchScenariosConfig, showScenarioManager, showScenarioOverview, hideScenarioManager} from "../actionsScenarios";
+import {fetchScenariosConfig, toggleScenarioManager, showScenarioOverview, hideScenarioManager} from "../actionsScenarios";
 import {ScenarioOverview} from "./scenarioOverview";
 
 // eslint-disable-next-line camelcase
@@ -74,7 +74,7 @@ class ScenariosContainer extends React.Component {
     static propTypes = {
         fetchScenariosConfig: PropTypes.func,
         fetchScenariosDetailConfig: PropTypes.func,
-        showScenarioManager: PropTypes.func,
+        toggleScenarioManager: PropTypes.func,
         hideScenarioManager: PropTypes.func,
         showScenarioOverview: PropTypes.func,
         visibleScenarioManager: PropTypes.bool,
@@ -82,7 +82,8 @@ class ScenariosContainer extends React.Component {
         mapId: PropTypes.number,
         setMenuGroup: PropTypes.func,
         hasScenarioConfig: PropTypes.bool,
-        config: PropTypes.array
+        config: PropTypes.array,
+        numberOfMenus: PropTypes.number
     };
 
     static defaultProps = {
@@ -126,10 +127,10 @@ class ScenariosContainer extends React.Component {
                     <ul className="menu-groups">
                         <button
                             key={'scenarios'}
-                            style={{...buttonStyle, left: 7 * 100 + 20}}
+                            style={{...buttonStyle, left: (this.props.numberOfMenus + 1) * 100 + 20}}
                             onClick={() => {
-                                this.props.showScenarioManager();
-                                this.props.setMenuGroup(null);
+                                this.props.toggleScenarioManager();
+                                this.props.setMenuGroup('app_scenario');
                             }}>
                             { this.isFetching ? 'Scenarios' : 'Scenarios'}
                         </button>
@@ -172,18 +173,19 @@ class ScenariosContainer extends React.Component {
 const mapStateToProps = (state) => {
     return {
         mapId: mapIdSelector(state),
-        visibleScenarioManager: state?.scenarios?.visibleScenarioManager,
+        visibleScenarioManager: state?.scenarios?.visibleScenarioManager && (state.projectManager?.openMenuGroup === 'app_scenario' || !state.projectManager?.openMenuGroup),
         visibleScenarioOverview: state?.scenarios?.visibleScenarioOverview,
         hasScenarioConfig: state?.scenarios?.hasScenarioConfig,
         openMenuGroup: state?.projectManager?.openMenuGroup,
-        config: state?.scenarios?.config
+        config: state?.scenarios?.config,
+        numberOfMenus: state?.projectManager?.data?.map_store_menu_groups?.length
     };
 };
 
 const mapDispatchToProps = ( dispatch ) => {
     return {
         fetchScenariosConfig: fetchScenariosConfig(dispatch),
-        showScenarioManager: () => dispatch(showScenarioManager()),
+        toggleScenarioManager: () => dispatch(toggleScenarioManager()),
         hideScenarioManager: () => dispatch(hideScenarioManager()),
         showScenarioOverview: (scen) => dispatch(showScenarioOverview(scen)),
         setMenuGroup: (menuGroup) => dispatch(setMenuGroup(menuGroup))
