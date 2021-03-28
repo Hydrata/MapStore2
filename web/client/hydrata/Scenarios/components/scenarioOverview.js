@@ -22,7 +22,7 @@ const scenarioOverviewPanelStyle = {
     top: "85px",
     left: "20px",
     minWidth: "760px",
-    width: "100%",
+    width: "95%",
     maxHeight: "92%",
     backgroundColor: "rgba(0,60,136,0.6)",
     borderColor: "rgb(255 255 255 / 70%)",
@@ -98,9 +98,8 @@ class ScenarioOverviewClass extends React.Component {
                         Scenarios - {this.props.scenarioOverview.title}
                     </h5>
                 </div>
-                {(this.props.scenarioOverview.slug === 'skai') ?
-                    <div style={{'textAlign': 'left'}}>
-                        <h4>D3 form to build queries and interpret results:</h4>
+                {(this.props.scenarioOverview.slug === 'network-analysis') ?
+                    <div style={{'textAlign': 'center'}}>
                         <DagContainer/>
                     </div> :
                     null

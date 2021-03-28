@@ -6,7 +6,7 @@ const PropTypes = require('prop-types');
 import {connect} from "react-redux";
 import '../scenarios.css';
 
-class DagContainerClass extends React.Component {
+class DagContainerClass extends React.PureComponent {
     static propTypes = {
         data: PropTypes.array,
         selectedScenario: PropTypes.object
@@ -16,11 +16,8 @@ class DagContainerClass extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = {
-            'containerWidth': 1100,
-            'containerHeight': 600
-        };
         this.handleChange = this.handleChange.bind(this);
+        this.graphContainer = React.createRef();
     }
 
     componentDidMount() {
@@ -36,12 +33,12 @@ class DagContainerClass extends React.Component {
     render() {
         const extraRenderers = [new CSS2DRenderer()];
         return (
-            <div style={{'border': '1px white solid', 'width': '100%'}}>
+            <div style={{'border': '1px white solid', 'width': '100%'}} ref={this.graphContainer}>
                 <ForceGraph3D
                     extraRenderers={extraRenderers}
                     graphData={this.props.data}
-                    width={this.state.containerWidth}
-                    height={this.state.containerHeight}
+                    width={this.graphContainer?.current?.offsetWidth}
+                    height={600}
                     backgroundColor={'#00000080'}
                     nodeVal={'value'}
                     nodeLabel={false}
@@ -56,10 +53,13 @@ class DagContainerClass extends React.Component {
                     nodeThreeObject={node => {
                         const nodeEl = document.createElement('div');
                         nodeEl.textContent = node.name;
-                        nodeEl.style.color = node.color;
+                        nodeEl.style.color = 'white';
                         nodeEl.style.marginTop = '18px';
                         nodeEl.className = 'node-label';
                         return new THREE.CSS2DObject(nodeEl);
+                    }}
+                    onNodeClick={node => {
+                        console.log('node:', node);
                     }}
                     nodeThreeObjectExtend
                     linkColor={'red'}
