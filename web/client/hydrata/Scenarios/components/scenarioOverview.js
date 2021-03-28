@@ -22,6 +22,8 @@ const scenarioOverviewPanelStyle = {
     top: "85px",
     left: "20px",
     minWidth: "760px",
+    width: "100%",
+    maxHeight: "92%",
     backgroundColor: "rgba(0,60,136,0.6)",
     borderColor: "rgb(255 255 255 / 70%)",
     borderWidth: "2px",
@@ -32,8 +34,7 @@ const scenarioOverviewPanelStyle = {
     color: "white",
     textAlign: "right",
     overflowY: "auto",
-    overflowX: "hidden",
-    maxHeight: "92%"
+    overflowX: "auto"
 };
 
 const formControlStyle = {

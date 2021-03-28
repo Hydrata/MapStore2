@@ -36,7 +36,7 @@ class DagContainerClass extends React.Component {
     render() {
         const extraRenderers = [new CSS2DRenderer()];
         return (
-            <div style={{'border': '1px white solid'}}>
+            <div style={{'border': '1px white solid', 'width': '100%'}}>
                 <ForceGraph3D
                     extraRenderers={extraRenderers}
                     graphData={this.props.data}
