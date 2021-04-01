@@ -4,6 +4,7 @@ const PropTypes = require('prop-types');
 const { mapIdSelector } = require('../../../selectors/map');
 import {fetchProjectManagerConfig, setMenuGroup} from "../actionsProjectManager";
 import {MenuDatasetRows} from './projectManagerMenuDatasetRows';
+import NetworksContainer from "../../Networks/components/networksContainer";
 import LegendPanel from "./legendPanel";
 
 // eslint-disable-next-line camelcase
@@ -109,6 +110,7 @@ class ProjectManagerContainer extends React.Component {
                     case null: return null;
                     case undefined: return null;
                     case "app_scenario": return <div id={"app-scenario-empty-div"}/>;
+                    case "app_networks": return <div id={"app-networks"}><NetworksContainer/></div>;
                     default: return (
                         <div style={{...panelStyle}}>
                             <MenuDatasetRows/>
@@ -132,7 +134,7 @@ const mapStateToProps = (state) => {
         projectTitle: state?.projectManager?.data?.title,
         isFetching: state?.projectManager?.fetching,
         hasPmData: state?.projectManager?.data,
-        openMenuGroup: state?.projectManager?.openMenuGroup
+        openMenuGroup: state?.projectManager?.openMenuGroup?.id_label
     };
 };
 
