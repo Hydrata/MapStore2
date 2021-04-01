@@ -111,6 +111,7 @@ class NetworksContainerClass extends React.Component {
                                             id={'networks-selector-box'}
                                             style={formControlStyle}
                                             type={'radio'}
+                                            name={'networks-selector'}
                                             value={false}
                                             onChange={() => this.props.selectNetwork(network)}
                                         />
