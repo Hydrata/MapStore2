@@ -105,7 +105,7 @@ class NetworksContainerClass extends React.Component {
                         </div>
                         {this.props.networksList?.map((network) => {
                             return (
-                                <div className={'networks-table-row'} key={network.name}>
+                                <div className={'networks-table-row'} key={network.id}>
                                     <div className={'networks-table-cell'}>
                                         <input
                                             id={'networks-selector-box'}
@@ -122,10 +122,10 @@ class NetworksContainerClass extends React.Component {
                                     <div className={'networks-table-cell'}>
                                         <input
                                             id={'name'}
-                                            key={'name'}
+                                            key={'input-id-' + network?.id}
                                             style={formControlStyle}
                                             type={'text'}
-                                            value={this.props.networksList.filter((networkToCheck) => network === networkToCheck)[0].name}
+                                            value={this.props.networksList.filter((networkToCheck) => network.id === networkToCheck.id)[0].name}
                                             onChange={(e) => this.handleChange(e, network)}
                                         />
                                     </div>
@@ -155,7 +155,7 @@ class NetworksContainerClass extends React.Component {
                                         <Button
                                             bsStyle="danger"
                                             bsSize="xsmall"
-                                            onClick={() => this.props.deleteNetwork(this.props.mapId, network)}
+                                            onClick={() => {if (window.confirm('Are you sure?')) { this.props.deleteNetwork(this.props.mapId, network);}}}
                                             style={{'borderRadius': '3px'}}
                                             className={network?.unsaved ? 'disabled' : null}
                                         >
