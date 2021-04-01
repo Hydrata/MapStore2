@@ -110,7 +110,7 @@ class ProjectManagerContainer extends React.Component {
                     case null: return null;
                     case undefined: return null;
                     case "app_scenario": return <div id={"app-scenario-empty-div"}/>;
-                    case "app_networks": return <div id={"app-networks"}><NetworksContainer/></div>;
+                    case "app_networks": return <NetworksContainer/>;
                     default: return (
                         <div style={{...panelStyle}}>
                             <MenuDatasetRows/>

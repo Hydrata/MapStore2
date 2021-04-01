@@ -2,7 +2,7 @@ import React from "react";
 import {connect} from "react-redux";
 const PropTypes = require('prop-types');
 import { Button } from 'react-bootstrap';
-import {DagContainer} from './d3Container';
+import {DagContainer} from './dagContainer';
 import {
     fetchNetworksList,
     showNetworksList,
@@ -27,13 +27,19 @@ class NetworksContainerClass extends React.Component {
     static propTypes = {
         data: PropTypes.array,
         mapId: PropTypes.number,
+        projectId: PropTypes.number,
         networksList: PropTypes.array,
         fetchNetworksList: PropTypes.func,
         showNetworksList: PropTypes.func,
         hideNetworksList: PropTypes.func,
         selectNetwork: PropTypes.func,
         createNetwork: PropTypes.func,
-        updateNetwork: PropTypes.func
+        deleteNetwork: PropTypes.func,
+        updateNetwork: PropTypes.func,
+        saveNetwork: PropTypes.func,
+        openMenuGroupLabel: PropTypes.string,
+        selectedNetwork: PropTypes.object,
+        setMenuGroup: PropTypes.func
     };
 
     static defaultProps = {}
@@ -61,18 +67,19 @@ class NetworksContainerClass extends React.Component {
     }
 
     render() {
-        return (
-            (this.props.openMenuGroup?.id_label === 'app_networks') ?
-                <div id={'networks-list'} className={'container networks-list-panel'}>
+        let panel;
+        if (this.props.openMenuGroupLabel === 'app_networks') {
+            panel = (
+                <div id={'networks-list'} className={'container networks-list-panel'} key={'networks-list-key'}>
                     <div className={"row"}>
                         <h5
                             style={{textAlign: 'left', marginLeft: '10px'}}
                         >
-                            Networks
+                            Networks - {this.props?.selectedNetwork?.name}
                         </h5>
                     </div>
                     <div style={{'textAlign': 'center'}}>
-                        <DagContainer/>
+                        <DagContainer key={'networks-dag-container'}/>
                     </div>
                     <span
                         className={"btn glyphicon glyphicon-remove"}
@@ -86,7 +93,7 @@ class NetworksContainerClass extends React.Component {
                     <div className={'networks-table'}>
                         <div className={'networks-table-header-group'}>
                             <div className={'networks-table-row'}>
-                                <div className={'networks-table-cell'} key={'networks-selector'}>
+                                <div className={'networks-table-cell'}>
                                     Select
                                 </div>
                                 <div className={'networks-table-cell'}>ID</div>
@@ -98,13 +105,12 @@ class NetworksContainerClass extends React.Component {
                         </div>
                         {this.props.networksList?.map((network) => {
                             return (
-                                <div className={'networks-table-row'}>
+                                <div className={'networks-table-row'} key={network.name}>
                                     <div className={'networks-table-cell'}>
                                         <input
                                             id={'networks-selector-box'}
                                             style={formControlStyle}
                                             type={'radio'}
-                                            name={'networks-selector'}
                                             value={false}
                                             onChange={() => this.props.selectNetwork(network)}
                                         />
@@ -128,7 +134,7 @@ class NetworksContainerClass extends React.Component {
                                             bsSize="xsmall"
                                             onClick={() => this.props.saveNetwork(this.props.mapId, network)}
                                             style={{'borderRadius': '3px'}}
-                                            className={network.unsaved ? null : 'disabled'}
+                                            className={network?.unsaved ? null : 'disabled'}
                                         >
                                             Save
                                         </Button>
@@ -139,7 +145,7 @@ class NetworksContainerClass extends React.Component {
                                             bsSize="xsmall"
                                             onClick={() => alert("Copy network feature not yet implemented")}
                                             style={{'borderRadius': '3px'}}
-                                            className={network.unsaved ? 'disabled' : null}
+                                            className={network?.unsaved ? 'disabled' : null}
                                         >
                                             Copy
                                         </Button>
@@ -150,7 +156,7 @@ class NetworksContainerClass extends React.Component {
                                             bsSize="xsmall"
                                             onClick={() => this.props.deleteNetwork(this.props.mapId, network)}
                                             style={{'borderRadius': '3px'}}
-                                            className={network.unsaved ? 'disabled' : null}
+                                            className={network?.unsaved ? 'disabled' : null}
                                         >
                                             Delete
                                         </Button>
@@ -171,8 +177,15 @@ class NetworksContainerClass extends React.Component {
                             </div>
                         </div>
                     </div>
-                </div> :
-                <div id={'networks-list'} />
+                </div>
+            );
+        } else {
+            panel = (<div id={'empty-network-list'}/>);
+        }
+        return (
+            <div>
+                {panel}
+            </div>
         );
     }
 
@@ -189,7 +202,7 @@ const mapStateToProps = (state) => {
         projectId: state?.projectManager?.data?.id,
         networksList: state?.networks?.data,
         selectedNetwork: state?.networks?.selectedNetwork,
-        openMenuGroup: state?.projectManager?.openMenuGroup
+        openMenuGroupLabel: state?.projectManager?.openMenuGroup?.id_label
     };
 };
 

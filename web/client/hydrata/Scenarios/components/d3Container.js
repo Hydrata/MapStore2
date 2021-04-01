@@ -31,11 +31,11 @@ class DagContainerClass extends React.PureComponent {
     };
 
     render() {
-        const extraRenderers = [new CSS2DRenderer()];
+        // const extraRenderers = [new CSS2DRenderer()];
         return (
             <div style={{'border': '1px white solid', 'width': '100%'}} ref={this.graphContainer}>
                 <ForceGraph3D
-                    extraRenderers={extraRenderers}
+                    // extraRenderers={extraRenderers}
                     graphData={this.props.data}
                     width={this.graphContainer?.current?.offsetWidth}
                     height={600}
@@ -50,18 +50,18 @@ class DagContainerClass extends React.PureComponent {
                         node.fy = node.y;
                         node.fz = node.z;
                     }}
-                    nodeThreeObject={node => {
-                        const nodeEl = document.createElement('div');
-                        nodeEl.textContent = node.name;
-                        nodeEl.style.color = 'white';
-                        nodeEl.style.marginTop = '18px';
-                        nodeEl.className = 'node-label';
-                        return new THREE.CSS2DObject(nodeEl);
-                    }}
+                    // nodeThreeObject={node => {
+                    //     const nodeEl = document.createElement('div');
+                    //     nodeEl.textContent = node.name;
+                    //     nodeEl.style.color = 'white';
+                    //     nodeEl.style.marginTop = '18px';
+                    //     nodeEl.className = 'node-label';
+                    //     return new THREE.CSS2DObject(nodeEl);
+                    // }}
                     onNodeClick={node => {
                         console.log('node:', node);
                     }}
-                    nodeThreeObjectExtend
+                    // nodeThreeObjectExtend
                     linkColor={'red'}
                     linkOpacity={0.90}
                     linkWidth={1}

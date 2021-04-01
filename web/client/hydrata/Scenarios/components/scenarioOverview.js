@@ -1,8 +1,7 @@
 import React from "react";
 import {connect} from "react-redux";
 const PropTypes = require('prop-types');
-import { Table, Button, Form, FormGroup, FormControl, ControlLabel, HelpBlock } from 'react-bootstrap';
-import {DagContainer} from './d3Container';
+import { Button } from 'react-bootstrap';
 import {
     fetchScenarioOverview,
     showScenarioOverview,
@@ -98,12 +97,6 @@ class ScenarioOverviewClass extends React.Component {
                         Scenarios - {this.props.scenarioOverview.title}
                     </h5>
                 </div>
-                {(this.props.scenarioOverview.slug === 'network-analysis') ?
-                    <div style={{'textAlign': 'center'}}>
-                        <DagContainer/>
-                    </div> :
-                    null
-                }
                 <span
                     className={"btn glyphicon glyphicon-remove"}
                     style={{
