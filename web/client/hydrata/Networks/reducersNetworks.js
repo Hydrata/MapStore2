@@ -7,7 +7,12 @@ import {
     CREATE_NETWORK,
     SELECT_NETWORK,
     SAVE_NETWORK_SUCCESS,
-    DELETE_NETWORK_SUCCESS
+    SAVE_NODE_SUCCESS,
+    DELETE_NETWORK_SUCCESS,
+    SELECT_LINK,
+    SELECT_NODE,
+    UPDATE_LINK,
+    UPDATE_NODE
 } from "./actionsNetworks";
 
 export default ( state = {}, action) => {
@@ -39,11 +44,25 @@ export default ( state = {}, action) => {
             ...state,
             data: state.data?.map((network) => {
                 if (network.id === action.network.id) {
-                    action.network.unsaved = true;
+                    // action.network.unsaved = true;
                     return action.network;
                 }
                 return network;
             })
+        };
+    case UPDATE_NODE:
+        // action.node.unsaved = true;
+        return {
+            ...state,
+            selectedNode: {
+                ...state.selectedNode,
+                ...action.kv
+            }
+        };
+    case UPDATE_LINK:
+        return {
+            ...state,
+            selectedLink: action.link
         };
     case SAVE_NETWORK_SUCCESS:
         return {
@@ -59,6 +78,14 @@ export default ( state = {}, action) => {
                 return network;
             })
         };
+    case SAVE_NODE_SUCCESS:
+        return {
+            ...state,
+            selectedNode: {
+                ...action.node,
+                unsaved: false
+            }
+        };
     case DELETE_NETWORK_SUCCESS:
         return {
             ...state,
@@ -68,6 +95,16 @@ export default ( state = {}, action) => {
         return {
             ...state,
             selectedNetwork: action.network
+        };
+    case SELECT_NODE:
+        return {
+            ...state,
+            selectedNode: action.node
+        };
+    case SELECT_LINK:
+        return {
+            ...state,
+            selectedLink: action.link
         };
     case CREATE_NETWORK:
         return {

@@ -4,12 +4,15 @@ import {CSS2DRenderer, CSS2DObject} from "three-css2drender";
 const PropTypes = require('prop-types');
 import {connect} from "react-redux";
 import '../networks.css';
+import {selectNode, selectLink} from "../actionsNetworks";
 
 class DagContainerClass extends React.Component {
     static propTypes = {
         data: PropTypes.array,
         selectedNetwork: PropTypes.object,
-        networks: PropTypes.array
+        networks: PropTypes.array,
+        selectLink: PropTypes.func,
+        selectNode: PropTypes.func
     };
 
     static defaultProps = {}
@@ -30,19 +33,23 @@ class DagContainerClass extends React.Component {
         console.log('clicked graph');
     };
 
+    onNodeHover(e) {
+        e.target.style.cursor = 'wait';
+    }
+
     render() {
         let extraRenderers = [new CSS2DRenderer()];
         return (
             <div style={{'border': '1px white solid', 'width': '100%'}} ref={this.graphContainer}>
                 <ForceGraph3D
-                    key={this.props?.selectedNetwork?.name}
+                    key={this.props?.selectedNetwork?.id}
                     extraRenderers={extraRenderers}
                     graphData={this.props?.selectedNetwork?.json}
                     width={this.graphContainer?.current?.offsetWidth}
                     height={600}
                     backgroundColor={'#00000080'}
                     nodeVal={'value'}
-                    nodeLabel={''}
+                    nodeLabel={'description'}
                     nodeOpacity={0.90}
                     nodeResolution={16}
                     nodeAutoColorBy={'group'}
@@ -61,8 +68,14 @@ class DagContainerClass extends React.Component {
                     }}
                     onNodeClick={node => {
                         console.log('node:', node);
+                        this.props.selectNode(node);
                     }}
+                    // onNodeHover={(this.onNodeHover)}
                     nodeThreeObjectExtend
+                    onLinkClick={link => {
+                        console.log('link:', link);
+                        this.props.selectLink(link);
+                    }}
                     linkColor={'red'}
                     linkOpacity={0.90}
                     linkWidth={1}
@@ -93,6 +106,8 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = ( dispatch ) => {
     return {
+        selectNode: (node) => dispatch(selectNode(node)),
+        selectLink: (link) => dispatch(selectLink(link))
     };
 };
 

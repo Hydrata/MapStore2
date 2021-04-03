@@ -11,10 +11,13 @@ import {
     saveNetwork,
     deleteNetwork,
     selectNetwork,
-    createNetwork
+    createNetwork,
+    selectNode,
+    selectLink
 } from '../actionsNetworks';
 import '../networks.css';
 import {setMenuGroup} from "../../ProjectManager/actionsProjectManager";
+import {EditNodeForm} from "./editNodeForm";
 
 const formControlStyle = {
     border: 'none',
@@ -39,6 +42,7 @@ class NetworksContainerClass extends React.Component {
         saveNetwork: PropTypes.func,
         openMenuGroupLabel: PropTypes.string,
         selectedNetwork: PropTypes.object,
+        selectedNode: PropTypes.object,
         setMenuGroup: PropTypes.func
     };
 
@@ -78,8 +82,9 @@ class NetworksContainerClass extends React.Component {
                             Networks - {this.props?.selectedNetwork?.name}
                         </h5>
                     </div>
-                    <div style={{'textAlign': 'center'}}>
-                        <DagContainer key={'networks-dag-container'}/>
+                    <div>
+                        <DagContainer key={'networks-dag-container'} style={{'textAlign': 'center'}}/>
+                        {this.props.selectedNode ? <EditNodeForm/> : null}
                     </div>
                     <span
                         className={"btn glyphicon glyphicon-remove"}
@@ -203,7 +208,9 @@ const mapStateToProps = (state) => {
         projectId: state?.projectManager?.data?.id,
         networksList: state?.networks?.data,
         selectedNetwork: state?.networks?.selectedNetwork,
-        openMenuGroupLabel: state?.projectManager?.openMenuGroup?.id_label
+        openMenuGroupLabel: state?.projectManager?.openMenuGroup?.id_label,
+        selectedNode: state?.networks?.selectedNode,
+        selectedLink: state?.networks?.selectedLink
     };
 };
 
@@ -217,7 +224,9 @@ const mapDispatchToProps = ( dispatch ) => {
         deleteNetwork: (mapId, network) => dispatch(deleteNetwork(mapId, network)),
         selectNetwork: (network) => dispatch(selectNetwork(network)),
         createNetwork: (projectId) => dispatch(createNetwork(projectId)),
-        setMenuGroup: (menuGroup) => dispatch(setMenuGroup(menuGroup))
+        setMenuGroup: (menuGroup) => dispatch(setMenuGroup(menuGroup)),
+        selectNode: (node) => dispatch(selectNode(node)),
+        selectLink: (node) => dispatch(selectLink(link))
     };
 };
 

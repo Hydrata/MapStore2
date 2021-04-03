@@ -18,7 +18,12 @@ function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
     }
 }
 
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 export {
     isInt,
-    formatMoney
+    formatMoney,
+    capitalizeFirstLetter
 };
