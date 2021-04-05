@@ -30,7 +30,6 @@ class DagContainerClass extends React.Component {
     componentDidUpdate() {
         console.log('this.graph', this.graph);
         this.graph.current.refresh();
-        this.graph.current.reheat();
     }
 
     onClick = () => {
