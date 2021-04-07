@@ -71,7 +71,7 @@ function saveNetworkError(e) {
 const saveNetwork = (mapId, network) => {
     if (network.id) {
         return (dispatch) => {
-            return axios.put(`/scenarios/api/${mapId}/networks/${network.id}/`, network
+            return axios.patch(`/scenarios/api/${mapId}/networks/${network.id}/`, network
             ).then(
                 response => {
                     dispatch(saveNetworkSuccess(response.data));
@@ -114,11 +114,14 @@ function saveNodeError(e) {
 
 const saveNode = (mapId, node) => {
     if (node.id) {
-        return (dispatch) => {
-            return axios.put(`/scenarios/api/${mapId}/nodes/${node.id}/`, node
+        return (dispatch, getState) => {
+            const state = getState();
+            const networkPayload = {id: state?.networks?.selectedNetwork?.id};
+            return axios.patch(`/scenarios/api/${mapId}/nodes/${node.id}/`, node
             ).then(
                 response => {
                     dispatch(saveNodeSuccess(response.data));
+                    dispatch(saveNetwork(state?.projectManager?.data?.base_map, networkPayload));
                 }
             ).catch(
                 e => {
