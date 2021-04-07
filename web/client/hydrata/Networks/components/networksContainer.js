@@ -3,6 +3,7 @@ import {connect} from "react-redux";
 const PropTypes = require('prop-types');
 import { Button } from 'react-bootstrap';
 import {DagContainer} from './dagContainer';
+import {CreateNodeForm} from './createNodeForm';
 import {
     fetchNetworksList,
     showNetworksList,
@@ -43,7 +44,8 @@ class NetworksContainerClass extends React.Component {
         openMenuGroupLabel: PropTypes.string,
         selectedNetwork: PropTypes.object,
         selectedNode: PropTypes.object,
-        setMenuGroup: PropTypes.func
+        setMenuGroup: PropTypes.func,
+        creatingNode: PropTypes.object
     };
 
     static defaultProps = {}
@@ -85,6 +87,7 @@ class NetworksContainerClass extends React.Component {
                     <div>
                         <DagContainer key={'networks-dag-container'} style={{'textAlign': 'center'}}/>
                         {this.props.selectedNode ? <EditNodeForm/> : null}
+                        {this.props.creatingNode ? <CreateNodeForm/> : null}
                     </div>
                     <span
                         className={"btn glyphicon glyphicon-remove"}
@@ -210,7 +213,8 @@ const mapStateToProps = (state) => {
         selectedNetwork: state?.networks?.selectedNetwork,
         openMenuGroupLabel: state?.projectManager?.openMenuGroup?.id_label,
         selectedNode: state?.networks?.selectedNode,
-        selectedLink: state?.networks?.selectedLink
+        selectedLink: state?.networks?.selectedLink,
+        creatingNode: state?.networks?.creatingNode
     };
 };
 
@@ -226,7 +230,7 @@ const mapDispatchToProps = ( dispatch ) => {
         createNetwork: (projectId) => dispatch(createNetwork(projectId)),
         setMenuGroup: (menuGroup) => dispatch(setMenuGroup(menuGroup)),
         selectNode: (node) => dispatch(selectNode(node)),
-        selectLink: (node) => dispatch(selectLink(link))
+        selectLink: (link) => dispatch(selectLink(link))
     };
 };
 

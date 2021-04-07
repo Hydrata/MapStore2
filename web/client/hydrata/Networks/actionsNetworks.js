@@ -20,7 +20,9 @@ const DELETE_NETWORK_ERROR = 'NETWORKS:DELETE_NETWORK_ERROR';
 const SELECT_NODE = 'NETWORKS:SELECT_NODE';
 const SELECT_LINK = 'NETWORKS:SELECT_LINK';
 const UPDATE_NODE = 'NETWORKS:UPDATE_NODE';
+const UPDATE_CREATING_NODE = 'NETWORKS:UPDATE_CREATING_NODE';
 const UPDATE_LINK = 'NETWORKS:UPDATE_LINK';
+const SHOW_CREATE_NODE_FORM = 'NETWORKS:SHOW_CREATE_NODE_FORM';
 
 const fetchNetworksListSuccess = (data) => {
     return {
@@ -130,7 +132,10 @@ const saveNode = (mapId, node) => {
             );
         };
     }
-    return (dispatch) => {
+    return (dispatch, getState) => {
+        const state = getState();
+        node.project = state?.projectManager?.data?.id;
+        node.network = state?.networks?.selectedNetwork?.id;
         return axios.post(`/scenarios/api/${mapId}/nodes/`, node
         ).then(
             response => {
@@ -235,6 +240,16 @@ const updateNode = (kv) => {
     };
 };
 
+const updateCreatingNode = (kv) => {
+    return {
+        type: UPDATE_CREATING_NODE,
+        kv: {
+            ...kv,
+            unsaved: true
+        }
+    };
+};
+
 const updateLink = (link, kv) => {
     return {
         type: UPDATE_LINK,
@@ -242,6 +257,13 @@ const updateLink = (link, kv) => {
             ...link,
             ...kv
         }
+    };
+};
+
+const showCreateNodeForm = (value) => {
+    return {
+        type: SHOW_CREATE_NODE_FORM,
+        value
     };
 };
 
@@ -266,5 +288,7 @@ module.exports = {
     SELECT_NODE, selectNode,
     SELECT_LINK, selectLink,
     UPDATE_NODE, updateNode,
-    UPDATE_LINK, updateLink
+    UPDATE_CREATING_NODE, updateCreatingNode,
+    UPDATE_LINK, updateLink,
+    SHOW_CREATE_NODE_FORM, showCreateNodeForm
 };

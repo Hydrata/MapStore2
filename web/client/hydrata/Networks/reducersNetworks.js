@@ -12,7 +12,9 @@ import {
     SELECT_LINK,
     SELECT_NODE,
     UPDATE_LINK,
-    UPDATE_NODE
+    UPDATE_NODE,
+    UPDATE_CREATING_NODE,
+    SHOW_CREATE_NODE_FORM
 } from "./actionsNetworks";
 
 export default ( state = {}, action) => {
@@ -56,6 +58,15 @@ export default ( state = {}, action) => {
             ...state,
             selectedNode: {
                 ...state.selectedNode,
+                ...action.kv
+            }
+        };
+    case UPDATE_CREATING_NODE:
+        // action.node.unsaved = true;
+        return {
+            ...state,
+            creatingNode: {
+                ...state.creatingNode,
                 ...action.kv
             }
         };
@@ -115,6 +126,11 @@ export default ( state = {}, action) => {
                 "name": "<enter name>",
                 "unsaved": true
             }]
+        };
+    case SHOW_CREATE_NODE_FORM:
+        return {
+            ...state,
+            creatingNode: action.value
         };
     default:
         return state;

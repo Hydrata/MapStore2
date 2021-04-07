@@ -2,21 +2,23 @@ import React from "react";
 const PropTypes = require('prop-types');
 import {connect} from "react-redux";
 import '../networks.css';
-import {selectNode, selectLink, updateNode, updateLink, saveNode, saveLink, showCreateNodeForm} from "../actionsNetworks";
+import {selectNode, selectLink, updateCreatingNode, updateLink, saveNode, saveLink, showCreateNodeForm} from "../actionsNetworks";
 import {Button} from "react-bootstrap";
 
-class EditNodeFormClass extends React.Component {
+class CreateNodeFormClass extends React.Component {
     static propTypes = {
         mapId: PropTypes.number,
         projectId: PropTypes.number,
         selectedNetwork: PropTypes.object,
         selectedNode: PropTypes.object,
+        creatingNode: PropTypes.object,
         selectedLink: PropTypes.object,
         selectNode: PropTypes.func,
         selectLink: PropTypes.func,
-        updateNode: PropTypes.func,
+        updateCreatingNode: PropTypes.func,
         updateLink: PropTypes.func,
         showCreateNodeForm: PropTypes.func,
+        hideCreateNodeForm: PropTypes.func,
         saveNode: PropTypes.func,
         saveLink: PropTypes.func
     };
@@ -41,13 +43,13 @@ class EditNodeFormClass extends React.Component {
 
     render() {
         return (
-            <div id={'edit-node-form'} className={'edit-node-form'}>
-                <h6>Node: {this.props.selectedNode?.id}</h6>
+            <div id={'create-node-form'} className={'create-node-form'}>
+                <h6>New Node</h6>
                 <span
                     className={"btn glyphicon glyphicon-remove close-network-form"}
                     style={{
                     }}
-                    onClick={() => this.props.selectNode(null)}
+                    onClick={() => this.props.hideCreateNodeForm()}
                 />
                 <div className={'network-form-table'}>
                     <div className={'network-form-table-row'}>
@@ -57,12 +59,12 @@ class EditNodeFormClass extends React.Component {
                         <div className={'network-form-table-cell'}>
                             <input
                                 id={'name'}
-                                key={'name-' + this.props.selectedNode?.id}
+                                key={'name-' + this.props.creatingNode?.id}
                                 name={'name'}
                                 className={'network-form-control'}
                                 type={'text'}
-                                value={this.props.selectedNode?.name}
-                                onChange={(e) => this.handleNodeChange(e, this.props.selectedNode)}
+                                value={this.props.creatingNode?.name}
+                                onChange={(e) => this.handleNodeChange(e, this.props.creatingNode)}
                             />
                         </div>
                     </div>
@@ -76,8 +78,8 @@ class EditNodeFormClass extends React.Component {
                                 key={'description'}
                                 className={'network-form-control'}
                                 type={'text'}
-                                value={this.props.selectedNode?.description}
-                                onChange={(e) => this.handleNodeChange(e, this.props.selectedNode)}
+                                value={this.props.creatingNode?.description}
+                                onChange={(e) => this.handleNodeChange(e, this.props.creatingNode)}
                             />
                         </div>
                     </div>
@@ -91,9 +93,27 @@ class EditNodeFormClass extends React.Component {
                                 key={'data'}
                                 className={'network-form-control'}
                                 type={'text'}
-                                value={this.props.selectedNode?.data}
-                                onChange={(e) => this.handleNodeChange(e, this.props.selectedNode)}
+                                value={this.props.creatingNode?.data}
+                                onChange={(e) => this.handleNodeChange(e, this.props.creatingNode)}
                             />
+                        </div>
+                    </div>
+                    <div className={'network-form-table-row'}>
+                        <div className={'network-form-table-cell'}>
+                            Include Link:
+                        </div>
+                        <div className={'network-form-table-cell'}>
+                            <select
+                                id={'includeLink'}
+                                key={'link-selector'}
+                                className={'network-form-control'}
+                                value={this.props.creatingNode?.includeLink}
+                                onChange={(e) => this.handleNodeChange(e)}
+                            >
+                                <option value={null}>None</option>
+                                <option value={'from'}>From {this.props?.selectedNode?.name} to this node</option>
+                                <option value={'to'}>From this node to {this.props?.selectedNode?.name}</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -101,18 +121,10 @@ class EditNodeFormClass extends React.Component {
                     <Button
                         bsStyle="success"
                         bsSize="xsmall"
-                        onClick={() => this.props.saveNode(this.props?.mapId, this.props.selectedNode)}
-                        className={'networks-button ' + (this.props.selectedNode?.unsaved ? null : 'disabled')}
+                        onClick={() => this.props.saveNode(this.props?.mapId, this.props.creatingNode)}
+                        className={'networks-button ' + (this.props.creatingNode?.unsaved ? null : 'disabled')}
                     >
-                        Save
-                    </Button>
-                    <Button
-                        bsStyle="success"
-                        bsSize="xsmall"
-                        onClick={() => this.props.showCreateNodeForm(true)}
-                        className={'networks-button'}
-                    >
-                        Add Node
+                        Create
                     </Button>
                 </div>
             </div>
@@ -123,7 +135,7 @@ class EditNodeFormClass extends React.Component {
     handleNodeChange = (e) => {
         const kv = {};
         kv[e.target.id] = e.target.value;
-        this.props.updateNode(kv);
+        this.props.updateCreatingNode(kv);
     }
 
     handleLinkChange = (e) => {
@@ -139,7 +151,8 @@ const mapStateToProps = (state) => {
         projectId: state?.projectManager?.data?.id,
         selectedNetwork: state?.networks?.selectedNetwork,
         selectedNode: state?.networks?.selectedNode,
-        selectedLink: state?.networks?.selectedLink
+        selectedLink: state?.networks?.selectedLink,
+        creatingNode: state?.networks?.creatingNode
     };
 };
 
@@ -147,7 +160,7 @@ const mapDispatchToProps = ( dispatch ) => {
     return {
         saveNode: (mapId, node) => dispatch(saveNode(mapId, node)),
         saveLink: (mapId, link) => dispatch(saveLink(mapId, link)),
-        updateNode: (kv) => dispatch(updateNode(kv)),
+        updateCreatingNode: (kv) => dispatch(updateCreatingNode(kv)),
         showCreateNodeForm: (node) => dispatch(showCreateNodeForm(node)),
         updateLink: (link) => dispatch(updateLink(link)),
         selectNode: (node) => dispatch(selectNode(node)),
@@ -155,8 +168,8 @@ const mapDispatchToProps = ( dispatch ) => {
     };
 };
 
-const EditNodeForm = connect(mapStateToProps, mapDispatchToProps)(EditNodeFormClass);
+const CreateNodeForm = connect(mapStateToProps, mapDispatchToProps)(CreateNodeFormClass);
 
 export {
-    EditNodeForm
+    CreateNodeForm
 };
