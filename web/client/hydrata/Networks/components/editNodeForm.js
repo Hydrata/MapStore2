@@ -2,18 +2,18 @@ import React from "react";
 const PropTypes = require('prop-types');
 import {connect} from "react-redux";
 import '../networks.css';
-import {selectNode, selectLink, updateNode, updateLink, saveNode, saveLink, showCreateNodeForm} from "../actionsNetworks";
+import {selectNodeId, selectLinkId, updateNode, updateLink, saveNode, saveLink, showCreateNodeForm} from "../actionsNetworks";
 import {Button} from "react-bootstrap";
 
 class EditNodeFormClass extends React.Component {
     static propTypes = {
         mapId: PropTypes.number,
         projectId: PropTypes.number,
-        selectedNetwork: PropTypes.object,
+        selectedNetworkId: PropTypes.number,
         selectedNode: PropTypes.object,
         selectedLink: PropTypes.object,
-        selectNode: PropTypes.func,
-        selectLink: PropTypes.func,
+        selectNodeId: PropTypes.func,
+        selectLinkId: PropTypes.func,
         updateNode: PropTypes.func,
         updateLink: PropTypes.func,
         showCreateNodeForm: PropTypes.func,
@@ -47,7 +47,7 @@ class EditNodeFormClass extends React.Component {
                     className={"btn glyphicon glyphicon-remove close-network-form"}
                     style={{
                     }}
-                    onClick={() => this.props.selectNode(null)}
+                    onClick={() => this.props.selectNodeId(null)}
                 />
                 <div className={'network-form-table'}>
                     <div className={'network-form-table-row'}>
@@ -134,11 +134,21 @@ class EditNodeFormClass extends React.Component {
 }
 
 const mapStateToProps = (state) => {
+    console.log('state:', state);
+    console.log('selectedNode:', state?.networks?.data?.filter(
+            (network) => network.id === state?.networks?.selectedNetworkId
+        )[0].json.nodes?.filter(
+            (node) => node.id === state?.networks?.selectedNodeId
+        )[0]);
     return {
         mapId: state?.projectManager?.data?.base_map,
         projectId: state?.projectManager?.data?.id,
-        selectedNetwork: state?.networks?.selectedNetwork,
-        selectedNode: state?.networks?.selectedNode,
+        selectedNetworkId: state?.networks?.selectedNetworkId,
+        selectedNode: state?.networks?.data?.filter(
+            (network) => network.id === state?.networks?.selectedNetworkId
+        )[0].json.nodes?.filter(
+            (node) => node.id === state?.networks?.selectedNodeId
+        )[0],
         selectedLink: state?.networks?.selectedLink
     };
 };
@@ -150,8 +160,8 @@ const mapDispatchToProps = ( dispatch ) => {
         updateNode: (kv) => dispatch(updateNode(kv)),
         showCreateNodeForm: (node) => dispatch(showCreateNodeForm(node)),
         updateLink: (link) => dispatch(updateLink(link)),
-        selectNode: (node) => dispatch(selectNode(node)),
-        selectLink: (link) => dispatch(selectLink(link))
+        selectNodeId: (nodeId) => dispatch(selectNodeId(nodeId)),
+        selectLinkId: (linkId) => dispatch(selectLinkId(linkId))
     };
 };
 

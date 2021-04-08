@@ -7,6 +7,7 @@ import {
     CREATE_NETWORK,
     SELECT_NETWORK,
     SAVE_NETWORK_SUCCESS,
+    CREATE_NODE_SUCCESS,
     SAVE_NODE_SUCCESS,
     DELETE_NETWORK_SUCCESS,
     SELECT_LINK,
@@ -46,20 +47,37 @@ export default ( state = {}, action) => {
             ...state,
             data: state.data?.map((network) => {
                 if (network.id === action.network.id) {
-                    // action.network.unsaved = true;
                     return action.network;
                 }
                 return network;
             })
         };
     case UPDATE_NODE:
-        // action.node.unsaved = true;
         return {
             ...state,
-            selectedNode: {
-                ...state.selectedNode,
-                ...action.kv
-            }
+            data: state.data.map(
+                (network) => {
+                    if (state.selectedNetworkId === network.id) {
+                        return {
+                            ...network,
+                            json: {
+                                ...network.json,
+                                nodes: network.json.nodes.map(
+                                    (node) => {
+                                        if (state.selectedNodeId === node.id) {
+                                            return {
+                                                ...node,
+                                                ...action.kv
+                                            };
+                                        }
+                                        return node;
+                                    }
+                                )
+                            }
+                        };
+                    }
+                    return network;
+                })
         };
     case UPDATE_CREATING_NODE:
         // action.node.unsaved = true;
@@ -92,10 +110,16 @@ export default ( state = {}, action) => {
     case SAVE_NODE_SUCCESS:
         return {
             ...state,
-            selectedNode: {
-                ...action.node,
+            selectedNodeId: {
+                ...action.node.id,
                 unsaved: false
             }
+        };
+    case CREATE_NODE_SUCCESS:
+        return {
+            ...state,
+            selectedNodeId: null,
+            creatingNode: null
         };
     case DELETE_NETWORK_SUCCESS:
         return {
@@ -105,17 +129,17 @@ export default ( state = {}, action) => {
     case SELECT_NETWORK:
         return {
             ...state,
-            selectedNetwork: action.network
+            selectedNetworkId: action.networkId
         };
     case SELECT_NODE:
         return {
             ...state,
-            selectedNode: action.node
+            selectedNodeId: action.nodeId
         };
     case SELECT_LINK:
         return {
             ...state,
-            selectedLink: action.link
+            selectedLinkId: action.link.id
         };
     case CREATE_NETWORK:
         return {

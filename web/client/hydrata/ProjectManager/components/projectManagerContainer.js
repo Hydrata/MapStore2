@@ -105,7 +105,6 @@ class ProjectManagerContainer extends React.Component {
                     </ul>
                 </div>
                 {(() => {
-                    console.log('openMenuGroup:', this.props.openMenuGroup);
                     switch (this.props?.openMenuGroup) {
                     case null: return null;
                     case undefined: return null;

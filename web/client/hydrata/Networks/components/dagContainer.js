@@ -4,15 +4,17 @@ import {CSS2DRenderer, CSS2DObject} from "three-css2drender";
 const PropTypes = require('prop-types');
 import {connect} from "react-redux";
 import '../networks.css';
-import {selectNode, selectLink} from "../actionsNetworks";
+import {selectNodeId, selectLinkId} from "../actionsNetworks";
+import randomDagData from '../../Scenarios/components/randomDagData.json';
+import lesMiserables from '../../Scenarios/components/lesMiserables.json';
+import simpleDag from '../../Scenarios/components/simpleDag.json';
 
 class DagContainerClass extends React.Component {
     static propTypes = {
-        data: PropTypes.array,
-        selectedNetwork: PropTypes.object,
-        networks: PropTypes.array,
-        selectLink: PropTypes.func,
-        selectNode: PropTypes.func
+        selectedNetworkId: PropTypes.number,
+        selectLinkId: PropTypes.func,
+        selectNodeId: PropTypes.func,
+        data: PropTypes.object
     };
 
     static defaultProps = {}
@@ -28,7 +30,7 @@ class DagContainerClass extends React.Component {
     }
 
     componentDidUpdate() {
-        console.log('this.graph', this.graph);
+        // console.log('this.graph', this.graph);
         this.graph.current.refresh();
     }
 
@@ -46,9 +48,9 @@ class DagContainerClass extends React.Component {
             <div style={{'border': '1px white solid', 'width': '100%'}} ref={this.graphContainer}>
                 <ForceGraph3D
                     ref={this.graph}
-                    key={this.props?.selectedNetwork?.id}
+                    key={this.props?.selectedNetworkId + this.props?.data?.nodes.length + this.props?.data?.nodes.length}
                     extraRenderers={extraRenderers}
-                    graphData={this.props?.selectedNetwork?.json}
+                    graphData={this.props?.data}
                     width={this.graphContainer?.current?.offsetWidth}
                     height={600}
                     backgroundColor={'#00000080'}
@@ -71,14 +73,12 @@ class DagContainerClass extends React.Component {
                         return new CSS2DObject(nodeEl);
                     }}
                     onNodeClick={node => {
-                        console.log('node:', node);
-                        this.props.selectNode(node);
+                        this.props.selectNodeId(node.id);
                     }}
                     // onNodeHover={(this.onNodeHover)}
                     nodeThreeObjectExtend
                     onLinkClick={link => {
-                        console.log('link:', link);
-                        this.props.selectLink(link);
+                        this.props.selectLinkId(link.id);
                     }}
                     linkColor={'red'}
                     linkOpacity={0.90}
@@ -100,18 +100,40 @@ class DagContainerClass extends React.Component {
 }
 
 const mapStateToProps = (state) => {
+    // let counter = 0;
+    // counter++;
+    // switch (counter % 3) {
+    // case 0:
+    //     data = simpleDag;
+    //     break;
+    // case 1:
+    //     data = lesMiserables;
+    //     break;
+    // case 2:
+    //     data = randomDagData;
+    //     break;
+    // default:
+    //     data = {};
+    // }
+    let data = simpleDag;
+    if (state?.networks?.selectedNetworkId) {
+        data = state?.networks?.data?.filter((network) => {
+            return network.id === state?.networks?.selectedNetworkId;
+        })[0].json;
+    }
+    console.log('data:', data);
     return {
+        data: data,
         mapId: state?.projectManager?.data?.base_map,
         projectId: state?.projectManager?.data?.id,
-        selectedNetwork: state?.networks?.selectedNetwork,
-        networks: state?.networks?.data
+        selectedNetworkId: state?.networks?.selectedNetworkId
     };
 };
 
 const mapDispatchToProps = ( dispatch ) => {
     return {
-        selectNode: (node) => dispatch(selectNode(node)),
-        selectLink: (link) => dispatch(selectLink(link))
+        selectNodeId: (nodeId) => dispatch(selectNodeId(nodeId)),
+        selectLinkId: (linkId) => dispatch(selectLinkId(linkId))
     };
 };
 

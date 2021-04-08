@@ -13,6 +13,7 @@ const SAVE_NETWORK_SUCCESS = 'NETWORKS:SAVE_NETWORK_SUCCESS';
 const SAVE_NETWORK_ERROR = 'NETWORKS:SAVE_NETWORK_ERROR';
 const SAVE_NODE = 'NETWORKS:SAVE_NODE';
 const SAVE_NODE_SUCCESS = 'NETWORKS:SAVE_NODE_SUCCESS';
+const CREATE_NODE_SUCCESS = 'NETWORKS:CREATE_NODE_SUCCESS';
 const SAVE_NODE_ERROR = 'NETWORKS:SAVE_NODE_ERROR';
 const DELETE_NETWORK = 'NETWORKS:DELETE_NETWORK';
 const DELETE_NETWORK_SUCCESS = 'NETWORKS:DELETE_NETWORK_SUCCESS';
@@ -106,6 +107,13 @@ const saveNodeSuccess = (data) => {
     };
 };
 
+const createNodeSuccess = (data) => {
+    return {
+        type: CREATE_NODE_SUCCESS,
+        node: data
+    };
+};
+
 function saveNodeError(e) {
     console.log('*** error:', e);
     return {
@@ -118,7 +126,7 @@ const saveNode = (mapId, node) => {
     if (node.id) {
         return (dispatch, getState) => {
             const state = getState();
-            const networkPayload = {id: state?.networks?.selectedNetwork?.id};
+            const networkPayload = {id: state?.networks?.selectedNetworkId};
             return axios.patch(`/scenarios/api/${mapId}/nodes/${node.id}/`, node
             ).then(
                 response => {
@@ -134,12 +142,15 @@ const saveNode = (mapId, node) => {
     }
     return (dispatch, getState) => {
         const state = getState();
+        const networkPayload = {id: state?.networks?.selectedNetworkId};
         node.project = state?.projectManager?.data?.id;
-        node.network = state?.networks?.selectedNetwork?.id;
+        node.network = state?.networks?.selectedNetworkId;
+        node.linkedNode = state?.networks?.selectedNodeId;
         return axios.post(`/scenarios/api/${mapId}/nodes/`, node
         ).then(
             response => {
-                dispatch(saveNodeSuccess(response.data));
+                dispatch(createNodeSuccess(response.data));
+                dispatch(saveNetwork(state?.projectManager?.data?.base_map, networkPayload));
             }
         ).catch(
             e => {
@@ -198,24 +209,24 @@ const hideNetworksList = () => {
     };
 };
 
-const selectNetwork = (network) => {
+const selectNetworkId = (networkId) => {
     return {
         type: SELECT_NETWORK,
-        network
+        networkId
     };
 };
 
-const selectNode = (node) => {
+const selectNodeId = (nodeId) => {
     return {
         type: SELECT_NODE,
-        node
+        nodeId
     };
 };
 
-const selectLink = (link) => {
+const selectLinkId = (linkId) => {
     return {
         type: SELECT_LINK,
-        link
+        linkId
     };
 };
 
@@ -275,18 +286,19 @@ module.exports = {
     HIDE_NETWORKS_LIST, hideNetworksList,
     UPDATE_NETWORK, updateNetwork,
     CREATE_NETWORK, createNetwork,
-    SELECT_NETWORK, selectNetwork,
+    SELECT_NETWORK, selectNetworkId,
     SAVE_NETWORK, saveNetwork,
     SAVE_NETWORK_SUCCESS, saveNetworkSuccess,
     SAVE_NETWORK_ERROR, saveNetworkError,
     SAVE_NODE, saveNode,
     SAVE_NODE_SUCCESS, saveNodeSuccess,
+    CREATE_NODE_SUCCESS, createNodeSuccess,
     SAVE_NODE_ERROR, saveNodeError,
     DELETE_NETWORK_SUCCESS, deleteNetworkSuccess,
     DELETE_NETWORK_ERROR, deleteNetworkError,
     DELETE_NETWORK, deleteNetwork,
-    SELECT_NODE, selectNode,
-    SELECT_LINK, selectLink,
+    SELECT_NODE, selectNodeId,
+    SELECT_LINK, selectLinkId,
     UPDATE_NODE, updateNode,
     UPDATE_CREATING_NODE, updateCreatingNode,
     UPDATE_LINK, updateLink,

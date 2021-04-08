@@ -2,19 +2,17 @@ import React from "react";
 const PropTypes = require('prop-types');
 import {connect} from "react-redux";
 import '../networks.css';
-import {selectNode, selectLink, updateCreatingNode, updateLink, saveNode, saveLink, showCreateNodeForm} from "../actionsNetworks";
+import {updateCreatingNode, updateLink, saveNode, saveLink, showCreateNodeForm} from "../actionsNetworks";
 import {Button} from "react-bootstrap";
 
 class CreateNodeFormClass extends React.Component {
     static propTypes = {
         mapId: PropTypes.number,
         projectId: PropTypes.number,
-        selectedNetwork: PropTypes.object,
-        selectedNode: PropTypes.object,
+        selectedNetworkId: PropTypes.number,
+        selectedNodeId: PropTypes.number,
         creatingNode: PropTypes.object,
-        selectedLink: PropTypes.object,
-        selectNode: PropTypes.func,
-        selectLink: PropTypes.func,
+        selectedLinkId: PropTypes.object,
         updateCreatingNode: PropTypes.func,
         updateLink: PropTypes.func,
         showCreateNodeForm: PropTypes.func,
@@ -111,8 +109,8 @@ class CreateNodeFormClass extends React.Component {
                                 onChange={(e) => this.handleNodeChange(e)}
                             >
                                 <option value={null}>None</option>
-                                <option value={'from'}>From {this.props?.selectedNode?.name} to this node</option>
-                                <option value={'to'}>From this node to {this.props?.selectedNode?.name}</option>
+                                <option value={'to'}>From {this.props?.selectedNode?.name} to this node</option>
+                                <option value={'from'}>From this node to {this.props?.selectedNode?.name}</option>
                             </select>
                         </div>
                     </div>
@@ -149,9 +147,13 @@ const mapStateToProps = (state) => {
     return {
         mapId: state?.projectManager?.data?.base_map,
         projectId: state?.projectManager?.data?.id,
-        selectedNetwork: state?.networks?.selectedNetwork,
-        selectedNode: state?.networks?.selectedNode,
-        selectedLink: state?.networks?.selectedLink,
+        selectedNetworkId: state?.networks?.selectedNetworkId,
+        selectedNode: state?.networks?.data?.filter(
+            (network) => network.id === state?.networks?.selectedNetworkId
+        )[0].json.nodes?.filter(
+            (node) => node.id === state?.networks?.selectedNodeId
+        )[0],
+        selectedLinkId: state?.networks?.selectedLinkId,
         creatingNode: state?.networks?.creatingNode
     };
 };
@@ -162,9 +164,7 @@ const mapDispatchToProps = ( dispatch ) => {
         saveLink: (mapId, link) => dispatch(saveLink(mapId, link)),
         updateCreatingNode: (kv) => dispatch(updateCreatingNode(kv)),
         showCreateNodeForm: (node) => dispatch(showCreateNodeForm(node)),
-        updateLink: (link) => dispatch(updateLink(link)),
-        selectNode: (node) => dispatch(selectNode(node)),
-        selectLink: (link) => dispatch(selectLink(link))
+        updateLink: (link) => dispatch(updateLink(link))
     };
 };
 

@@ -11,10 +11,10 @@ import {
     updateNetwork,
     saveNetwork,
     deleteNetwork,
-    selectNetwork,
+    selectNetworkId,
     createNetwork,
-    selectNode,
-    selectLink
+    selectNodeId,
+    selectLinkId
 } from '../actionsNetworks';
 import '../networks.css';
 import {setMenuGroup} from "../../ProjectManager/actionsProjectManager";
@@ -36,14 +36,14 @@ class NetworksContainerClass extends React.Component {
         fetchNetworksList: PropTypes.func,
         showNetworksList: PropTypes.func,
         hideNetworksList: PropTypes.func,
-        selectNetwork: PropTypes.func,
+        selectNetworkId: PropTypes.func,
         createNetwork: PropTypes.func,
         deleteNetwork: PropTypes.func,
         updateNetwork: PropTypes.func,
         saveNetwork: PropTypes.func,
         openMenuGroupLabel: PropTypes.string,
-        selectedNetwork: PropTypes.object,
-        selectedNode: PropTypes.object,
+        selectedNetworkId: PropTypes.number,
+        selectedNodeId: PropTypes.number,
         setMenuGroup: PropTypes.func,
         creatingNode: PropTypes.object
     };
@@ -81,12 +81,12 @@ class NetworksContainerClass extends React.Component {
                         <h5
                             style={{textAlign: 'left', marginLeft: '10px'}}
                         >
-                            Networks - {this.props?.selectedNetwork?.name}
+                            Networks
                         </h5>
                     </div>
                     <div>
                         <DagContainer key={'networks-dag-container'} style={{'textAlign': 'center'}}/>
-                        {this.props.selectedNode ? <EditNodeForm/> : null}
+                        {this.props.selectedNodeId ? <EditNodeForm/> : null}
                         {this.props.creatingNode ? <CreateNodeForm/> : null}
                     </div>
                     <span
@@ -121,7 +121,7 @@ class NetworksContainerClass extends React.Component {
                                             type={'radio'}
                                             name={'networks-selector'}
                                             value={false}
-                                            onChange={() => this.props.selectNetwork(network)}
+                                            onChange={() => this.props.selectNetworkId(network.id)}
                                         />
                                     </div>
                                     <div className={'networks-table-cell'}>
@@ -210,10 +210,10 @@ const mapStateToProps = (state) => {
         mapId: state?.projectManager?.data?.base_map,
         projectId: state?.projectManager?.data?.id,
         networksList: state?.networks?.data,
-        selectedNetwork: state?.networks?.selectedNetwork,
+        selectedNetworkId: state?.networks?.selectedNetworkId,
         openMenuGroupLabel: state?.projectManager?.openMenuGroup?.id_label,
-        selectedNode: state?.networks?.selectedNode,
-        selectedLink: state?.networks?.selectedLink,
+        selectedNodeId: state?.networks?.selectedNodeId,
+        selectedLinkId: state?.networks?.selectedLinkId,
         creatingNode: state?.networks?.creatingNode
     };
 };
@@ -226,13 +226,12 @@ const mapDispatchToProps = ( dispatch ) => {
         updateNetwork: (network, kv) => dispatch(updateNetwork(network, kv)),
         saveNetwork: (mapId, network) => dispatch(saveNetwork(mapId, network)),
         deleteNetwork: (mapId, network) => dispatch(deleteNetwork(mapId, network)),
-        selectNetwork: (network) => dispatch(selectNetwork(network)),
+        selectNetworkId: (network) => dispatch(selectNetworkId(network)),
         createNetwork: (projectId) => dispatch(createNetwork(projectId)),
         setMenuGroup: (menuGroup) => dispatch(setMenuGroup(menuGroup)),
-        selectNode: (node) => dispatch(selectNode(node)),
-        selectLink: (link) => dispatch(selectLink(link))
+        selectNodeId: (node) => dispatch(selectNodeId(node)),
+        selectLinkId: (link) => dispatch(selectLinkId(link))
     };
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(NetworksContainerClass);
-
