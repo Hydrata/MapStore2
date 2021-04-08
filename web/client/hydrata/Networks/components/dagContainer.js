@@ -5,9 +5,9 @@ const PropTypes = require('prop-types');
 import {connect} from "react-redux";
 import '../networks.css';
 import {selectNodeId, selectLinkId} from "../actionsNetworks";
-import randomDagData from '../../Scenarios/components/randomDagData.json';
-import lesMiserables from '../../Scenarios/components/lesMiserables.json';
-import simpleDag from '../../Scenarios/components/simpleDag.json';
+// import randomDagData from '../../Scenarios/components/randomDagData.json';
+// import lesMiserables from '../../Scenarios/components/lesMiserables.json';
+// import simpleDag from '../../Scenarios/components/simpleDag.json';
 
 class DagContainerClass extends React.Component {
     static propTypes = {
@@ -115,7 +115,10 @@ const mapStateToProps = (state) => {
     // default:
     //     data = {};
     // }
-    let data = simpleDag;
+    let data = {
+        nodes: [],
+        links: []
+    };
     if (state?.networks?.selectedNetworkId) {
         data = state?.networks?.data?.filter((network) => {
             return network.id === state?.networks?.selectedNetworkId;
