@@ -3,7 +3,6 @@ import {connect} from "react-redux";
 const PropTypes = require('prop-types');
 import { Button } from 'react-bootstrap';
 import {DagContainer} from './dagContainer';
-import {CreateNodeForm} from './createNodeForm';
 import {
     fetchNetworksList,
     showNetworksList,
@@ -19,6 +18,9 @@ import {
 import '../networks.css';
 import {setMenuGroup} from "../../ProjectManager/actionsProjectManager";
 import {EditNodeForm} from "./editNodeForm";
+import {CreateNodeForm} from './createNodeForm';
+import {EditLinkForm} from './editLinkForm';
+import {CreateLinkForm} from './createLinkForm';
 
 const formControlStyle = {
     border: 'none',
@@ -44,8 +46,10 @@ class NetworksContainerClass extends React.Component {
         openMenuGroupLabel: PropTypes.string,
         selectedNetworkId: PropTypes.number,
         selectedNodeId: PropTypes.number,
+        selectedLinkId: PropTypes.number,
         setMenuGroup: PropTypes.func,
-        creatingNode: PropTypes.object
+        creatingNode: PropTypes.object,
+        creatingLink: PropTypes.object
     };
 
     static defaultProps = {}
@@ -88,6 +92,8 @@ class NetworksContainerClass extends React.Component {
                         <DagContainer key={'networks-dag-container'} style={{'textAlign': 'center'}}/>
                         {this.props.selectedNodeId ? <EditNodeForm/> : null}
                         {this.props.creatingNode ? <CreateNodeForm/> : null}
+                        {this.props.selectedLinkId ? <EditLinkForm/> : null}
+                        {this.props.creatingLink ? <CreateLinkForm/> : null}
                     </div>
                     <span
                         className={"btn glyphicon glyphicon-remove"}
@@ -214,7 +220,8 @@ const mapStateToProps = (state) => {
         openMenuGroupLabel: state?.projectManager?.openMenuGroup?.id_label,
         selectedNodeId: state?.networks?.selectedNodeId,
         selectedLinkId: state?.networks?.selectedLinkId,
-        creatingNode: state?.networks?.creatingNode
+        creatingNode: state?.networks?.creatingNode,
+        creatingLink: state?.networks?.creatingLink
     };
 };
 

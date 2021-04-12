@@ -100,21 +100,6 @@ class DagContainerClass extends React.Component {
 }
 
 const mapStateToProps = (state) => {
-    // let counter = 0;
-    // counter++;
-    // switch (counter % 3) {
-    // case 0:
-    //     data = simpleDag;
-    //     break;
-    // case 1:
-    //     data = lesMiserables;
-    //     break;
-    // case 2:
-    //     data = randomDagData;
-    //     break;
-    // default:
-    //     data = {};
-    // }
     let data = {
         nodes: [],
         links: []
@@ -122,7 +107,7 @@ const mapStateToProps = (state) => {
     if (state?.networks?.selectedNetworkId) {
         data = state?.networks?.data?.filter((network) => {
             return network.id === state?.networks?.selectedNetworkId;
-        })[0].json;
+        })[0]?.json;
     }
     console.log('data:', data);
     return {

@@ -9,13 +9,16 @@ import {
     SAVE_NETWORK_SUCCESS,
     CREATE_NODE_SUCCESS,
     SAVE_NODE_SUCCESS,
+    SAVE_LINK_SUCCESS,
     DELETE_NETWORK_SUCCESS,
     SELECT_LINK,
     SELECT_NODE,
     UPDATE_LINK,
     UPDATE_NODE,
     UPDATE_CREATING_NODE,
-    SHOW_CREATE_NODE_FORM
+    UPDATE_CREATING_LINK,
+    SHOW_CREATE_NODE_FORM,
+    SHOW_CREATE_LINK_FORM
 } from "./actionsNetworks";
 
 export default ( state = {}, action) => {
@@ -79,6 +82,33 @@ export default ( state = {}, action) => {
                     return network;
                 })
         };
+    case UPDATE_LINK:
+        return {
+            ...state,
+            data: state.data.map(
+                (network) => {
+                    if (state.selectedNetworkId === network.id) {
+                        return {
+                            ...network,
+                            json: {
+                                ...network.json,
+                                links: network.json.links.map(
+                                    (link) => {
+                                        if (state.selectedLinkId === link.id) {
+                                            return {
+                                                ...link,
+                                                ...action.kv
+                                            };
+                                        }
+                                        return link;
+                                    }
+                                )
+                            }
+                        };
+                    }
+                    return network;
+                })
+        };
     case UPDATE_CREATING_NODE:
         // action.node.unsaved = true;
         return {
@@ -88,10 +118,14 @@ export default ( state = {}, action) => {
                 ...action.kv
             }
         };
-    case UPDATE_LINK:
+    case UPDATE_CREATING_LINK:
+        // action.node.unsaved = true;
         return {
             ...state,
-            selectedLink: action.link
+            creatingLink: {
+                ...state.creatingLink,
+                ...action.kv
+            }
         };
     case SAVE_NETWORK_SUCCESS:
         return {
@@ -110,10 +144,7 @@ export default ( state = {}, action) => {
     case SAVE_NODE_SUCCESS:
         return {
             ...state,
-            selectedNodeId: {
-                ...action.node.id,
-                unsaved: false
-            }
+            selectedNodeId: action.node.id
         };
     case CREATE_NODE_SUCCESS:
         return {
@@ -129,7 +160,9 @@ export default ( state = {}, action) => {
     case SELECT_NETWORK:
         return {
             ...state,
-            selectedNetworkId: action.networkId
+            selectedNetworkId: action.networkId,
+            selectedNodeId: null,
+            selectedLinkId: null
         };
     case SELECT_NODE:
         return {
@@ -139,7 +172,7 @@ export default ( state = {}, action) => {
     case SELECT_LINK:
         return {
             ...state,
-            selectedLinkId: action.link.id
+            selectedLinkId: action.linkId
         };
     case CREATE_NETWORK:
         return {
@@ -152,9 +185,30 @@ export default ( state = {}, action) => {
             }]
         };
     case SHOW_CREATE_NODE_FORM:
+        if (action.value) {
+            return {
+                ...state,
+                creatingNode: {
+                    unsaved: true
+                }
+            };
+        }
         return {
             ...state,
-            creatingNode: action.value
+            creatingNode: null
+        };
+    case SHOW_CREATE_LINK_FORM:
+        if (action.value) {
+            return {
+                ...state,
+                creatingLink: {
+                    unsaved: true
+                }
+            };
+        }
+        return {
+            ...state,
+            creatingLink: null
         };
     default:
         return state;

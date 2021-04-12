@@ -15,6 +15,16 @@ const SAVE_NODE = 'NETWORKS:SAVE_NODE';
 const SAVE_NODE_SUCCESS = 'NETWORKS:SAVE_NODE_SUCCESS';
 const CREATE_NODE_SUCCESS = 'NETWORKS:CREATE_NODE_SUCCESS';
 const SAVE_NODE_ERROR = 'NETWORKS:SAVE_NODE_ERROR';
+const SAVE_LINK = 'NETWORKS:SAVE_LINK';
+const SAVE_LINK_SUCCESS = 'NETWORKS:SAVE_LINK_SUCCESS';
+const CREATE_LINK_SUCCESS = 'NETWORKS:CREATE_LINK_SUCCESS';
+const SAVE_LINK_ERROR = 'NETWORKS:SAVE_LINK_ERROR';
+const DELETE_NODE = 'NETWORKS:DELETE_NODE';
+const DELETE_NODE_SUCCESS = 'NETWORKS:DELETE_NODE_SUCCESS';
+const DELETE_NODE_ERROR = 'NETWORKS:DELETE_NODE_ERROR';
+const DELETE_LINK = 'NETWORKS:DELETE_LINK';
+const DELETE_LINK_SUCCESS = 'NETWORKS:DELETE_LINK_SUCCESS';
+const DELETE_LINK_ERROR = 'NETWORKS:DELETE_LINK_ERROR';
 const DELETE_NETWORK = 'NETWORKS:DELETE_NETWORK';
 const DELETE_NETWORK_SUCCESS = 'NETWORKS:DELETE_NETWORK_SUCCESS';
 const DELETE_NETWORK_ERROR = 'NETWORKS:DELETE_NETWORK_ERROR';
@@ -23,7 +33,9 @@ const SELECT_LINK = 'NETWORKS:SELECT_LINK';
 const UPDATE_NODE = 'NETWORKS:UPDATE_NODE';
 const UPDATE_CREATING_NODE = 'NETWORKS:UPDATE_CREATING_NODE';
 const UPDATE_LINK = 'NETWORKS:UPDATE_LINK';
+const UPDATE_CREATING_LINK = 'NETWORKS:UPDATE_CREATING_LINK';
 const SHOW_CREATE_NODE_FORM = 'NETWORKS:SHOW_CREATE_NODE_FORM';
+const SHOW_CREATE_LINK_FORM = 'NETWORKS:SHOW_CREATE_LINK_FORM';
 
 const fetchNetworksListSuccess = (data) => {
     return {
@@ -160,6 +172,125 @@ const saveNode = (mapId, node) => {
     };
 };
 
+const saveLinkSuccess = (data) => {
+    return {
+        type: SAVE_LINK_SUCCESS,
+        link: data
+    };
+};
+
+const createLinkSuccess = (data) => {
+    return {
+        type: CREATE_LINK_SUCCESS,
+        link: data
+    };
+};
+
+function saveLinkError(e) {
+    console.log('*** error:', e);
+    return {
+        type: SAVE_LINK_ERROR,
+        error: e
+    };
+}
+
+const saveLink = (mapId, link) => {
+    if (link.id) {
+        return (dispatch, getState) => {
+            const state = getState();
+            const networkPayload = {id: state?.networks?.selectedNetworkId};
+            return axios.patch(`/scenarios/api/${mapId}/links/${link.id}/`, link
+            ).then(
+                response => {
+                    dispatch(saveLinkSuccess(response.data));
+                    dispatch(saveNetwork(state?.projectManager?.data?.base_map, networkPayload));
+                }
+            ).catch(
+                e => {
+                    dispatch(saveLinkError(e));
+                }
+            );
+        };
+    }
+    return (dispatch, getState) => {
+        const state = getState();
+        const networkPayload = {id: state?.networks?.selectedNetworkId};
+        link.project = state?.projectManager?.data?.id;
+        link.network = state?.networks?.selectedNetworkId;
+        return axios.post(`/scenarios/api/${mapId}/links/`, link
+        ).then(
+            response => {
+                dispatch(createLinkSuccess(response.data));
+                dispatch(saveNetwork(state?.projectManager?.data?.base_map, networkPayload));
+            }
+        ).catch(
+            e => {
+                dispatch(saveLinkError(e));
+            }
+        );
+    };
+};
+
+const deleteNodeSuccess = (node) => {
+    return {
+        type: DELETE_NODE_SUCCESS,
+        node
+    };
+};
+
+function deleteNodeError(e) {
+    console.log('*** error:', e);
+    return {
+        type: DELETE_NODE_ERROR,
+        error: e
+    };
+}
+
+const deleteNode = (mapId, node) => {
+    return (dispatch) => {
+        return axios.delete(`/scenarios/api/${mapId}/nodes/${node?.id}/`, node
+        ).then(
+            response => {
+                dispatch(deleteNodeSuccess(node));
+            }
+        ).catch(
+            e => {
+                dispatch(deleteNodeError(e));
+            }
+        );
+    };
+};
+
+const deleteLinkSuccess = (link) => {
+    return {
+        type: DELETE_LINK_SUCCESS,
+        link
+    };
+};
+
+function deleteLinkError(e) {
+    console.log('*** error:', e);
+    return {
+        type: DELETE_LINK_ERROR,
+        error: e
+    };
+}
+
+const deleteLink = (mapId, link) => {
+    return (dispatch) => {
+        return axios.delete(`/scenarios/api/${mapId}/links/${link.id}/`, link
+        ).then(
+            response => {
+                dispatch(deleteLinkSuccess(link));
+            }
+        ).catch(
+            e => {
+                dispatch(deleteLinkError(e));
+            }
+        );
+    };
+};
+
 const deleteNetworkSuccess = (network) => {
     return {
         type: DELETE_NETWORK_SUCCESS,
@@ -261,12 +392,22 @@ const updateCreatingNode = (kv) => {
     };
 };
 
-const updateLink = (link, kv) => {
+const updateCreatingLink = (kv) => {
+    return {
+        type: UPDATE_CREATING_LINK,
+        kv: {
+            ...kv,
+            unsaved: true
+        }
+    };
+};
+
+const updateLink = (kv) => {
     return {
         type: UPDATE_LINK,
-        link: {
-            ...link,
-            ...kv
+        kv: {
+            ...kv,
+            unsaved: true
         }
     };
 };
@@ -274,6 +415,13 @@ const updateLink = (link, kv) => {
 const showCreateNodeForm = (value) => {
     return {
         type: SHOW_CREATE_NODE_FORM,
+        value
+    };
+};
+
+const showCreateLinkForm = (value) => {
+    return {
+        type: SHOW_CREATE_LINK_FORM,
         value
     };
 };
@@ -294,6 +442,16 @@ module.exports = {
     SAVE_NODE_SUCCESS, saveNodeSuccess,
     CREATE_NODE_SUCCESS, createNodeSuccess,
     SAVE_NODE_ERROR, saveNodeError,
+    SAVE_LINK, saveLink,
+    SAVE_LINK_SUCCESS, saveLinkSuccess,
+    CREATE_LINK_SUCCESS, createLinkSuccess,
+    SAVE_LINK_ERROR, saveLinkError,
+    DELETE_NODE_SUCCESS, deleteNodeSuccess,
+    DELETE_NODE_ERROR, deleteNodeError,
+    DELETE_NODE, deleteNode,
+    DELETE_LINK_SUCCESS, deleteLinkSuccess,
+    DELETE_LINK_ERROR, deleteLinkError,
+    DELETE_LINK, deleteLink,
     DELETE_NETWORK_SUCCESS, deleteNetworkSuccess,
     DELETE_NETWORK_ERROR, deleteNetworkError,
     DELETE_NETWORK, deleteNetwork,
@@ -302,5 +460,7 @@ module.exports = {
     UPDATE_NODE, updateNode,
     UPDATE_CREATING_NODE, updateCreatingNode,
     UPDATE_LINK, updateLink,
-    SHOW_CREATE_NODE_FORM, showCreateNodeForm
+    UPDATE_CREATING_LINK, updateCreatingLink,
+    SHOW_CREATE_NODE_FORM, showCreateNodeForm,
+    SHOW_CREATE_LINK_FORM, showCreateLinkForm
 };
