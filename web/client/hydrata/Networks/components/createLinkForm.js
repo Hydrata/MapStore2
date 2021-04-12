@@ -100,11 +100,12 @@ class CreateLinkFormClass extends React.Component {
                         <div className={'network-form-table-cell'}>
                             <select
                                 id={'source'}
-                                key={'link-selector'}
+                                key={'link-selector-source'}
                                 className={'network-form-control'}
                                 value={this.props.creatingLink?.source}
                                 onChange={(e) => this.handleLinkChange(e)}
                             >
+                                <option value={''}/>
                                 {this.props?.nodesList?.map((node) => {
                                     return (
                                         <option value={node.id}>{node.name}</option>
@@ -120,11 +121,12 @@ class CreateLinkFormClass extends React.Component {
                         <div className={'network-form-table-cell'}>
                             <select
                                 id={'target'}
-                                key={'link-selector'}
+                                key={'link-selector-target'}
                                 className={'network-form-control'}
                                 value={this.props.creatingLink?.target}
                                 onChange={(e) => this.handleLinkChange(e)}
                             >
+                                <option value={''}/>
                                 {this.props?.nodesList?.map((node) => {
                                     return (
                                         <option value={node.id}>{node.name}</option>

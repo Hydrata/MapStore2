@@ -247,11 +247,14 @@ function deleteNodeError(e) {
 }
 
 const deleteNode = (mapId, node) => {
-    return (dispatch) => {
+    return (dispatch, getState) => {
+        const state = getState();
+        const networkPayload = {id: state?.networks?.selectedNetworkId};
         return axios.delete(`/scenarios/api/${mapId}/nodes/${node?.id}/`, node
         ).then(
             response => {
                 dispatch(deleteNodeSuccess(node));
+                dispatch(saveNetwork(state?.projectManager?.data?.base_map, networkPayload));
             }
         ).catch(
             e => {
