@@ -31,7 +31,7 @@ class DagContainerClass extends React.Component {
 
     componentDidUpdate() {
         // console.log('this.graph', this.graph);
-        this.graph.current.refresh();
+        // this.graph.current.refresh();
     }
 
     onClick = () => {
@@ -48,7 +48,7 @@ class DagContainerClass extends React.Component {
             <div style={{'border': '1px white solid', 'width': '100%'}} ref={this.graphContainer}>
                 <ForceGraph3D
                     ref={this.graph}
-                    key={this.props?.selectedNetworkId + this.props?.data?.nodes.length + this.props?.data?.nodes.length}
+                    key={this.props?.selectedNetworkId + JSON.stringify(this.props?.data?.nodes).length + JSON.stringify(this.props?.data?.links).length}
                     extraRenderers={extraRenderers}
                     graphData={this.props?.data}
                     width={this.graphContainer?.current?.offsetWidth}

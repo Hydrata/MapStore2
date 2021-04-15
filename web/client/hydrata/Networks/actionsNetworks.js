@@ -195,6 +195,8 @@ function saveLinkError(e) {
 }
 
 const saveLink = (mapId, link) => {
+    link.source = link?.source?.id;
+    link.target = link?.target?.id;
     if (link.id) {
         return (dispatch, getState) => {
             const state = getState();
