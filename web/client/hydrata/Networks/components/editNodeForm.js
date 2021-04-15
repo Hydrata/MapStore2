@@ -74,7 +74,7 @@ class EditNodeFormClass extends React.Component {
                                 className={'network-form-control'}
                                 type={'text'}
                                 value={this.props.selectedNode?.name}
-                                onChange={(e) => this.handleNodeChange(e, this.props.selectedNode)}
+                                onChange={(e) => this.handleNodeChange(e)}
                             />
                         </div>
                     </div>
@@ -89,7 +89,7 @@ class EditNodeFormClass extends React.Component {
                                 className={'network-form-control'}
                                 type={'text'}
                                 value={this.props.selectedNode?.description}
-                                onChange={(e) => this.handleNodeChange(e, this.props.selectedNode)}
+                                onChange={(e) => this.handleNodeChange(e)}
                             />
                         </div>
                     </div>
@@ -104,7 +104,7 @@ class EditNodeFormClass extends React.Component {
                                 className={'network-form-control'}
                                 type={'text'}
                                 value={this.props.selectedNode?.data}
-                                onChange={(e) => this.handleNodeChange(e, this.props.selectedNode)}
+                                onChange={(e) => this.handleNodeChange(e)}
                             />
                         </div>
                     </div>
@@ -130,7 +130,7 @@ class EditNodeFormClass extends React.Component {
                         bsStyle="success"
                         bsSize="xsmall"
                         onClick={() => this.props.showCreateNodeForm(true)}
-                        className={'networks-button'}
+                        className={'networks-button ' + (this.props.selectedNode?.unsaved ? 'disabled' : null)}
                     >
                         Add Node
                     </Button>
@@ -138,7 +138,7 @@ class EditNodeFormClass extends React.Component {
                         bsStyle="success"
                         bsSize="xsmall"
                         onClick={() => this.props.showCreateLinkForm(true)}
-                        className={'networks-button'}
+                        className={'networks-button ' + (this.props.selectedNode?.unsaved ? 'disabled' : null)}
                     >
                         Add Link
                     </Button>
@@ -162,12 +162,6 @@ class EditNodeFormClass extends React.Component {
 }
 
 const mapStateToProps = (state) => {
-    console.log('state:', state);
-    console.log('selectedNode:', state?.networks?.data?.filter(
-            (network) => network.id === state?.networks?.selectedNetworkId
-        )[0].json.nodes?.filter(
-            (node) => node.id === state?.networks?.selectedNodeId
-        )[0]);
     return {
         mapId: state?.projectManager?.data?.base_map,
         projectId: state?.projectManager?.data?.id,
@@ -186,10 +180,10 @@ const mapDispatchToProps = ( dispatch ) => {
         saveNode: (mapId, node) => dispatch(saveNode(mapId, node)),
         saveLink: (mapId, link) => dispatch(saveLink(mapId, link)),
         updateNode: (kv) => dispatch(updateNode(kv)),
+        updateLink: (kv) => dispatch(updateLink(kv)),
         deleteNode: (mapId, node) => dispatch(deleteNode(mapId, node)),
         showCreateNodeForm: (node) => dispatch(showCreateNodeForm(node)),
         showCreateLinkForm: (link) => dispatch(showCreateLinkForm(link)),
-        updateLink: (link) => dispatch(updateLink(link)),
         selectNodeId: (nodeId) => dispatch(selectNodeId(nodeId)),
         selectLinkId: (linkId) => dispatch(selectLinkId(linkId))
     };

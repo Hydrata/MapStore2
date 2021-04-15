@@ -24,6 +24,19 @@ import {
     SHOW_CREATE_LINK_FORM
 } from "./actionsNetworks";
 
+const threeFields = [
+    'x',
+    'y',
+    'z',
+    'vx',
+    'vy',
+    'vz',
+    'fx',
+    'fy',
+    'fz',
+    '__threeObj'
+];
+
 export default ( state = {}, action) => {
     switch (action.type) {
     case FETCH_NETWORKS_LIST:

@@ -30,8 +30,6 @@ class DagContainerClass extends React.Component {
     }
 
     componentDidUpdate() {
-        // console.log('this.graph', this.graph);
-        // this.graph.current.refresh();
     }
 
     onClick = () => {
@@ -44,13 +42,15 @@ class DagContainerClass extends React.Component {
 
     render() {
         let extraRenderers = [new CSS2DRenderer()];
+        let copiedData = JSON.parse(JSON.stringify(this.props?.data));
         return (
-            <div style={{'border': '1px white solid', 'width': '100%'}} ref={this.graphContainer}>
+            <div
+                style={{'border': '1px white solid', 'width': '100%'}}
+                ref={this.graphContainer}
+            >
                 <ForceGraph3D
-                    ref={this.graph}
-                    key={this.props?.selectedNetworkId + JSON.stringify(this.props?.data?.nodes).length + JSON.stringify(this.props?.data?.links).length}
                     extraRenderers={extraRenderers}
-                    graphData={this.props?.data}
+                    graphData={copiedData}
                     width={this.graphContainer?.current?.offsetWidth}
                     height={600}
                     backgroundColor={'#00000080'}
@@ -88,6 +88,7 @@ class DagContainerClass extends React.Component {
                     linkDirectionalArrowLength={6}
                     linkDirectionalParticles={0.5}
                     linkDirectionalParticleWidth={3}
+                    warmupTicks={20}
                 />
             </div>
         );
@@ -110,6 +111,12 @@ const mapStateToProps = (state) => {
         })[0]?.json;
     }
     console.log('data:', data);
+    if (!data) {
+        data = {
+            nodes: [],
+            links: []
+        };
+    }
     return {
         data: data,
         mapId: state?.projectManager?.data?.base_map,
