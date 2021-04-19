@@ -127,7 +127,7 @@ class ScenariosContainer extends React.Component {
                     <ul className="menu-groups">
                         <button
                             key={'scenarios'}
-                            style={{...buttonStyle, left: (this.props.numberOfMenus + 1) * 100 + 20}}
+                            style={{...buttonStyle, left: (this.props.numberOfMenus + 5) * 100 + 20}}
                             onClick={() => {
                                 this.props.toggleScenarioManager();
                                 this.props.setMenuGroup('app_scenario');
