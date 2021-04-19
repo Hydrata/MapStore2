@@ -83,7 +83,8 @@ class ScenariosContainer extends React.Component {
         setMenuGroup: PropTypes.func,
         hasScenarioConfig: PropTypes.bool,
         config: PropTypes.array,
-        numberOfMenus: PropTypes.number
+        numberOfMenus: PropTypes.number,
+        userRole: PropTypes.string
     };
 
     static defaultProps = {
@@ -121,6 +122,9 @@ class ScenariosContainer extends React.Component {
     }
 
     render() {
+        if (this.props.userRole !== 'ADMIN') {
+            return null;
+        }
         return (
             <div id={"scenarios-container"}>
                 <div>
@@ -178,7 +182,8 @@ const mapStateToProps = (state) => {
         hasScenarioConfig: state?.scenarios?.hasScenarioConfig,
         openMenuGroup: state?.projectManager?.openMenuGroup,
         config: state?.scenarios?.config,
-        numberOfMenus: state?.projectManager?.data?.map_store_menu_groups?.length
+        numberOfMenus: state?.projectManager?.data?.map_store_menu_groups?.length,
+        userRole: state?.security?.user?.role
     };
 };
 
