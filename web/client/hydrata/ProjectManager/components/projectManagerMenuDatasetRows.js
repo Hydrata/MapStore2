@@ -23,7 +23,7 @@ class MenuDatasetRowsClass extends React.Component {
     }
 
     render() {
-        if (this.props.openMenuGroup === 'basemaps') {
+        if (this.props.openMenuGroup.id_label === 'basemaps') {
             return (
                 <div style={rowsStyle}>
                     {this.props.baseMaps.map((layer) => (

@@ -66,26 +66,29 @@ class MenuDatasetRowClass extends React.Component {
                     />
                     <div className="h5" style={textStyle}>{this.props.thisLayer.title}</div>
                 </div>
-                <div className="mapstore-slider dataset-transparency with-tooltip" onClick={(e) => { e.stopPropagation(); }}>
-                    <Slider
-                        step={1}
-                        start={this.props.thisLayer?.opacity * 100}
-                        range={{
-                            min: 0,
-                            max: 100
-                        }}
-                        onChange={(values) => {
-                            this.props.setOpacity(this.props.thisLayer?.id, values);
-                        }}
-                    />
-                </div>
+                {
+                    this.props.thisLayer?.opacity ?
+                        <div className="mapstore-slider dataset-transparency with-tooltip" onClick={(e) => { e.stopPropagation(); }}>
+                            <Slider
+                                step={1}
+                                start={this.props.thisLayer?.opacity * 100}
+                                range={{
+                                    min: 0,
+                                    max: 100
+                                }}
+                                onChange={(values) => {
+                                    this.props.setOpacity(this.props.thisLayer?.id, values);
+                                }}
+                            />
+                        </div> :
+                        null
+                }
             </div>
         );
     }
 }
 
 const mapStateToProps = (state, ownProps) => {
-    console.log('ownProps: ', ownProps);
     return {
         thisLayer: ownProps.layer ? ownProps.layer : state?.layers?.flat.filter((layer) => {
             return layer?.id === ownProps.dataset?.layer;

@@ -19,7 +19,7 @@ export default ( state = {}, action) => {
             data: action.payload
         };
     case SET_MENU_GROUP:
-        if (state.openMenuGroup === action.payload) {
+        if (state.openMenuGroup?.id_label === action.payload?.id_label) {
             return {
                 ...state,
                 openMenuGroup: null

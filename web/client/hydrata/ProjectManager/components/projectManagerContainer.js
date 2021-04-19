@@ -48,6 +48,7 @@ class ProjectManagerContainer extends React.Component {
     static propTypes = {
         fetchProjectManagerConfig: PropTypes.func,
         menuGroups: PropTypes.array,
+        baseMapMenuGroup: PropTypes.object,
         mapId: PropTypes.number,
         layers: PropTypes.array,
         projectTitle: PropTypes.string,
@@ -87,7 +88,7 @@ class ProjectManagerContainer extends React.Component {
                         <button
                             key={'basemaps'}
                             style={{...buttonStyle, left: 20}}
-                            onClick={() => {this.props.setMenuGroup('basemaps');}}>
+                            onClick={() => {this.props.setMenuGroup(this.props.baseMapMenuGroup);}}>
                             BaseMaps
                         </button>
                         {this.props.menuGroups && this.props.menuGroups.length && this.props.menuGroups.map(
@@ -130,6 +131,7 @@ const mapStateToProps = (state) => {
         layers: state?.layers?.flat.map(layer => layer.name),
         // eslint-disable-next-line camelcase
         menuGroups: menuGroupsSelector(state),
+        baseMapMenuGroup: {id: 0, id_label: 'basemaps', title: 'Base Maps'},
         projectTitle: state?.projectManager?.data?.title,
         isFetching: state?.projectManager?.fetching,
         hasPmData: state?.projectManager?.data,
