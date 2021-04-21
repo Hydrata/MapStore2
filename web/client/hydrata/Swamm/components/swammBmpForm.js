@@ -12,7 +12,8 @@ import {
     updateBmpForm,
     setDrawingBmpLayerName,
     setEditingBmpFeatureId,
-    clearEditingBmpFeatureId
+    clearEditingBmpFeatureId,
+    deleteBmp
 } from "../actionsSwamm";
 import {setMenuGroup} from "../../ProjectManager/actionsProjectManager";
 import {
@@ -22,9 +23,6 @@ import {
     startDrawingFeature,
     saveChanges
 } from "../../../actions/featuregrid";
-import {
-    changeDrawingStatus
-} from "../../../actions/draw";
 import { purgeMapInfoResults } from "../../../actions/mapInfo";
 import {featureTypeSelected, createQuery, query} from "../../../actions/wfsquery";
 import "../../ProjectManager/projectManager.css";
@@ -59,7 +57,6 @@ class SwammBmpFormClass extends React.Component {
         toggleEditMode: PropTypes.func,
         createNewFeatures: PropTypes.func,
         createQuery: PropTypes.func,
-        changeDrawingStatus: PropTypes.func,
         startDrawingFeature: PropTypes.func,
         saveChanges: PropTypes.func,
         setDrawingBmpLayerName: PropTypes.func,
@@ -77,7 +74,8 @@ class SwammBmpFormClass extends React.Component {
         toggleLayer: PropTypes.func,
         bmpOutletLayer: PropTypes.object,
         bmpFootprintLayer: PropTypes.object,
-        bmpWatershedLayer: PropTypes.object
+        bmpWatershedLayer: PropTypes.object,
+        deleteBmp: PropTypes.func
     };
 
     static defaultProps = {
@@ -135,7 +133,7 @@ class SwammBmpFormClass extends React.Component {
                             <Form horizontal>
                                 <FormGroup controlId="formControlsSelectOrg" bsSize={"small"}>
                                     <Col componentClass={ControlLabel} sm={6}>
-                                      Organisation
+                                      Organization
                                     </Col>
                                     {this.props.storedBmpForm.id ?
                                         <Col sm={5}>
@@ -154,7 +152,7 @@ class SwammBmpFormClass extends React.Component {
                                                 value={JSON.stringify(this.props.storedBmpForm?.organisation)}
                                                 onChange={this.handleOrgChange}
                                             >
-                                                <option key="1" value="select">Select Organisation</option>
+                                                <option key="1" value="select">Select Organization</option>
                                                 {this.props.orgs.map((org) => {
                                                     return <option key={org.id} value={JSON.stringify(org)}>{org.name}</option>;
                                                 })}
@@ -519,6 +517,17 @@ class SwammBmpFormClass extends React.Component {
                         <Button
                             bsStyle="danger"
                             bsSize="small"
+                            style={{opacity: "0.7", position: "absolute", bottom: "20px", right: "320px", minWidth: "80px"}}
+                            onClick={() => {
+                                if (window.confirm('This action can not be undone. Are you sure?')) {
+                                    this.props.deleteBmp(this.props.mapId, this.props.storedBmpForm?.id);
+                                }
+                            }}>
+                            Delete
+                        </Button>
+                        <Button
+                            bsStyle="danger"
+                            bsSize="small"
                             style={{opacity: "0.7", position: "absolute", bottom: "20px", right: "220px", minWidth: "80px"}}
                             onClick={() => this.props.clearBmpForm()}>
                             Close
@@ -630,6 +639,7 @@ const mapDispatchToProps = ( dispatch ) => {
         submitBmpForm: (newBmp, mapId) => dispatch(submitBmpForm(newBmp, mapId)),
         updateBmpForm: (kv) => dispatch(updateBmpForm(kv)),
         clearBmpForm: () => dispatch(clearBmpForm()),
+        deleteBmp: (mapId, bmpId) => dispatch(deleteBmp(mapId, bmpId)),
         makeDefaultsBmpForm: (bmpType) => dispatch(makeDefaultsBmpForm(bmpType)),
         setLayer: (id) => dispatch(setLayer(id)),
         setDrawingBmpLayerName: (layerName) => dispatch(setDrawingBmpLayerName(layerName)),
@@ -641,7 +651,6 @@ const mapDispatchToProps = ( dispatch ) => {
         createNewFeatures: (features) => dispatch(createNewFeatures(features)),
         createQuery: (searchUrl, filterObj) => dispatch(createQuery(searchUrl, filterObj)),
         query: (url, filterObj, queryOptions, reason) => dispatch(query(url, filterObj, queryOptions, reason)),
-        changeDrawingStatus: () => dispatch(changeDrawingStatus()),
         startDrawingFeature: () => dispatch(startDrawingFeature()),
         saveChanges: () => dispatch(saveChanges()),
         purgeMapInfoResults: () => dispatch(purgeMapInfoResults()),

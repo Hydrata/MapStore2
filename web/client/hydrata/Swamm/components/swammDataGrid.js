@@ -89,7 +89,7 @@ class SwammDataGridClass extends React.Component {
     columnHeaders = [
         { key: 'id', name: 'ID', filterable: true, filterRenderer: NumericFilter },
         { key: 'typeName', name: 'Type' },
-        { key: 'organisationName', name: 'Organisation'},
+        { key: 'organisationName', name: 'Organization'},
         { key: 'n_redratio', name: 'N Reduction Ratio'},
         { key: 'p_redratio', name: 'P Reduction Ratio'},
         { key: 's_redratio', name: 'S Reduction Ratio'},

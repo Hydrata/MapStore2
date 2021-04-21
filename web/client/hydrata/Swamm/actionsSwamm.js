@@ -47,6 +47,9 @@ const CLEAR_DRAWING_BMP_LAYER_NAME = 'CLEAR_DRAWING_BMP_LAYER_NAME';
 const CREATE_BMP_FEATURE_ID = 'CREATE_BMP_FEATURE_ID';
 const SET_EDITING_BMP_FEATURE_ID = 'SET_EDITING_BMP_FEATURE_ID';
 const CLEAR_EDITING_BMP_FEATURE_ID = 'CLEAR_EDITING_BMP_FEATURE_ID';
+const DELETE_BMP = 'DELETE_BMP';
+const DELETE_BMP_SUCCESS = 'DELETE_BMP_SUCCESS';
+const DELETE_BMP_ERROR = 'DELETE_BMP_ERROR';
 
 const uuidv1 = require('uuid/v1');
 const { SHOW_NOTIFICATION } = require('../../actions/notifications');
@@ -435,6 +438,64 @@ const submitBmpForm = (newBmp, mapId) => {
     };
 };
 
+const deleteBmpSuccess = (bmpId) => {
+    return (dispatch) => {
+        dispatch({
+            type: SHOW_NOTIFICATION,
+            title: 'Delete BMP Error',
+            autoDismiss: 6,
+            position: 'tc',
+            message: `Successfully deleted BMP: ${bmpId}`,
+            uid: uuidv1(),
+            level: 'success'
+        });
+        dispatch({
+            type: DELETE_BMP_SUCCESS,
+            bmpId
+        });
+    };
+};
+
+const deleteBmpError = (e) => {
+    console.log('*** error:', e);
+    return (dispatch) => {
+        dispatch({
+            type: SHOW_NOTIFICATION,
+            title: 'Delete BMP Error',
+            autoDismiss: 60,
+            position: 'tc',
+            message: `${e?.data}`,
+            uid: uuidv1(),
+            level: 'error'
+        });
+        dispatch({
+            type: DELETE_BMP_ERROR,
+            error: e
+        });
+    };
+};
+
+const deleteBmp = (mapId, bmpId) => {
+    return (dispatch) => {
+        // const state = getState();
+        // const networkPayload = {id: state?.networks?.selectedNetworkId};
+        return axios.delete(`/swamm/api/${mapId}/bmps/${bmpId}/`, {}
+        ).then(
+            response => {
+                dispatch(deleteBmpSuccess(bmpId));
+                dispatch(hideBmpForm());
+                dispatch(clearBmpForm());
+                dispatch(clearEditingBmpFeatureId());
+                dispatch(clearDrawingBmpLayerName());
+            }
+        ).catch(
+            e => {
+                dispatch(deleteBmpError(e));
+            }
+        );
+    };
+};
+
 module.exports = {
     FETCH_SWAMM_BMPTYPES, fetchSwammBmpTypes,
     FETCH_SWAMM_BMPTYPES_ERROR, fetchSwammBmpTypesError,
@@ -474,5 +535,8 @@ module.exports = {
     CLEAR_DRAWING_BMP_LAYER_NAME, clearDrawingBmpLayerName,
     CREATE_BMP_FEATURE_ID, createBmpFeatureId,
     SET_EDITING_BMP_FEATURE_ID, setEditingBmpFeatureId,
-    CLEAR_EDITING_BMP_FEATURE_ID, clearEditingBmpFeatureId
+    CLEAR_EDITING_BMP_FEATURE_ID, clearEditingBmpFeatureId,
+    DELETE_BMP, deleteBmp,
+    DELETE_BMP_ERROR, deleteBmpError,
+    DELETE_BMP_SUCCESS, deleteBmpSuccess
 };

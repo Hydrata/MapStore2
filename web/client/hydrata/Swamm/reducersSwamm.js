@@ -28,7 +28,8 @@ import {
     SET_DRAWING_BMP_LAYER_NAME,
     CLEAR_DRAWING_BMP_LAYER_NAME,
     SET_EDITING_BMP_FEATURE_ID,
-    CLEAR_EDITING_BMP_FEATURE_ID
+    CLEAR_EDITING_BMP_FEATURE_ID,
+    DELETE_BMP_SUCCESS
 } from "./actionsSwamm";
 import {
     SET_MENU_GROUP
@@ -375,6 +376,12 @@ export default ( state = initialState, action) => {
         return {
             ...state,
             editingBmpFeatureId: null
+        };
+    case DELETE_BMP_SUCCESS:
+        console.log('deleted', action);
+        return {
+            ...state,
+            allBmps: state.allBmps.filter((bmp) => bmp.id !== action.bmpId)
         };
     default:
         return state;

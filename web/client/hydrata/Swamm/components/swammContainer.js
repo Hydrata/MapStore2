@@ -177,11 +177,11 @@ class SwammContainer extends React.Component {
         if (!this.props.mapId && !this.fetchingBmpTypes) {
             this.fetchingBmpTypes = false;
         }
-        if (this.props.mapId && (this.props.bmpTypes.length === 0) && !this.fetchingBmpTypes) {
+        if (this.props.mapId && (this.props.bmpTypes?.length === 0) && !this.fetchingBmpTypes) {
             this.fetchingBmpTypes = true;
             this.props.fetchSwammBmpTypes(this.props.mapId);
         }
-        if (this.props.mapId && (this.props.bmpTypes.length > 0)) {
+        if (this.props.mapId && (this.props.bmpTypes?.length > 0)) {
             this.fetchingBmpTypes = false;
         }
         if (!this.props.mapId && !this.fetchingBmps) {
