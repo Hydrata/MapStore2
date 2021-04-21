@@ -503,6 +503,22 @@ class SwammBmpFormClass extends React.Component {
                                     </tr>
                                 </tbody>
                             </Table>
+                            <FormGroup controlId="notes" bsSize={"small"}>
+                                <Col componentClass={ControlLabel} sm={3}>
+                                  Notes
+                                </Col>
+                                <Col sm={8}>
+                                    <FormControl
+                                        inline="true"
+                                        type="textarea"
+                                        componentClass="textarea"
+                                        name="notes"
+                                        value={this.props.storedBmpForm?.notes}
+                                        onChange={this.handleChange}
+                                    />
+                                    <FormControl.Feedback />
+                                </Col>
+                            </FormGroup>
                             {this.props.storedBmpForm?.created_by ?
                                 <p>Created by: {this.props.storedBmpForm?.created_by} on {new Date(this.props.storedBmpForm?.created_at).toLocaleString()}</p> :
                                 null

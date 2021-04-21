@@ -254,7 +254,7 @@ export default ( state = initialState, action) => {
             override_cost_base: action.bmp.override_cost_base,
             override_cost_rate_per_watershed_area: action.bmp.override_cost_rate_per_watershed_area,
             override_cost_rate_per_footprint_area: action.bmp.override_cost_rate_per_footprint_area,
-            notes: '',
+            notes: action.bmp.notes,
             outlet_fid: outletFid,
             footprint_fid: footprintFid,
             watershed_fid: watershedFid
