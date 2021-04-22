@@ -49,7 +49,8 @@ class NetworksContainerClass extends React.Component {
         selectedLinkId: PropTypes.number,
         setMenuGroup: PropTypes.func,
         creatingNode: PropTypes.object,
-        creatingLink: PropTypes.object
+        creatingLink: PropTypes.object,
+        numberOfMenus: PropTypes.number
     };
 
     static defaultProps = {}

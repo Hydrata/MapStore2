@@ -164,7 +164,8 @@ class SwammContainer extends React.Component {
         drawStopped: PropTypes.func,
         bmpOutletLayer: PropTypes.object,
         bmpFootrprintLayer: PropTypes.object,
-        bmpWatershedLayer: PropTypes.object
+        bmpWatershedLayer: PropTypes.object,
+        numberOfMenus: PropTypes.number
     };
 
     static defaultProps = {};
@@ -226,7 +227,8 @@ class SwammContainer extends React.Component {
                         </Button>
                         <button
                             key="swamm-bmp-creator-button"
-                            style={{...buttonStyle, left: 4 * 100 + 20}}
+                            // style={{...buttonStyle, left: (this.props.numberOfMenus + 5) * 100 + 20}}
+                            style={{...buttonStyle, left: (this.props.numberOfMenus + 1) * 100 + 20}}
                             onClick={() => {
                                 this.props.showBmpForm();
                                 this.props.setMenuGroup(null);
@@ -263,7 +265,7 @@ class SwammContainer extends React.Component {
                             </Button>
                             <button
                                 key="swamm-bmp-creator-button"
-                                style={{...buttonStyle, left: 4 * 100 + 20}}
+                                style={{...buttonStyle, left: (this.props.numberOfMenus + 1) * 100 + 20}}
                                 onClick={() => {
                                     this.props.saveChanges();
                                     this.props.showBmpForm();
@@ -276,7 +278,7 @@ class SwammContainer extends React.Component {
                         : this.props.visibleBmpForm ?
                             <button
                                 key="swamm-bmp-creator-button"
-                                style={{...buttonStyle, left: 4 * 100 + 20}}
+                                style={{...buttonStyle, left: (this.props.numberOfMenus + 1) * 100 + 20}}
                                 disabled
                             >
                                 Create BMPs
@@ -284,7 +286,7 @@ class SwammContainer extends React.Component {
                             :
                             <button
                                 key="swamm-bmp-creator-button"
-                                style={{...buttonStyle, left: 4 * 100 + 20}}
+                                style={{...buttonStyle, left: (this.props.numberOfMenus + 1) * 100 + 20}}
                                 onClick={() => {
                                     this.props.makeBmpForm();
                                     this.props.setMenuGroup(null);
@@ -295,7 +297,7 @@ class SwammContainer extends React.Component {
                 }
                 <button
                     key="swamm-bmp-data-grid-button"
-                    style={{...buttonStyle, left: 5 * 100 + 20}}
+                    style={{...buttonStyle, left: (this.props.numberOfMenus + 2) * 100 + 20}}
                     onClick={() => {
                         this.props.showSwammFeatureGrid(this.props.bmpOutletLayer);
                         this.props.setMenuGroup(null);
@@ -305,7 +307,7 @@ class SwammContainer extends React.Component {
                 </button>
                 <button
                     key="swamm-bmp-chart-button"
-                    style={{...buttonStyle, left: 6 * 100 + 20}}
+                    style={{...buttonStyle, left: (this.props.numberOfMenus + 3) * 100 + 20}}
                     onClick={() => {
                         this.props.showSwammBmpChart();
                         this.props.setMenuGroup(null);
@@ -423,6 +425,7 @@ const mapStateToProps = (state) => {
         visibleSwammDataGrid: state?.swamm?.visibleSwammDataGrid,
         visibleSwammBmpChart: state?.swamm?.visibleSwammBmpChart,
         queryStore: state?.query,
+        numberOfMenus: state?.projectManager?.data?.map_store_menu_groups?.length,
         filters: {
             showOutlets: state.swamm?.showOutlets,
             showFootprints: state.swamm?.showFootprints,
