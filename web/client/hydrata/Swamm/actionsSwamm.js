@@ -379,14 +379,20 @@ const clearEditingBmpFeatureId = () => {
 };
 
 const submitBmpFormSuccess = (bmp) => {
-    return {
-        type: SHOW_NOTIFICATION,
-        title: 'Success',
-        autoDismiss: 6,
-        position: 'tc',
-        message: `BMP ID: ${bmp.id} saved`,
-        uid: uuidv1(),
-        level: 'success'
+    return (dispatch) => {
+            dispatch({
+            type: SHOW_NOTIFICATION,
+            title: 'Success',
+            autoDismiss: 6,
+            position: 'tc',
+            message: `BMP ID: ${bmp.id} saved`,
+            uid: uuidv1(),
+            level: 'success'
+        });
+        dispatch({
+            type: SUBMIT_BMP_FORM_SUCCESS,
+            bmp
+        });
     };
 };
 
@@ -411,7 +417,7 @@ const submitBmpForm = (newBmp, mapId) => {
             ).then(
                 response => {
                     dispatch(submitBmpFormSuccess(response.data));
-                    dispatch(fetchSwammAllBmps(mapId));
+                    // dispatch(fetchSwammAllBmps(mapId));
                     dispatch(makeExistingBmpForm(response.data));
                 }
             ).catch(
@@ -427,7 +433,7 @@ const submitBmpForm = (newBmp, mapId) => {
         ).then(
             response => {
                 dispatch(submitBmpFormSuccess(response.data));
-                dispatch(fetchSwammAllBmps(mapId));
+                // dispatch(fetchSwammAllBmps(mapId));
                 dispatch(makeExistingBmpForm(response.data));
             }
         ).catch(
@@ -477,8 +483,6 @@ const deleteBmpError = (e) => {
 
 const deleteBmp = (mapId, bmpId) => {
     return (dispatch) => {
-        // const state = getState();
-        // const networkPayload = {id: state?.networks?.selectedNetworkId};
         return axios.delete(`/swamm/api/${mapId}/bmps/${bmpId}/`, {}
         ).then(
             response => {

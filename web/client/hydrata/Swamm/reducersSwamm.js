@@ -35,6 +35,7 @@ import {
     SET_MENU_GROUP
 } from "../ProjectManager/actionsProjectManager";
 import { LOAD_FEATURE_INFO } from "../../actions/mapInfo";
+import {SAVE_NETWORK_SUCCESS} from "../Networks/actionsNetworks";
 
 const initialState = {
     showOutlets: true,
@@ -279,9 +280,22 @@ export default ( state = initialState, action) => {
             updatingBmp: null
         };
     case SUBMIT_BMP_FORM_SUCCESS:
+        const allBmpIds = state.allBmps?.map((bmp) => bmp.id);
+        console.log("allBmpIds:", allBmpIds);
+        if (allBmpIds.indexOf(action.bmp.id) > -1) {
+            return {
+                ...state,
+                allBmps: state.allBmps.map((bmp) => {
+                    if (bmp.id === action.bmp.id) {
+                        return action.bmp;
+                    }
+                    return bmp;
+                })
+            };
+        }
         return {
             ...state,
-            showSubmitBmpFormSuccess: true
+            allBmps: [...state.allBmps, action.bmp]
         };
     case SUBMIT_BMP_FORM_ERROR:
         return {
