@@ -1,13 +1,14 @@
 import React from "react";
 import {connect} from "react-redux";
 const PropTypes = require('prop-types');
-import {Modal, Button,  Col, Grid, Row } from "react-bootstrap";
+import {Modal, Button,  Col, Grid, Row, ButtonToolbar } from "react-bootstrap";
 import {formatMoney} from "../../Utils/utils";
 import {SwammStatusFilter} from "./swammStatusFilter";
 import {hideSwammBmpChart} from "../actionsSwamm";
 import {bmpDashboardDataSelector, bmpSpeedDialSelector} from "../selectorsSwamm";
 const {Cell, BarChart, Bar, PieChart, Pie, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip} = require('recharts');
 import Legend from "../../../components/TOC/fragments/legend/Legend";
+import '../swamm.css';
 
 const circleSize = 150;
 
@@ -55,12 +56,55 @@ class SwammBmpChartClass extends React.Component {
                 </Modal.Header>
                 <Modal.Body style={{padding: "0", margin: "0"}}>
                     <Grid>
-                        <Col sm={10}>
+                        <Col sm={2} className={'well'}>
+                            <h4 style={{padding: "0", margin: "0"}} className={'dash-controls'}>Targets</h4>
+                            <div className={'row-no-gutters'}>
+                                <Button
+                                    bsStyle="success"
+                                    bsSize="xsmall"
+                                    block
+                                    style={{opacity: "0.7", marginTop: "4px", fontSize: "xsmall"}}
+                                    onClick={() => this.props.createLoadingTarget()}>
+                                    Button One
+                                </Button>
+                            </div>
+                            <div className={'row-no-gutters'}>
+                                <Button
+                                    bsStyle="success"
+                                    bsSize="xsmall"
+                                    block
+                                    style={{opacity: "0.7", marginTop: "4px", fontSize: "xsmall"}}
+                                    onClick={() => this.props.createLoadingTarget()}>
+                                    Button OneA
+                                </Button>
+                            </div>
+                            <div className={'row-no-gutters'}>
+                                <Button
+                                    bsStyle="success"
+                                    bsSize="xsmall"
+                                    block
+                                    style={{opacity: "0.7", marginTop: "4px", fontSize: "xsmall"}}
+                                    onClick={() => this.props.createLoadingTarget()}>
+                                    Button Two
+                                </Button>
+                            </div>
+                            <div className={'row-no-gutters'}>
+                                <Button
+                                    bsStyle="info"
+                                    bsSize="xsmall"
+                                    block
+                                    style={{marginTop: "4px", fontSize: "xsmall"}}
+                                    onClick={() => this.props.createLoadingTarget()}>
+                                    New Target
+                                </Button>
+                            </div>
+                        </Col>
+                        <Col sm={8}>
                             {
                                 this.pollutants.map(pollutant => {
                                     return (
                                         <Row
-                                            className={"container well"}
+                                            className={"well"}
                                             style={{padding: 0}}
                                             key={pollutant.name + "-dashboard"}
                                         >
@@ -126,7 +170,7 @@ class SwammBmpChartClass extends React.Component {
                                                     </ResponsiveContainer>
                                                 </div>
                                             </Col>
-                                            <Col sm={7}>
+                                            <Col sm={8}>
                                                 <h4 style={{textAlign: "center"}}>
                                                     Current {pollutant.name} Load Reductions ({pollutant.units})
                                                 </h4>
