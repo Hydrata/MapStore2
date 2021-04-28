@@ -48,8 +48,7 @@ const initialState = {
     targets: [],
     visibleBmpForm: false,
     creatingNewBmp: false,
-    drawingBmpLayerName: false,
-    selectedTargetId: 1
+    drawingBmpLayerName: false
 };
 
 export default ( state = initialState, action) => {

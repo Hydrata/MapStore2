@@ -24,6 +24,7 @@ class SwammBmpChartClass extends React.Component {
         targets: PropTypes.array,
         selectSwammTargetId: PropTypes.func,
         selectedTargetId: PropTypes.number,
+        defaultTargetId: PropTypes.number,
         selectedTarget: PropTypes.object
     };
 
@@ -35,13 +36,13 @@ class SwammBmpChartClass extends React.Component {
     }
 
     componentDidMount() {
+        this.props.selectSwammTargetId(this.props.defaultTargetId);
     }
 
     componentDidUpdate() {
     }
 
     render() {
-        console.log('speedDialData', this.props.speedDialData);
         return (
             <Modal
                 show
@@ -331,7 +332,8 @@ const mapStateToProps = (state) => {
         statuses: state?.swamm?.statuses || [],
         targets: state?.swamm?.targets || [],
         selectedTargetId: state?.swamm?.selectedTargetId,
-        selectedTarget: state?.swamm?.targets.filter((target) => target.id === state?.swamm?.selectedTargetId) || state?.swamm?.targets[0]
+        selectedTarget: state?.swamm?.targets.filter((target) => target.id === state?.swamm?.selectedTargetId)[0],
+        defaultTargetId: state?.swamm?.targets?.[0].id
     };
 };
 
