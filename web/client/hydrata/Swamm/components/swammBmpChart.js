@@ -15,10 +15,10 @@ class SwammBmpChartClass extends React.Component {
     static propTypes = {
         hideSwammBmpChart: PropTypes.func,
         allBmps: PropTypes.array,
-        bmpDashboardDataSelector: PropTypes.func,
-        bmpSpeedDialSelector: PropTypes.func,
-        dashboardData: PropTypes.array,
-        speedDialData: PropTypes.object,
+        // bmpDashboardDataSelector: PropTypes.func,
+        // bmpSpeedDialSelector: PropTypes.func,
+        // dashboardData: PropTypes.array,
+        // speedDialData: PropTypes.object,
         data: PropTypes.array,
         layerForLegend: PropTypes.object,
         targets: PropTypes.array,
@@ -107,7 +107,7 @@ class SwammBmpChartClass extends React.Component {
                                                             style={{paddingTop: "10px"}}
                                                         >
                                                             <Pie
-                                                                data={this.props.speedDialData[`percent${pollutant.name}Target`]}
+                                                                data={this.props.selectedTarget?.speedDialData?.[`percent${pollutant.name}Target`]}
                                                                 dataKey="value"
                                                                 cx={circleSize / 1.3 - 10}
                                                                 cy={circleSize / 2}
@@ -129,7 +129,7 @@ class SwammBmpChartClass extends React.Component {
                                                                 dominantBaseline="middle"
                                                                 className="progress-label"
                                                             >
-                                                                {this.props.speedDialData[`percent${pollutant.name}Target`]?.[0]?.value.toFixed(1)}%
+                                                                {this.props.selectedTarget?.speedDialData[`percent${pollutant.name}Target`]?.[0]?.value.toFixed(1)}%
                                                             </text>
                                                         </PieChart>
                                                     </ResponsiveContainer>
@@ -137,14 +137,14 @@ class SwammBmpChartClass extends React.Component {
                                             </Col>
                                             <Col sm={8}>
                                                 <h4 style={{textAlign: "center", fontSize: "14px", paddingTop: "5px", paddingBottom: "10px", margin: 0}}>
-                                                    Load reduction composition ({pollutant.units})
+                                                    Load reductions ({pollutant.units}):
                                                 </h4>
                                                 <div style={{width: '100%', height: 100}}>
                                                     <ResponsiveContainer>
                                                         <BarChart
                                                             width={600}
                                                             height={80}
-                                                            data={this.props.dashboardData}
+                                                            data={this.props.selectedTarget?.barChartData}
                                                             margin={{top: 0, right: 0, left: 10, bottom: 10}}
                                                             layout="vertical"
                                                             maxBarSize={100}
@@ -158,10 +158,10 @@ class SwammBmpChartClass extends React.Component {
                                                                     tooltipPollutantKey={this.state.tooltipPollutantKey}
                                                                 />}
                                                             />
-                                                            {Object.keys(this.props.dashboardData[0])
-                                                                .sort((keyA, keyB) => this.props.dashboardData[0][keyA]?.type - this.props.dashboardData[0][keyB]?.type)
+                                                            {Object.keys(this.props.selectedTarget?.barChartData?.[0] || {})
+                                                                .sort((keyA, keyB) => this.props.selectedTarget?.barChartData?.[0]?.[keyA]?.type - this.props.selectedTarget?.barChartData?.[0]?.[keyB]?.type)
                                                                 .map(key => {
-                                                                    const bmp = this.props.dashboardData[0][key];
+                                                                    const bmp = this.props.selectedTarget?.barChartData?.[0]?.[key];
                                                                     return (
                                                                         <Bar
                                                                             key={bmp.id}
@@ -224,16 +224,16 @@ class SwammBmpChartClass extends React.Component {
                                         </tr>
                                         <tr>
                                             <td>Actual pollutant reduction from BMPs:</td>
-                                            <td>{this.props.speedDialData?.totalBmpPhosphorusReduction?.toFixed(0)}</td>
-                                            <td>{this.props.speedDialData?.totalBmpNitrogenReduction?.toFixed(0)}</td>
-                                            <td>{this.props.speedDialData?.totalBmpSedimentReduction?.toFixed(0)}</td>
+                                            <td>{this.props.selectedTarget?.speedDialData?.totalBmpPhosphorusReduction?.toFixed(0)}</td>
+                                            <td>{this.props.selectedTarget?.speedDialData?.totalBmpNitrogenReduction?.toFixed(0)}</td>
+                                            <td>{this.props.selectedTarget?.speedDialData?.totalBmpSedimentReduction?.toFixed(0)}</td>
                                             <td className={"text-left"}>units/year</td>
                                         </tr>
                                         <tr>
                                             <td>Percentage of target achieved: </td>
-                                            <td>{this.props.speedDialData?.percentPhosphorusTarget?.[0]?.value?.toFixed(1)}</td>
-                                            <td>{this.props.speedDialData?.percentNitrogenTarget?.[0]?.value?.toFixed(1)}</td>
-                                            <td>{this.props.speedDialData?.percentSedimentTarget?.[0]?.value?.toFixed(1)}</td>
+                                            <td>{this.props.selectedTarget?.speedDialData?.percentPhosphorusTarget?.[0]?.value?.toFixed(1)}</td>
+                                            <td>{this.props.selectedTarget?.speedDialData?.percentNitrogenTarget?.[0]?.value?.toFixed(1)}</td>
+                                            <td>{this.props.selectedTarget?.speedDialData?.percentSedimentTarget?.[0]?.value?.toFixed(1)}</td>
                                             <td className={"text-left"}>%</td>
                                         </tr>
                                     </tbody>
@@ -296,14 +296,15 @@ class CustomTooltipClass extends React.Component {
         active: PropTypes.bool,
         tooltipBarId: PropTypes.number,
         tooltipPollutantKey: PropTypes.string,
-        dashboardData: PropTypes.array
+        barChartData: PropTypes.array,
+        selectedTarget: PropTypes.object
     }
 
     render() {
         if (this.props.active) {
             let bmp = null;
-            Object.keys(this.props.dashboardData[0]).map(key => {
-                const obj = this.props.dashboardData[0][key];
+            Object.keys(this.props.selectedTarget?.barChartData[0]).map(key => {
+                const obj = this.props.selectedTarget?.barChartData[0][key];
                 if (obj.id === this.props.tooltipBarId) {
                     bmp = obj;
                 }
@@ -323,12 +324,14 @@ class CustomTooltipClass extends React.Component {
 const mapStateToProps = (state) => {
     const projectCode = state?.projectManager?.data?.code;
     const legendLayerName = projectCode + '_bmp_footprint';
+    // console.log('dashboardData', bmpDashboardDataSelector(state) || []);
+    // console.log('speedDialData', bmpSpeedDialSelector(state) || []);
     return {
         mapId: state?.projectManager?.data?.base_map,
         layerForLegend: state?.layers?.flat?.filter((layer) => layer.name === legendLayerName)[0],
         allBmps: state?.swamm?.allBmps,
-        dashboardData: bmpDashboardDataSelector(state) || [],
-        speedDialData: bmpSpeedDialSelector(state) || [],
+        // dashboardData: bmpDashboardDataSelector(state) || [],
+        // speedDialData: bmpSpeedDialSelector(state) || [],
         statuses: state?.swamm?.statuses || [],
         targets: state?.swamm?.targets || [],
         selectedTargetId: state?.swamm?.selectedTargetId,
