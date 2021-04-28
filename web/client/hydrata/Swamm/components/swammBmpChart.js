@@ -202,36 +202,36 @@ class SwammBmpChartClass extends React.Component {
                                     <tbody>
                                         <tr>
                                             <td>Current total untreated pollutant volume: </td>
-                                            <td>{this.props.selectedTarget?.total_current_n_loading}</td>
                                             <td>{this.props.selectedTarget?.total_current_p_loading}</td>
+                                            <td>{this.props.selectedTarget?.total_current_n_loading}</td>
                                             <td>{this.props.selectedTarget?.total_current_s_loading}</td>
                                             <td className={"text-left"}>units/year</td>
                                         </tr>
                                         <tr>
                                             <td>Selected target reduction percentage:</td>
-                                            <td>{this.props.selectedTarget?.target_percent_n_reduction * 100}</td>
                                             <td>{this.props.selectedTarget?.target_percent_p_reduction * 100}</td>
+                                            <td>{this.props.selectedTarget?.target_percent_n_reduction * 100}</td>
                                             <td>{this.props.selectedTarget?.target_percent_s_reduction * 100}</td>
                                             <td className={"text-left"}>% of total</td>
                                         </tr>
                                         <tr>
                                             <td>Selected target load reduction required:</td>
-                                            <td>{(this.props.selectedTarget?.total_current_n_loading * this.props.selectedTarget?.target_percent_n_reduction)?.toFixed(0)}</td>
                                             <td>{(this.props.selectedTarget?.total_current_p_loading * this.props.selectedTarget?.target_percent_p_reduction)?.toFixed(0)}</td>
+                                            <td>{(this.props.selectedTarget?.total_current_n_loading * this.props.selectedTarget?.target_percent_n_reduction)?.toFixed(0)}</td>
                                             <td>{(this.props.selectedTarget?.total_current_s_loading * this.props.selectedTarget?.target_percent_s_reduction)?.toFixed(0)}</td>
                                             <td className={"text-left"}>units/year</td>
                                         </tr>
                                         <tr>
                                             <td>Actual pollutant reduction from BMPs:</td>
-                                            <td>{this.props.speedDialData?.totalBmpNitrogenReduction?.toFixed(0)}</td>
                                             <td>{this.props.speedDialData?.totalBmpPhosphorusReduction?.toFixed(0)}</td>
+                                            <td>{this.props.speedDialData?.totalBmpNitrogenReduction?.toFixed(0)}</td>
                                             <td>{this.props.speedDialData?.totalBmpSedimentReduction?.toFixed(0)}</td>
                                             <td className={"text-left"}>units/year</td>
                                         </tr>
                                         <tr>
                                             <td>Percentage of target achieved: </td>
-                                            <td>{this.props.speedDialData?.percentNitrogenTarget?.[0]?.value?.toFixed(1)}</td>
                                             <td>{this.props.speedDialData?.percentPhosphorusTarget?.[0]?.value?.toFixed(1)}</td>
+                                            <td>{this.props.speedDialData?.percentNitrogenTarget?.[0]?.value?.toFixed(1)}</td>
                                             <td>{this.props.speedDialData?.percentSedimentTarget?.[0]?.value?.toFixed(1)}</td>
                                             <td className={"text-left"}>%</td>
                                         </tr>
@@ -331,7 +331,7 @@ const mapStateToProps = (state) => {
         statuses: state?.swamm?.statuses || [],
         targets: state?.swamm?.targets || [],
         selectedTargetId: state?.swamm?.selectedTargetId,
-        selectedTarget: state?.swamm?.targets.filter((target) => target.id === state?.swamm?.selectedTargetId)[0]
+        selectedTarget: state?.swamm?.targets.filter((target) => target.id === state?.swamm?.selectedTargetId) || state?.swamm?.targets[0]
     };
 };
 
