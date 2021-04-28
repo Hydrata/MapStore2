@@ -4,6 +4,8 @@ import {
     FETCH_SWAMM_ALL_BMPS_SUCCESS,
     FETCH_SWAMM_BMP_STATUSES,
     FETCH_SWAMM_BMP_STATUSES_SUCCESS,
+    FETCH_SWAMM_TARGETS_SUCCESS,
+    SELECT_SWAMM_TARGET_ID,
     TOGGLE_OUTLETS,
     TOGGLE_FOOTPRINTS,
     TOGGLE_WATERSHEDS,
@@ -35,7 +37,6 @@ import {
     SET_MENU_GROUP
 } from "../ProjectManager/actionsProjectManager";
 import { LOAD_FEATURE_INFO } from "../../actions/mapInfo";
-import {SAVE_NETWORK_SUCCESS} from "../Networks/actionsNetworks";
 
 const initialState = {
     showOutlets: true,
@@ -44,9 +45,11 @@ const initialState = {
     bmpTypes: [],
     allBmps: [],
     statuses: [],
+    targets: [],
     visibleBmpForm: false,
     creatingNewBmp: false,
-    drawingBmpLayerName: false
+    drawingBmpLayerName: false,
+    selectedTargetId: 1
 };
 
 export default ( state = initialState, action) => {
@@ -326,47 +329,6 @@ export default ( state = initialState, action) => {
                 ...action.kv
             }
         };
-    // case CREATE_BMP_FEATURE_ID:
-    //     return {
-    //         ...state,
-    //         storedBmpForm: {
-    //             ...state.storedBmpForm,
-    //             ...action.shapeId
-    //         }
-    //     };
-    // case QUERY_RESULT:
-    //     if (action.reason === 'queryGetNewBmpId') {
-    //         console.log('reducer queryGetNewBmpId got action: ', action);
-    //         let queryGetNewBmpId = null;
-    //         let shapeId = null;
-    //         const ids = action.result.features.map(feature => feature.id);
-    //         // TODO: It would be much better to get this Id from the WFS response XML,
-    //         //  rather than assume it's the largest one.
-    //         queryGetNewBmpId = ids.pop();
-    //         console.log('reducer queryGetNewBmpId: ', queryGetNewBmpId);
-    //         switch (queryGetNewBmpId.split("_")[3].split(".")[0]) {
-    //         case "outlet":
-    //             shapeId = {outlet_fid: queryGetNewBmpId};
-    //             break;
-    //         case "footprint":
-    //             shapeId = {footprint_fid: queryGetNewBmpId};
-    //             break;
-    //         case "watershed":
-    //             shapeId = {watershed_fid: queryGetNewBmpId};
-    //             break;
-    //         default:
-    //             shapeId = {};
-    //         }
-    //         console.log('reducer shapeId: ', shapeId);
-    //         return {
-    //             ...state,
-    //             storedBmpForm: {
-    //                 ...state.storedBmpForm,
-    //                 ...shapeId
-    //             }
-    //         };
-    //     }
-    //     return state;
     case SET_DRAWING_BMP_LAYER_NAME:
         let drawingBmpLayerName = false;
         if (action.drawingBmpLayerName !== state.drawingBmpLayerName) {
@@ -396,6 +358,17 @@ export default ( state = initialState, action) => {
         return {
             ...state,
             allBmps: state.allBmps.filter((bmp) => bmp.id !== action.bmpId)
+        };
+    case FETCH_SWAMM_TARGETS_SUCCESS:
+        return {
+            ...state,
+            fetchingTargets: false,
+            targets: action.targets
+        };
+    case SELECT_SWAMM_TARGET_ID:
+        return {
+            ...state,
+            selectedTargetId: action.selectedTargetId
         };
     default:
         return state;

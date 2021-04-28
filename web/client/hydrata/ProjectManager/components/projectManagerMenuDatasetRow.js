@@ -67,7 +67,7 @@ class MenuDatasetRowClass extends React.Component {
                     <div className="h5" style={textStyle}>{this.props.thisLayer.title}</div>
                 </div>
                 {
-                    this.props.thisLayer?.opacity ?
+                    (this.props.thisLayer.opacity === 0 || this.props.thisLayer.opacity) ?
                         <div className="mapstore-slider dataset-transparency with-tooltip" onClick={(e) => { e.stopPropagation(); }}>
                             <Slider
                                 step={1}

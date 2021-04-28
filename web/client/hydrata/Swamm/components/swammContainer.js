@@ -20,7 +20,7 @@ import {
     toggleBmpType,
     setBmpType,
     showSwammDataGrid,
-    showSwammFeatureGrid
+    showSwammFeatureGrid, fetchSwammTargets
 } from "../actionsSwamm";
 import {SwammBmpForm} from "./swammBmpForm";
 import {SwammDataGrid} from "./swammDataGrid";
@@ -116,7 +116,9 @@ class SwammContainer extends React.Component {
         fetchSwammBmpTypes: PropTypes.func,
         fetchSwammAllBmps: PropTypes.func,
         fetchSwammBmpStatuses: PropTypes.func,
+        fetchSwammTargets: PropTypes.func,
         statuses: PropTypes.array,
+        targets: PropTypes.array,
         swammData: PropTypes.array,
         mapId: PropTypes.number,
         organisations: PropTypes.array,
@@ -204,6 +206,16 @@ class SwammContainer extends React.Component {
         }
         if (this.props.mapId && (this.props.statuses.length > 0)) {
             this.fetchingStatuses = false;
+        }
+        if (!this.props.mapId && !this.fetchingTargets) {
+            this.fetchingTargets = false;
+        }
+        if (this.props.mapId && (this.props.targets.length === 0) && !this.fetchingTargets) {
+            this.fetchingTargets = true;
+            this.props.fetchSwammTargets(this.props.mapId);
+        }
+        if (this.props.mapId && (this.props.targets.length > 0)) {
+            this.fetchingTargets = false;
         }
     }
 
@@ -409,6 +421,7 @@ const mapStateToProps = (state) => {
         bmpTypes: state?.swamm?.bmpTypes,
         allBmps: state?.swamm?.allBmps,
         statuses: state?.swamm?.statuses,
+        targets: state?.swamm?.targets,
         showOutlets: state?.swamm?.showOutlets,
         showFootprints: state?.swamm?.showFootprints,
         showWatersheds: state?.swamm?.showWatersheds,
@@ -439,6 +452,7 @@ const mapDispatchToProps = ( dispatch ) => {
         fetchSwammBmpTypes: (mapId) => dispatch(fetchSwammBmpTypes(mapId)),
         fetchSwammAllBmps: (mapId) => dispatch(fetchSwammAllBmps(mapId)),
         fetchSwammBmpStatuses: (mapId) => dispatch(fetchSwammBmpStatuses(mapId)),
+        fetchSwammTargets: (mapId) => dispatch(fetchSwammTargets(mapId)),
         toggleLayer: (layer, isVisible) => dispatch(changeLayerProperties(layer, {visibility: isVisible})),
         toggleOutlets: () => dispatch(toggleOutlets()),
         toggleFootprints: () => dispatch(toggleFootprints()),

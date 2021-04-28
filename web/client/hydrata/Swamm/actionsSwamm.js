@@ -12,6 +12,11 @@ const FETCH_SWAMM_BMP_STATUSES = 'FETCH_SWAMM_BMP_STATUSES';
 const FETCH_SWAMM_BMP_STATUSES_ERROR = 'FETCH_SWAMM_BMP_STATUSES_ERROR';
 const FETCH_SWAMM_BMP_STATUSES_SUCCESS = 'FETCH_SWAMM_BMP_STATUSES_SUCCESS';
 
+const FETCH_SWAMM_TARGETS = 'FETCH_SWAMM_TARGETS';
+const FETCH_SWAMM_TARGETS_ERROR = 'FETCH_SWAMM_TARGETS_ERROR';
+const FETCH_SWAMM_TARGETS_SUCCESS = 'FETCH_SWAMM_TARGETS_SUCCESS';
+const SELECT_SWAMM_TARGET_ID = 'SELECT_SWAMM_TARGET_ID';
+
 const SHOW_SWAMM_BMP_CHART = 'SHOW_SWAMM_BMP_CHART';
 const HIDE_SWAMM_BMP_CHART = 'HIDE_SWAMM_BMP_CHART';
 
@@ -380,7 +385,7 @@ const clearEditingBmpFeatureId = () => {
 
 const submitBmpFormSuccess = (bmp) => {
     return (dispatch) => {
-            dispatch({
+        dispatch({
             type: SHOW_NOTIFICATION,
             title: 'Success',
             autoDismiss: 6,
@@ -448,7 +453,7 @@ const deleteBmpSuccess = (bmpId) => {
     return (dispatch) => {
         dispatch({
             type: SHOW_NOTIFICATION,
-            title: 'Delete BMP Error',
+            title: 'Delete BMP Success',
             autoDismiss: 6,
             position: 'tc',
             message: `Successfully deleted BMP: ${bmpId}`,
@@ -500,6 +505,56 @@ const deleteBmp = (mapId, bmpId) => {
     };
 };
 
+const fetchSwammTargetsSuccess = (data) => {
+    return (dispatch) => {
+        dispatch({
+            type: FETCH_SWAMM_TARGETS_SUCCESS,
+            targets: data
+        });
+    };
+};
+
+const fetchSwammTargetsError = (e) => {
+    console.log('*** error:', e);
+    return (dispatch) => {
+        dispatch({
+            type: SHOW_NOTIFICATION,
+            title: 'Failed to load Targets',
+            autoDismiss: 60,
+            position: 'tc',
+            message: `${e?.data}`,
+            uid: uuidv1(),
+            level: 'error'
+        });
+        dispatch({
+            type: FETCH_SWAMM_TARGETS_ERROR,
+            error: e
+        });
+    };
+};
+
+const fetchSwammTargets = (mapId) => {
+    return (dispatch) => {
+        return axios.get(`/swamm/api/${mapId}/pollutant-loading/`
+        ).then(
+            response => {
+                dispatch(fetchSwammTargetsSuccess(response.data));
+            }
+        ).catch(
+            e => {
+                dispatch(fetchSwammTargetsError(e));
+            }
+        );
+    };
+};
+
+const selectSwammTargetId = (selectedTargetId) => {
+    return {
+        type: SELECT_SWAMM_TARGET_ID,
+        selectedTargetId
+    };
+};
+
 module.exports = {
     FETCH_SWAMM_BMPTYPES, fetchSwammBmpTypes,
     FETCH_SWAMM_BMPTYPES_ERROR, fetchSwammBmpTypesError,
@@ -510,6 +565,10 @@ module.exports = {
     FETCH_SWAMM_BMP_STATUSES, fetchSwammBmpStatuses,
     FETCH_SWAMM_BMP_STATUSES_ERROR, fetchSwammBmpStatusesError,
     FETCH_SWAMM_BMP_STATUSES_SUCCESS, fetchSwammBmpStatusesSuccess,
+    FETCH_SWAMM_TARGETS, fetchSwammTargets,
+    FETCH_SWAMM_TARGETS_ERROR, fetchSwammTargetsError,
+    FETCH_SWAMM_TARGETS_SUCCESS, fetchSwammTargetsSuccess,
+    SELECT_SWAMM_TARGET_ID, selectSwammTargetId,
     SUBMIT_BMP_FORM, submitBmpForm,
     SUBMIT_BMP_FORM_ERROR, submitBmpFormError,
     SUBMIT_BMP_FORM_SUCCESS, submitBmpFormSuccess,

@@ -39,92 +39,98 @@ export const bmpSpeedDialSelector = (state) => {
     }, 0
     );
     const mapId = state?.projectManager?.data?.base_map;
-    const targets = {
-        9: {
-            mapId: 9,
-            currentNitrogenLoad: 1960104,
-            currentPhosphorusLoad: 40696,
-            currentSedimentLoad: 35334,
-            percentNitrogenReductionTarget: 40,
-            percentPhosphorusReductionTarget: 66,
-            percentSedimentReductionTarget: 25
-        },
-        30: {
-            mapId: 30,
-            currentNitrogenLoad: 1960104,
-            currentPhosphorusLoad: 40696,
-            currentSedimentLoad: 35334,
-            percentNitrogenReductionTarget: 40,
-            percentPhosphorusReductionTarget: 66,
-            percentSedimentReductionTarget: 25
-        },
-        419: {
-            mapId: 419,
-            currentNitrogenLoad: 1960104,
-            currentPhosphorusLoad: 40696,
-            currentSedimentLoad: 35334,
-            percentNitrogenReductionTarget: 40,
-            percentPhosphorusReductionTarget: 66,
-            percentSedimentReductionTarget: 25
-        },
-        327: {
-            mapId: 327,
-            currentNitrogenLoad: 1960104,
-            currentPhosphorusLoad: 40696,
-            currentSedimentLoad: 35334,
-            percentNitrogenReductionTarget: 40,
-            percentPhosphorusReductionTarget: 66,
-            percentSedimentReductionTarget: 25
-        },
-        331: {
-            mapId: 331,
-            currentNitrogenLoad: 151591,
-            currentPhosphorusLoad: 20352,
-            currentSedimentLoad: 13801,
-            percentNitrogenReductionTarget: 45,
-            percentPhosphorusReductionTarget: 66,
-            percentSedimentReductionTarget: 66
-        },
-        465: {
-            mapId: 465,
-            currentNitrogenLoad: 1960104,
-            currentPhosphorusLoad: 40696,
-            currentSedimentLoad: 35334,
-            percentNitrogenReductionTarget: 40,
-            percentPhosphorusReductionTarget: 66,
-            percentSedimentReductionTarget: 25
-        },
-        699: {
-            mapId: 699,
-            currentNitrogenLoad: 1960104,
-            currentPhosphorusLoad: 40696,
-            currentSedimentLoad: 35334,
-            percentNitrogenReductionTarget: 40,
-            percentPhosphorusReductionTarget: 66,
-            percentSedimentReductionTarget: 25
-        },
-        704: {
-            mapId: 704,
-            currentNitrogenLoad: 1960104,
-            currentPhosphorusLoad: 40696,
-            currentSedimentLoad: 35334,
-            percentNitrogenReductionTarget: 40,
-            percentPhosphorusReductionTarget: 66,
-            percentSedimentReductionTarget: 25
-        },
-        794: {
-            mapId: 794,
-            currentNitrogenLoad: 1960104,
-            currentPhosphorusLoad: 40696,
-            currentSedimentLoad: 35334,
-            percentNitrogenReductionTarget: 40,
-            percentPhosphorusReductionTarget: 66,
-            percentSedimentReductionTarget: 25
-        }
-    };
+    // const targets = {
+    //     9: {
+    //         mapId: 9,
+    //         currentNitrogenLoad: 1960104,
+    //         currentPhosphorusLoad: 40696,
+    //         currentSedimentLoad: 35334,
+    //         percentNitrogenReductionTarget: 40,
+    //         percentPhosphorusReductionTarget: 66,
+    //         percentSedimentReductionTarget: 25
+    //     },
+    //     30: {
+    //         mapId: 30,
+    //         currentNitrogenLoad: 1960104,
+    //         currentPhosphorusLoad: 40696,
+    //         currentSedimentLoad: 35334,
+    //         percentNitrogenReductionTarget: 40,
+    //         percentPhosphorusReductionTarget: 66,
+    //         percentSedimentReductionTarget: 25
+    //     },
+    //     419: {
+    //         mapId: 419,
+    //         currentNitrogenLoad: 1960104,
+    //         currentPhosphorusLoad: 40696,
+    //         currentSedimentLoad: 35334,
+    //         percentNitrogenReductionTarget: 40,
+    //         percentPhosphorusReductionTarget: 66,
+    //         percentSedimentReductionTarget: 25
+    //     },
+    //     327: {
+    //         mapId: 327,
+    //         currentNitrogenLoad: 1960104,
+    //         currentPhosphorusLoad: 40696,
+    //         currentSedimentLoad: 35334,
+    //         percentNitrogenReductionTarget: 40,
+    //         percentPhosphorusReductionTarget: 66,
+    //         percentSedimentReductionTarget: 25
+    //     },
+    //     331: {
+    //         mapId: 331,
+    //         currentNitrogenLoad: 151591,
+    //         currentPhosphorusLoad: 20352,
+    //         currentSedimentLoad: 13801,
+    //         percentNitrogenReductionTarget: 45,
+    //         percentPhosphorusReductionTarget: 66,
+    //         percentSedimentReductionTarget: 66
+    //     },
+    //     465: {
+    //         mapId: 465,
+    //         currentNitrogenLoad: 1960104,
+    //         currentPhosphorusLoad: 40696,
+    //         currentSedimentLoad: 35334,
+    //         percentNitrogenReductionTarget: 40,
+    //         percentPhosphorusReductionTarget: 66,
+    //         percentSedimentReductionTarget: 25
+    //     },
+    //     699: {
+    //         mapId: 699,
+    //         currentNitrogenLoad: 1960104,
+    //         currentPhosphorusLoad: 40696,
+    //         currentSedimentLoad: 35334,
+    //         percentNitrogenReductionTarget: 40,
+    //         percentPhosphorusReductionTarget: 66,
+    //         percentSedimentReductionTarget: 25
+    //     },
+    //     704: {
+    //         mapId: 704,
+    //         currentNitrogenLoad: 1960104,
+    //         currentPhosphorusLoad: 40696,
+    //         currentSedimentLoad: 35334,
+    //         percentNitrogenReductionTarget: 40,
+    //         percentPhosphorusReductionTarget: 66,
+    //         percentSedimentReductionTarget: 25
+    //     },
+    //     794: {
+    //         mapId: 794,
+    //         currentNitrogenLoad: 1960104,
+    //         currentPhosphorusLoad: 40696,
+    //         currentSedimentLoad: 35334,
+    //         percentNitrogenReductionTarget: 40,
+    //         percentPhosphorusReductionTarget: 66,
+    //         percentSedimentReductionTarget: 25
+    //     }
+    // };
     let totalResult =  {};
+    let target = state?.swamm?.targets?.filter((t) => t.id === state?.swamm?.selectedTargetId)[0];
     totalResult[mapId] =  {
-        ...targets[mapId],
+        currentNitrogenLoad: target?.total_current_n_loading,
+        currentPhosphorusLoad: target?.total_current_p_loading,
+        currentSedimentLoad: target?.total_current_s_loading,
+        percentNitrogenReductionTarget: target?.target_percent_n_reduction,
+        percentPhosphorusReductionTarget: target?.target_percent_n_reduction,
+        percentSedimentReductionTarget: target?.target_percent_n_reduction,
         totalBmpNitrogenReduction: totalBmpNitrogenReduction,
         totalBmpPhosphorusReduction: totalBmpPhosphorusReduction,
         totalBmpSedimentReduction: totalBmpSedimentReduction,
