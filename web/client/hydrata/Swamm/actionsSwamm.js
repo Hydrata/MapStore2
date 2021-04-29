@@ -535,7 +535,7 @@ const fetchSwammTargetsError = (e) => {
 
 const fetchSwammTargets = (mapId) => {
     return (dispatch) => {
-        return axios.get(`/swamm/api/${mapId}/pollutant-loading/`
+        return axios.get(`/swamm/api/${mapId}/pollutant-loading-target/`
         ).then(
             response => {
                 dispatch(fetchSwammTargetsSuccess(response.data));

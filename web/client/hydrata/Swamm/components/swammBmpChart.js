@@ -141,27 +141,28 @@ class SwammBmpChartClass extends React.Component {
                                                 </h4>
                                                 <div style={{width: '100%', height: 100}}>
                                                     <ResponsiveContainer>
-                                                        <BarChart
-                                                            width={600}
-                                                            height={80}
-                                                            data={this.props.selectedTarget?.barChartData}
-                                                            margin={{top: 0, right: 0, left: 10, bottom: 10}}
-                                                            layout="vertical"
-                                                            maxBarSize={100}
-                                                        >
-                                                            <XAxis type="number"/>
-                                                            <YAxis type="category" hide/>
-                                                            <CartesianGrid strokeDasharray="3 3" vertical={false} horizontal={false}/>
-                                                            <Tooltip
-                                                                content={<CustomTooltip
-                                                                    tooltipBarId={this.state.tooltipBarId}
-                                                                    tooltipPollutantKey={this.state.tooltipPollutantKey}
-                                                                />}
-                                                            />
-                                                            {Object.keys(this.props.selectedTarget?.barChartData?.[0] || {})
-                                                                .sort((keyA, keyB) => this.props.selectedTarget?.barChartData?.[0]?.[keyA]?.type - this.props.selectedTarget?.barChartData?.[0]?.[keyB]?.type)
-                                                                .map(key => {
-                                                                    const bmp = this.props.selectedTarget?.barChartData?.[0]?.[key];
+                                                        {this.props.selectedTarget?.barChartData ?
+                                                            <BarChart
+                                                                width={600}
+                                                                height={80}
+                                                                data={[this.props.selectedTarget?.barChartData]}
+                                                                margin={{top: 0, right: 0, left: 10, bottom: 10}}
+                                                                layout="vertical"
+                                                                maxBarSize={100}
+                                                            >
+                                                                <XAxis type="number"/>
+                                                                <YAxis type="category" hide/>
+                                                                <CartesianGrid strokeDasharray="3 3" vertical={false} horizontal={false}/>
+                                                                <Tooltip
+                                                                    content={<CustomTooltip
+                                                                        tooltipBarId={this.state.tooltipBarId}
+                                                                        tooltipPollutantKey={this.state.tooltipPollutantKey}
+                                                                    />}
+                                                                />
+                                                                {Object.keys(this.props.selectedTarget?.barChartData)?.map((key) => {
+                                                                    let bmp = this.props.selectedTarget?.barChartData?.[key];
+                                                                    {/*{this.props.selectedTarget?.barChartData?.map((bmp) => {*/}
+                                                                    console.log('bmp.id + "." + pollutant.load_red_total_key', bmp.id + "." + pollutant.load_red_total_key);
                                                                     return (
                                                                         <Bar
                                                                             key={bmp.id}
@@ -171,17 +172,21 @@ class SwammBmpChartClass extends React.Component {
                                                                             stroke={"white"}
                                                                             strokeWidth={0}
                                                                             name="Name"
+                                                                            // onMouseOver={() => {
+                                                                            //     this.setState({
+                                                                            //         tooltipBarId: bmp.id,
+                                                                            //         tooltipPollutantKey: pollutant.load_red_total_key
+                                                                            //     });
+                                                                            // }}
                                                                             onMouseOver={() => {
-                                                                                this.setState({
-                                                                                    tooltipBarId: bmp.id,
-                                                                                    tooltipPollutantKey: pollutant.load_red_total_key
-                                                                                });
+                                                                                console.log('mousey');
                                                                             }}
                                                                         />
                                                                     );
-                                                                })
-                                                            }
-                                                        </BarChart>
+                                                                })}
+                                                                }
+                                                            </BarChart>
+                                                            : null}
                                                     </ResponsiveContainer>
                                                 </div>
                                             </Col>
@@ -301,22 +306,22 @@ class CustomTooltipClass extends React.Component {
     }
 
     render() {
-        if (this.props.active) {
-            let bmp = null;
-            Object.keys(this.props.selectedTarget?.barChartData[0]).map(key => {
-                const obj = this.props.selectedTarget?.barChartData[0][key];
-                if (obj.id === this.props.tooltipBarId) {
-                    bmp = obj;
-                }
-            });
-            return (
-                <div className="custom-tooltip" style={{background: "black", borderRadius: "3px"}}>
-                    <div className="label">{`${bmp?.type_data.name} - ID:${bmp?.id}`}</div>
-                    <br/>
-                    <div className="label">{formatMoney(bmp?.[this.props.tooltipPollutantKey], 0)}</div>
-                </div >
-            );
-        }
+        // if (this.props.active) {
+        //     let bmp = null;
+        //     Object.keys(this.props.selectedTarget?.barChartData[0]).map(key => {
+        //         const obj = this.props.selectedTarget?.barChartData[0][key];
+        //         if (obj.id === this.props.tooltipBarId) {
+        //             bmp = obj;
+        //         }
+        //     });
+        //     return (
+        //         <div className="custom-tooltip" style={{background: "black", borderRadius: "3px"}}>
+        //             <div className="label">{`${bmp?.type_data.name} - ID:${bmp?.id}`}</div>
+        //             <br/>
+        //             <div className="label">{formatMoney(bmp?.[this.props.tooltipPollutantKey], 0)}</div>
+        //         </div >
+        //     );
+        // }
         return null;
     }
 }
@@ -335,8 +340,8 @@ const mapStateToProps = (state) => {
         statuses: state?.swamm?.statuses || [],
         targets: state?.swamm?.targets || [],
         selectedTargetId: state?.swamm?.selectedTargetId,
-        selectedTarget: state?.swamm?.targets.filter((target) => target.id === state?.swamm?.selectedTargetId)[0],
-        defaultTargetId: state?.swamm?.targets?.[0].id
+        selectedTarget: state?.swamm?.targets?.filter((target) => target.id === state?.swamm?.selectedTargetId)?.[0],
+        defaultTargetId: state?.swamm?.targets?.[0]?.id || 0
     };
 };
 
