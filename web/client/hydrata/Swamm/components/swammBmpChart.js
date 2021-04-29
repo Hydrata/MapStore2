@@ -4,9 +4,7 @@ const PropTypes = require('prop-types');
 import {Modal, Button, Col, Grid, Row, Table} from "react-bootstrap";
 import {formatMoney} from "../../Utils/utils";
 import {hideSwammBmpChart, selectSwammTargetId} from "../actionsSwamm";
-import {bmpDashboardDataSelector, bmpSpeedDialSelector} from "../selectorsSwamm";
-const {Cell, BarChart, Bar, PieChart, Pie, ResponsiveContainer, XAxis, YAxis, CartesianGrid, Tooltip} = require('recharts');
-import Legend from "../../../components/TOC/fragments/legend/Legend";
+const {Cell, BarChart, Bar, PieChart, Pie, ResponsiveContainer, XAxis, YAxis, Legend, Tooltip} = require('recharts');
 import '../swamm.css';
 
 const circleSize = 100;
@@ -92,7 +90,6 @@ class SwammBmpChartClass extends React.Component {
                                     return (
                                         <Row
                                             className={"well"}
-                                            key={pollutant.name + "-dashboard"}
                                         >
                                             <Col sm={3} style={{padding: 0}}>
                                                 <h4 style={{textAlign: "center", fontSize: "14px", paddingLeft: "5px", paddingTop: "5px", paddingBottom: "10px", margin: 0}}>
@@ -141,47 +138,42 @@ class SwammBmpChartClass extends React.Component {
                                                 </h4>
                                                 <div style={{width: '100%', height: 100}}>
                                                     <ResponsiveContainer>
-                                                        {this.props.selectedTarget?.barChartData ?
-                                                            <BarChart
-                                                                width={600}
-                                                                height={80}
-                                                                data={[this.props.selectedTarget?.barChartData]}
-                                                                margin={{top: 0, right: 0, left: 10, bottom: 10}}
-                                                                layout="vertical"
-                                                                maxBarSize={100}
-                                                            >
-                                                                <XAxis type="number"/>
-                                                                <YAxis type="category" hide/>
-                                                                <CartesianGrid strokeDasharray="3 3" vertical={false} horizontal={false}/>
-                                                                {/*<Tooltip*/}
-                                                                {/*    content={<CustomTooltip*/}
-                                                                {/*        tooltipBarId={this.state.tooltipBarId}*/}
-                                                                {/*        tooltipPollutantKey={this.state.tooltipPollutantKey}*/}
-                                                                {/*    />}*/}
-                                                                {/*/>*/}
-                                                                {this.props.selectedTarget?.barChartBars?.map((bmp) => {
-                                                                    return (
-                                                                        <Bar
-                                                                            key={bmp.id}
-                                                                            stackId="n"
-                                                                            dataKey={(bmp.id + "." + pollutant.load_red_total_key)}
-                                                                            fill={bmp.type_data.colour}
-                                                                            isAnimationActive={false}
-                                                                            stroke={"white"}
-                                                                            strokeWidth={0}
-                                                                            name="Name"
-                                                                            // onMouseOver={() => {
-                                                                            //     this.setState({
-                                                                            //         tooltipBarId: bmp.id,
-                                                                            //         tooltipPollutantKey: pollutant.load_red_total_key
-                                                                            //     });
-                                                                            // }}
-                                                                        />
-                                                                    );
-                                                                })}
-                                                                }
-                                                            </BarChart>
-                                                            : null}
+                                                        <BarChart
+                                                            width={600}
+                                                            height={80}
+                                                            data={[{'barOne': this.props.selectedTarget?.barChartData?.['type']}]}
+                                                            margin={{top: 0, right: 0, left: 10, bottom: 10}}
+                                                            layout="vertical"
+                                                            maxBarSize={100}
+                                                        >
+                                                            {this.props.selectedTarget?.barChartData?.['type']?.map((bar, index) => {
+                                                                const key = `barOne.${index}.${pollutant.load_red_total_key}`;
+                                                                console.log('key', key);
+                                                                console.log('value:', bar[key]);
+                                                                return (
+                                                                    <Bar
+                                                                        key={`${bar['type']} + ${pollutant.initial}`}
+                                                                        stackId={'a'}
+                                                                        dataKey={key}
+                                                                        fill={this.colours[index]}
+                                                                        // isAnimationActive={false}
+                                                                        stroke={"white"}
+                                                                        strokeWidth={0}
+                                                                        name={bar?.label}
+                                                                    />
+                                                                );
+                                                            })}
+                                                            <XAxis type="number"/>
+                                                            <YAxis type="category" hide/>
+                                                            {(pollutant.initial === 'p') ?
+                                                                <Legend
+                                                                    layout="vertical"
+                                                                    verticalAlign="top"
+                                                                    align="right"
+                                                                    wrapperStyle={{right: "-200px", top: "-40px"}}
+                                                                /> : null
+                                                            }
+                                                        </BarChart>
                                                     </ResponsiveContainer>
                                                 </div>
                                             </Col>
@@ -240,21 +232,6 @@ class SwammBmpChartClass extends React.Component {
                                 </Table>
                             </Row>
                         </Col>
-                        <Col sm={2} style={{marginLeft: 20, marginRight: -20}}>
-                            <Legend
-                                layer={this.props.layerForLegend}
-                                legendHeight={20}
-                                legendWidth={20}
-                                legendOptions={"dpi:300"}
-                                style={{
-                                    display: "block",
-                                    marginLeft: "auto",
-                                    marginRight: "auto",
-                                    maxHeight: "auto",
-                                    maxWidth: "100%"
-                                }}
-                            />
-                        </Col>
                     </Grid>
                 </Modal.Body>
                 <Modal.Footer>
@@ -274,19 +251,32 @@ class SwammBmpChartClass extends React.Component {
         {
             name: 'Phosphorus',
             load_red_total_key: 'p_load_reduction',
-            units: 'lbs/year'
+            units: 'lbs/year',
+            initial: 'p'
         },
         {
             name: 'Nitrogen',
             load_red_total_key: 'n_load_reduction',
-            units: 'lbs/year'
+            units: 'lbs/year',
+            initial: 'n'
         },
         {
             name: 'Sediment',
             load_red_total_key: 's_load_reduction',
-            units: 'tons/year'
+            units: 'tons/year',
+            initial: 's'
         }
     ]
+    colours = [
+        '#0088FE', '#00C49F', '#FFBB28', '#FF8042',
+        '#0088FE', '#00C49F', '#FFBB28', '#FF8042',
+        '#0088FE', '#00C49F', '#FFBB28', '#FF8042',
+        '#0088FE', '#00C49F', '#FFBB28', '#FF8042',
+        '#0088FE', '#00C49F', '#FFBB28', '#FF8042',
+        '#0088FE', '#00C49F', '#FFBB28', '#FF8042',
+        '#0088FE', '#00C49F', '#FFBB28', '#FF8042',
+        '#0088FE', '#00C49F', '#FFBB28', '#FF8042'
+    ];
 }
 
 class CustomTooltipClass extends React.Component {
