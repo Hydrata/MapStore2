@@ -170,7 +170,7 @@ class SwammBmpChartClass extends React.Component {
                                                                     layout="vertical"
                                                                     verticalAlign="top"
                                                                     align="right"
-                                                                    wrapperStyle={{right: "-200px", top: "-40px"}}
+                                                                    wrapperStyle={{right: "-300px", top: "-40px"}}
                                                                 /> : null
                                                             }
                                                         </BarChart>
