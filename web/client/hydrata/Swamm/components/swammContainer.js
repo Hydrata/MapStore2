@@ -2,7 +2,7 @@ import React from 'react';
 import {connect} from 'react-redux';
 const PropTypes = require('prop-types');
 const {mapIdSelector} = require('../../../selectors/map');
-import {Button} from "react-bootstrap";
+import {Button, Glyphicon} from "react-bootstrap";
 import {
     fetchSwammBmpTypes,
     fetchSwammAllBmps,
@@ -117,6 +117,7 @@ class SwammContainer extends React.Component {
         fetchSwammAllBmps: PropTypes.func,
         fetchSwammBmpStatuses: PropTypes.func,
         fetchSwammTargets: PropTypes.func,
+        fetchingTargets: PropTypes.bool,
         statuses: PropTypes.array,
         targets: PropTypes.array,
         swammData: PropTypes.array,
@@ -317,16 +318,25 @@ class SwammContainer extends React.Component {
                 >
                     Summary Table
                 </button>
-                <button
-                    key="swamm-bmp-chart-button"
-                    style={{...buttonStyle, left: (this.props.numberOfMenus + 3) * 100 + 20}}
-                    onClick={() => {
-                        this.props.showSwammBmpChart();
-                        this.props.setMenuGroup(null);
-                    }}
-                >
-                    Dashboard
-                </button>
+                {this.props.targets?.length ?
+                    <button
+                        key="swamm-bmp-chart-button"
+                        style={{...buttonStyle, left: (this.props.numberOfMenus + 3) * 100 + 20}}
+                        onClick={() => {
+                            this.props.showSwammBmpChart();
+                            this.props.setMenuGroup(null);
+                        }}
+                    >
+                        Dashboard
+                    </button> :
+                    <button
+                        key="swamm-bmp-chart-button"
+                        style={{...buttonStyle, left: (this.props.numberOfMenus + 3) * 100 + 20}}
+                        className={'disabled'}
+                    >
+                        <Glyphicon glyph="hourglass" />
+                    </button>
+                }
                 {this.props.visibleBmpManager ?
                     <div style={{...panelStyle}} id="swamm-bmp-manager">
                         <div className="btn-group" role="group" style={{display: "none", margin: "auto"}}>
@@ -422,6 +432,7 @@ const mapStateToProps = (state) => {
         allBmps: state?.swamm?.allBmps,
         statuses: state?.swamm?.statuses,
         targets: state?.swamm?.targets,
+        fetchingTargets: state?.swamm?.fetchingTargets,
         showOutlets: state?.swamm?.showOutlets,
         showFootprints: state?.swamm?.showFootprints,
         showWatersheds: state?.swamm?.showWatersheds,
