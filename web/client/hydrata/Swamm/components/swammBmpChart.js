@@ -153,22 +153,20 @@ class SwammBmpChartClass extends React.Component {
                                                                 <XAxis type="number"/>
                                                                 <YAxis type="category" hide/>
                                                                 <CartesianGrid strokeDasharray="3 3" vertical={false} horizontal={false}/>
-                                                                <Tooltip
-                                                                    content={<CustomTooltip
-                                                                        tooltipBarId={this.state.tooltipBarId}
-                                                                        tooltipPollutantKey={this.state.tooltipPollutantKey}
-                                                                    />}
-                                                                />
-                                                                {Object.keys(this.props.selectedTarget?.barChartData)?.map((key) => {
-                                                                    let bmp = this.props.selectedTarget?.barChartData?.[key];
-                                                                    {/*{this.props.selectedTarget?.barChartData?.map((bmp) => {*/}
-                                                                    console.log('bmp.id + "." + pollutant.load_red_total_key', bmp.id + "." + pollutant.load_red_total_key);
+                                                                {/*<Tooltip*/}
+                                                                {/*    content={<CustomTooltip*/}
+                                                                {/*        tooltipBarId={this.state.tooltipBarId}*/}
+                                                                {/*        tooltipPollutantKey={this.state.tooltipPollutantKey}*/}
+                                                                {/*    />}*/}
+                                                                {/*/>*/}
+                                                                {this.props.selectedTarget?.barChartBars?.map((bmp) => {
                                                                     return (
                                                                         <Bar
                                                                             key={bmp.id}
                                                                             stackId="n"
                                                                             dataKey={(bmp.id + "." + pollutant.load_red_total_key)}
                                                                             fill={bmp.type_data.colour}
+                                                                            isAnimationActive={false}
                                                                             stroke={"white"}
                                                                             strokeWidth={0}
                                                                             name="Name"
@@ -178,9 +176,6 @@ class SwammBmpChartClass extends React.Component {
                                                                             //         tooltipPollutantKey: pollutant.load_red_total_key
                                                                             //     });
                                                                             // }}
-                                                                            onMouseOver={() => {
-                                                                                console.log('mousey');
-                                                                            }}
                                                                         />
                                                                     );
                                                                 })}
