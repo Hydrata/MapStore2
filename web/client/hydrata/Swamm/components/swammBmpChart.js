@@ -98,7 +98,6 @@ class SwammBmpChartClass extends React.Component {
                                                 <div style={{width: circleSize * 1.5, height: circleSize / 1.2}}>
                                                     <ResponsiveContainer>
                                                         <PieChart
-                                                            key={'asdf'}
                                                             width={circleSize * 1.5}
                                                             height={circleSize * 1.5}
                                                             style={{paddingTop: "10px"}}
@@ -148,17 +147,12 @@ class SwammBmpChartClass extends React.Component {
                                                         >
                                                             {this.props.selectedTarget?.barChartData?.['type']?.map((bar, index) => {
                                                                 const key = `barOne.${index}.${pollutant.load_red_total_key}`;
-                                                                console.log('key', key);
-                                                                console.log('value:', bar[key]);
                                                                 return (
                                                                     <Bar
                                                                         key={`${bar['type']} + ${pollutant.initial}`}
                                                                         stackId={'a'}
                                                                         dataKey={key}
                                                                         fill={this.colours[index]}
-                                                                        // isAnimationActive={false}
-                                                                        stroke={"white"}
-                                                                        strokeWidth={0}
                                                                         name={bar?.label}
                                                                     />
                                                                 );
@@ -314,14 +308,10 @@ class CustomTooltipClass extends React.Component {
 const mapStateToProps = (state) => {
     const projectCode = state?.projectManager?.data?.code;
     const legendLayerName = projectCode + '_bmp_footprint';
-    // console.log('dashboardData', bmpDashboardDataSelector(state) || []);
-    // console.log('speedDialData', bmpSpeedDialSelector(state) || []);
     return {
         mapId: state?.projectManager?.data?.base_map,
         layerForLegend: state?.layers?.flat?.filter((layer) => layer.name === legendLayerName)[0],
         allBmps: state?.swamm?.allBmps,
-        // dashboardData: bmpDashboardDataSelector(state) || [],
-        // speedDialData: bmpSpeedDialSelector(state) || [],
         statuses: state?.swamm?.statuses || [],
         targets: state?.swamm?.targets || [],
         selectedTargetId: state?.swamm?.selectedTargetId,
