@@ -49,7 +49,8 @@ const initialState = {
     targets: [],
     visibleBmpForm: false,
     creatingNewBmp: false,
-    drawingBmpLayerName: false
+    drawingBmpLayerName: false,
+    bmpFilterMode: 'type'
 };
 
 export default ( state = initialState, action) => {
