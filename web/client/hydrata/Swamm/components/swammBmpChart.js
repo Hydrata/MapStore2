@@ -351,7 +351,7 @@ const mapStateToProps = (state) => {
         selectedTargetId: state?.swamm?.selectedTargetId,
         selectedTarget: state?.swamm?.targets?.filter((target) => target.id === state?.swamm?.selectedTargetId)?.[0],
         defaultTargetId: state?.swamm?.targets?.[0]?.id || 0,
-        bmpFilterMode: state?.swamm?.bmpFilterMode
+        bmpFilterMode: state?.swamm?.bmpFilterMode || 'type'
     };
 };
 
