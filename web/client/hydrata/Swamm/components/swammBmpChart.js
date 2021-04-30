@@ -226,23 +226,23 @@ class SwammBmpChartClass extends React.Component {
                                     <tbody>
                                         <tr>
                                             <td>Current total untreated pollutant volume: </td>
-                                            <td>{this.props.selectedTarget?.total_current_p_loading}</td>
-                                            <td>{this.props.selectedTarget?.total_current_n_loading}</td>
-                                            <td>{this.props.selectedTarget?.total_current_s_loading}</td>
+                                            <td>{this.props.selectedTarget?.speedDialData?.currentPhosphorusLoad}</td>
+                                            <td>{this.props.selectedTarget?.speedDialData?.currentNitrogenLoad}</td>
+                                            <td>{this.props.selectedTarget?.speedDialData?.currentSedimentLoad}</td>
                                             <td className={"text-left"}>units/year</td>
                                         </tr>
                                         <tr>
                                             <td>Selected target reduction percentage:</td>
-                                            <td>{this.props.selectedTarget?.target_percent_p_reduction * 100}</td>
-                                            <td>{this.props.selectedTarget?.target_percent_n_reduction * 100}</td>
-                                            <td>{this.props.selectedTarget?.target_percent_s_reduction * 100}</td>
+                                            <td>{this.props.selectedTarget?.speedDialData?.percentPhosphorusReductionTarget * 100}</td>
+                                            <td>{this.props.selectedTarget?.speedDialData?.percentNitrogenReductionTarget * 100}</td>
+                                            <td>{this.props.selectedTarget?.speedDialData?.percentSedimentReductionTarget * 100}</td>
                                             <td className={"text-left"}>% of total</td>
                                         </tr>
                                         <tr>
                                             <td>Selected target load reduction required:</td>
-                                            <td>{(this.props.selectedTarget?.total_current_p_loading * this.props.selectedTarget?.target_percent_p_reduction)?.toFixed(0)}</td>
-                                            <td>{(this.props.selectedTarget?.total_current_n_loading * this.props.selectedTarget?.target_percent_n_reduction)?.toFixed(0)}</td>
-                                            <td>{(this.props.selectedTarget?.total_current_s_loading * this.props.selectedTarget?.target_percent_s_reduction)?.toFixed(0)}</td>
+                                            <td>{(this.props.selectedTarget?.speedDialData?.targetPhosphorusLoadReductionRequired)?.toFixed(0)}</td>
+                                            <td>{(this.props.selectedTarget?.speedDialData?.targetNitrogenLoadReductionRequired?.toFixed(0))}</td>
+                                            <td>{(this.props.selectedTarget?.speedDialData?.targetSedimentLoadReductionRequired)?.toFixed(0)}</td>
                                             <td className={"text-left"}>units/year</td>
                                         </tr>
                                         <tr>
