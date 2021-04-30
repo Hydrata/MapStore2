@@ -55,6 +55,7 @@ const CLEAR_EDITING_BMP_FEATURE_ID = 'CLEAR_EDITING_BMP_FEATURE_ID';
 const DELETE_BMP = 'DELETE_BMP';
 const DELETE_BMP_SUCCESS = 'DELETE_BMP_SUCCESS';
 const DELETE_BMP_ERROR = 'DELETE_BMP_ERROR';
+const SET_BMP_FILTER_MODE = 'SET_BMP_FILTER_MODE';
 
 const uuidv1 = require('uuid/v1');
 const { SHOW_NOTIFICATION } = require('../../actions/notifications');
@@ -555,6 +556,13 @@ const selectSwammTargetId = (selectedTargetId) => {
     };
 };
 
+const setBmpFilterMode = (bmpFilterMode) => {
+    return {
+        type: SET_BMP_FILTER_MODE,
+        bmpFilterMode
+    };
+};
+
 module.exports = {
     FETCH_SWAMM_BMPTYPES, fetchSwammBmpTypes,
     FETCH_SWAMM_BMPTYPES_ERROR, fetchSwammBmpTypesError,
@@ -601,5 +609,6 @@ module.exports = {
     CLEAR_EDITING_BMP_FEATURE_ID, clearEditingBmpFeatureId,
     DELETE_BMP, deleteBmp,
     DELETE_BMP_ERROR, deleteBmpError,
-    DELETE_BMP_SUCCESS, deleteBmpSuccess
+    DELETE_BMP_SUCCESS, deleteBmpSuccess,
+    SET_BMP_FILTER_MODE, setBmpFilterMode
 };

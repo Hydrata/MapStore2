@@ -31,7 +31,8 @@ import {
     CLEAR_DRAWING_BMP_LAYER_NAME,
     SET_EDITING_BMP_FEATURE_ID,
     CLEAR_EDITING_BMP_FEATURE_ID,
-    DELETE_BMP_SUCCESS
+    DELETE_BMP_SUCCESS,
+    SET_BMP_FILTER_MODE
 } from "./actionsSwamm";
 import {
     SET_MENU_GROUP
@@ -368,6 +369,11 @@ export default ( state = initialState, action) => {
         return {
             ...state,
             selectedTargetId: action.selectedTargetId
+        };
+    case SET_BMP_FILTER_MODE:
+        return {
+            ...state,
+            bmpFilterMode: action.bmpFilterMode
         };
     default:
         return state;

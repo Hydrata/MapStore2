@@ -3,7 +3,7 @@ import {connect} from "react-redux";
 const PropTypes = require('prop-types');
 import {Modal, Button, Col, Grid, Row, Table} from "react-bootstrap";
 import {formatMoney} from "../../Utils/utils";
-import {hideSwammBmpChart, selectSwammTargetId} from "../actionsSwamm";
+import {hideSwammBmpChart, selectSwammTargetId, setBmpFilterMode} from "../actionsSwamm";
 const {Cell, BarChart, Bar, PieChart, Pie, ResponsiveContainer, XAxis, YAxis, Legend, Tooltip} = require('recharts');
 import '../swamm.css';
 
@@ -23,7 +23,9 @@ class SwammBmpChartClass extends React.Component {
         selectSwammTargetId: PropTypes.func,
         selectedTargetId: PropTypes.number,
         defaultTargetId: PropTypes.number,
-        selectedTarget: PropTypes.object
+        selectedTarget: PropTypes.object,
+        bmpFilterMode: PropTypes.string,
+        setBmpFilterMode: PropTypes.func
     };
 
     static defaultProps = {}
@@ -58,31 +60,66 @@ class SwammBmpChartClass extends React.Component {
                 </Modal.Header>
                 <Modal.Body>
                     <Grid>
-                        <Col sm={2} className={'well'} style={{paddingTop: "0"}}>
-                            <h4 style={{paddingTop: "5px", paddingBottom: "10px", margin: "0", textAlign: "center", fontSize: "14px"}}>Targets</h4>
-                            {this.props.targets.map((target) => {
-                                return (
-                                    <div className={'row-no-gutters'}>
-                                        <Button
-                                            bsStyle="success"
-                                            bsSize="xsmall"
-                                            block
-                                            style={{opacity: "0.7", marginTop: "4px", fontSize: "x-small"}}
-                                            onClick={() => this.props.selectSwammTargetId(target?.id)}>
-                                            {target?.name}
-                                        </Button>
-                                    </div>);
-                            })}
-                            <div className={'row-no-gutters'}>
-                                <Button
-                                    bsStyle="info"
-                                    bsSize="xsmall"
-                                    block
-                                    style={{marginTop: "4px", fontSize: "x-small"}}
-                                    onClick={() => window.alert('New Target Form not yet implemented.')}>
-                                    New Target
-                                </Button>
-                            </div>
+                        <Col sm={2}>
+                            <Row className={'well'} style={{paddingTop: "0"}}>
+                                <h4 style={{paddingTop: "5px", paddingBottom: "10px", margin: "0", textAlign: "center", fontSize: "14px"}}>Targets</h4>
+                                {this.props.targets.map((target) => {
+                                    return (
+                                        <div className={'row-no-gutters'}>
+                                            <Button
+                                                bsStyle="success"
+                                                bsSize="xsmall"
+                                                block
+                                                style={{opacity: "0.7", marginTop: "4px", fontSize: "x-small"}}
+                                                onClick={() => this.props.selectSwammTargetId(target?.id)}>
+                                                {target?.name}
+                                            </Button>
+                                        </div>);
+                                })}
+                                <div className={'row-no-gutters'}>
+                                    <Button
+                                        bsStyle="info"
+                                        bsSize="xsmall"
+                                        block
+                                        style={{marginTop: "4px", fontSize: "x-small"}}
+                                        onClick={() => window.alert('New Target Form not yet implemented.')}>
+                                        New Target
+                                    </Button>
+                                </div>
+                            </Row>
+                            <Row className={'well'} style={{paddingTop: "20px"}}>
+                                <h4 style={{paddingTop: "5px", paddingBottom: "10px", margin: "0", textAlign: "center", fontSize: "14px"}}>Sort Data By:</h4>
+                                <div className={'row-no-gutters'}>
+                                    <Button
+                                        bsStyle="success"
+                                        bsSize="xsmall"
+                                        block
+                                        style={{opacity: "0.7", marginTop: "4px", fontSize: "x-small"}}
+                                        onClick={() => this.props.setBmpFilterMode('type')}>
+                                        BMP Type
+                                    </Button>
+                                </div>
+                                <div className={'row-no-gutters'}>
+                                    <Button
+                                        bsStyle="success"
+                                        bsSize="xsmall"
+                                        block
+                                        style={{opacity: "0.7", marginTop: "4px", fontSize: "x-small"}}
+                                        onClick={() => this.props.setBmpFilterMode('status')}>
+                                        BMP Status
+                                    </Button>
+                                </div>
+                                <div className={'row-no-gutters'}>
+                                    <Button
+                                        bsStyle="success"
+                                        bsSize="xsmall"
+                                        block
+                                        style={{opacity: "0.7", marginTop: "4px", fontSize: "x-small"}}
+                                        onClick={() => this.props.setBmpFilterMode('organisation')}>
+                                        Organization
+                                    </Button>
+                                </div>
+                            </Row>
                         </Col>
                         <Col sm={8} style={{marginLeft: 20, marginRight: -20}}>
                             {
@@ -140,16 +177,16 @@ class SwammBmpChartClass extends React.Component {
                                                         <BarChart
                                                             width={600}
                                                             height={80}
-                                                            data={[{'barOne': this.props.selectedTarget?.barChartData?.['type']}]}
+                                                            data={[{'barOne': this.props.selectedTarget?.barChartData?.[this.props.bmpFilterMode]}]}
                                                             margin={{top: 0, right: 0, left: 10, bottom: 10}}
                                                             layout="vertical"
                                                             maxBarSize={100}
                                                         >
-                                                            {this.props.selectedTarget?.barChartData?.['type']?.map((bar, index) => {
+                                                            {this.props.selectedTarget?.barChartData?.[this.props.bmpFilterMode]?.map((bar, index) => {
                                                                 const key = `barOne.${index}.${pollutant.load_red_total_key}`;
                                                                 return (
                                                                     <Bar
-                                                                        key={`${bar['type']} + ${pollutant.initial}`}
+                                                                        key={`${bar[this.props.bmpFilterMode]} + ${pollutant.initial}`}
                                                                         stackId={'a'}
                                                                         dataKey={key}
                                                                         fill={this.colours[index]}
@@ -263,13 +300,10 @@ class SwammBmpChartClass extends React.Component {
     ]
     colours = [
         '#0088FE', '#00C49F', '#FFBB28', '#FF8042',
-        '#0088FE', '#00C49F', '#FFBB28', '#FF8042',
-        '#0088FE', '#00C49F', '#FFBB28', '#FF8042',
-        '#0088FE', '#00C49F', '#FFBB28', '#FF8042',
-        '#0088FE', '#00C49F', '#FFBB28', '#FF8042',
-        '#0088FE', '#00C49F', '#FFBB28', '#FF8042',
-        '#0088FE', '#00C49F', '#FFBB28', '#FF8042',
-        '#0088FE', '#00C49F', '#FFBB28', '#FF8042'
+        '#39CCCC', '#7FDBFF', '#0074D9', '#001f3f',
+        '#FFDC00', '#01FF70', '#2ECC40', '#3D9970',
+        '#DDDDDD', '#AAAAAA', '#B10DC9', '#F012BE',
+        '#85144b', '#FF4136', '#FF851B', '#FFFFFF'
     ];
 }
 
@@ -316,14 +350,16 @@ const mapStateToProps = (state) => {
         targets: state?.swamm?.targets || [],
         selectedTargetId: state?.swamm?.selectedTargetId,
         selectedTarget: state?.swamm?.targets?.filter((target) => target.id === state?.swamm?.selectedTargetId)?.[0],
-        defaultTargetId: state?.swamm?.targets?.[0]?.id || 0
+        defaultTargetId: state?.swamm?.targets?.[0]?.id || 0,
+        bmpFilterMode: state?.swamm?.bmpFilterMode
     };
 };
 
 const mapDispatchToProps = ( dispatch ) => {
     return {
         hideSwammBmpChart: () => dispatch(hideSwammBmpChart()),
-        selectSwammTargetId: (selectedTargetId) => dispatch(selectSwammTargetId(selectedTargetId))
+        selectSwammTargetId: (selectedTargetId) => dispatch(selectSwammTargetId(selectedTargetId)),
+        setBmpFilterMode: (mode) => dispatch(setBmpFilterMode(mode))
     };
 };
 
