@@ -28,9 +28,9 @@ const SHOW_BMP_MANAGER = 'SHOW_BMP_MANAGER';
 const HIDE_BMP_MANAGER = 'HIDE_BMP_MANAGER';
 const TOGGLE_BMP_MANAGER = 'TOGGLE_BMP_MANAGER';
 
-const TOGGLE_OUTLETS = 'TOGGLE_OUTLETS';
-const TOGGLE_FOOTPRINTS = 'TOGGLE_FOOTPRINTS';
-const TOGGLE_WATERSHEDS = 'TOGGLE_WATERSHEDS';
+// const TOGGLE_OUTLETS = 'TOGGLE_OUTLETS';
+// const TOGGLE_FOOTPRINTS = 'TOGGLE_FOOTPRINTS';
+// const TOGGLE_WATERSHEDS = 'TOGGLE_WATERSHEDS';
 const TOGGLE_BMP_TYPE = 'TOGGLE_BMP_TYPE';
 const SET_BMP_TYPE = 'SET_BMP_TYPE';
 
@@ -191,35 +191,35 @@ const setBmpType = (bmpType, isVisible) => {
     };
 };
 
-const toggleOutlets = () => {
-    return (dispatch, getState) => {
-        const state = getState();
-        dispatch({
-            type: 'TOGGLE_OUTLETS',
-            layers: state.layers
-        });
-    };
-};
-
-const toggleFootprints = () => {
-    return (dispatch, getState) => {
-        const state = getState();
-        dispatch({
-            type: 'TOGGLE_FOOTPRINTS',
-            layers: state.layers
-        });
-    };
-};
-
-const toggleWatersheds = () => {
-    return (dispatch, getState) => {
-        const state = getState();
-        dispatch({
-            type: 'TOGGLE_WATERSHEDS',
-            layers: state.layers
-        });
-    };
-};
+// const toggleOutlets = () => {
+//     return (dispatch, getState) => {
+//         const state = getState();
+//         dispatch({
+//             type: 'TOGGLE_OUTLETS',
+//             layers: state.layers
+//         });
+//     };
+// };
+//
+// const toggleFootprints = () => {
+//     return (dispatch, getState) => {
+//         const state = getState();
+//         dispatch({
+//             type: 'TOGGLE_FOOTPRINTS',
+//             layers: state.layers
+//         });
+//     };
+// };
+//
+// const toggleWatersheds = () => {
+//     return (dispatch, getState) => {
+//         const state = getState();
+//         dispatch({
+//             type: 'TOGGLE_WATERSHEDS',
+//             layers: state.layers
+//         });
+//     };
+// };
 
 const makeBmpForm = () => {
     return {
@@ -384,6 +384,49 @@ const clearEditingBmpFeatureId = () => {
     };
 };
 
+const fetchSwammTargetsSuccess = (data) => {
+    return (dispatch) => {
+        dispatch({
+            type: FETCH_SWAMM_TARGETS_SUCCESS,
+            targets: data
+        });
+    };
+};
+
+const fetchSwammTargetsError = (e) => {
+    console.log('*** error:', e);
+    return (dispatch) => {
+        dispatch({
+            type: SHOW_NOTIFICATION,
+            title: 'Failed to load Targets',
+            autoDismiss: 60,
+            position: 'tc',
+            message: `${e?.data}`,
+            uid: uuidv1(),
+            level: 'error'
+        });
+        dispatch({
+            type: FETCH_SWAMM_TARGETS_ERROR,
+            error: e
+        });
+    };
+};
+
+const fetchSwammTargets = (mapId) => {
+    return (dispatch) => {
+        return axios.get(`/swamm/api/${mapId}/pollutant-loading-target/`
+        ).then(
+            response => {
+                dispatch(fetchSwammTargetsSuccess(response.data));
+            }
+        ).catch(
+            e => {
+                dispatch(fetchSwammTargetsError(e));
+            }
+        );
+    };
+};
+
 const submitBmpFormSuccess = (bmp) => {
     return (dispatch) => {
         dispatch({
@@ -425,6 +468,7 @@ const submitBmpForm = (newBmp, mapId) => {
                     dispatch(submitBmpFormSuccess(response.data));
                     // dispatch(fetchSwammAllBmps(mapId));
                     dispatch(makeExistingBmpForm(response.data));
+                    dispatch(fetchSwammTargets(mapId));
                 }
             ).catch(
                 e => {
@@ -441,6 +485,7 @@ const submitBmpForm = (newBmp, mapId) => {
                 dispatch(submitBmpFormSuccess(response.data));
                 // dispatch(fetchSwammAllBmps(mapId));
                 dispatch(makeExistingBmpForm(response.data));
+                dispatch(fetchSwammTargets(mapId));
             }
         ).catch(
             e => {
@@ -506,49 +551,6 @@ const deleteBmp = (mapId, bmpId) => {
     };
 };
 
-const fetchSwammTargetsSuccess = (data) => {
-    return (dispatch) => {
-        dispatch({
-            type: FETCH_SWAMM_TARGETS_SUCCESS,
-            targets: data
-        });
-    };
-};
-
-const fetchSwammTargetsError = (e) => {
-    console.log('*** error:', e);
-    return (dispatch) => {
-        dispatch({
-            type: SHOW_NOTIFICATION,
-            title: 'Failed to load Targets',
-            autoDismiss: 60,
-            position: 'tc',
-            message: `${e?.data}`,
-            uid: uuidv1(),
-            level: 'error'
-        });
-        dispatch({
-            type: FETCH_SWAMM_TARGETS_ERROR,
-            error: e
-        });
-    };
-};
-
-const fetchSwammTargets = (mapId) => {
-    return (dispatch) => {
-        return axios.get(`/swamm/api/${mapId}/pollutant-loading-target/`
-        ).then(
-            response => {
-                dispatch(fetchSwammTargetsSuccess(response.data));
-            }
-        ).catch(
-            e => {
-                dispatch(fetchSwammTargetsError(e));
-            }
-        );
-    };
-};
-
 const selectSwammTargetId = (selectedTargetId) => {
     return {
         type: SELECT_SWAMM_TARGET_ID,
@@ -583,9 +585,9 @@ module.exports = {
     TOGGLE_BMP_TYPE, toggleBmpType,
     SET_BMP_TYPE, setBmpType,
     SET_STATUS_FILTER, setStatusFilter,
-    TOGGLE_OUTLETS, toggleOutlets,
-    TOGGLE_FOOTPRINTS, toggleFootprints,
-    TOGGLE_WATERSHEDS, toggleWatersheds,
+    // TOGGLE_OUTLETS, toggleOutlets,
+    // TOGGLE_FOOTPRINTS, toggleFootprints,
+    // TOGGLE_WATERSHEDS, toggleWatersheds,
     SHOW_BMP_FORM, showBmpForm,
     HIDE_BMP_FORM, hideBmpForm,
     SHOW_SWAMM_DATA_GRID, showSwammDataGrid,

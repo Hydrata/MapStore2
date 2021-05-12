@@ -8,9 +8,9 @@ import {
     fetchSwammBmpTypes,
     fetchSwammAllBmps,
     fetchSwammBmpStatuses,
-    toggleOutlets,
-    toggleFootprints,
-    toggleWatersheds,
+    // toggleOutlets,
+    // toggleFootprints,
+    // toggleWatersheds,
     showBmpForm,
     showSwammBmpChart,
     toggleBmpManager,
@@ -143,9 +143,9 @@ class SwammContainer extends React.Component {
         bmpUniqueNames: PropTypes.array,
         bmpTypes: PropTypes.array,
         allBmps: PropTypes.array,
-        toggleOutlets: PropTypes.func,
-        toggleFootprints: PropTypes.func,
-        toggleWatersheds: PropTypes.func,
+        // toggleOutlets: PropTypes.func,
+        // toggleFootprints: PropTypes.func,
+        // toggleWatersheds: PropTypes.func,
         showOutlets: PropTypes.bool,
         showFootprints: PropTypes.bool,
         showWatersheds: PropTypes.bool,
@@ -183,8 +183,8 @@ class SwammContainer extends React.Component {
         toggleViewMode: PropTypes.func,
         drawStopped: PropTypes.func,
         bmpOutletLayer: PropTypes.object,
-        bmpFootrprintLayer: PropTypes.object,
-        bmpWatershedLayer: PropTypes.object,
+        // bmpFootrprintLayer: PropTypes.object,
+        // bmpWatershedLayer: PropTypes.object,
         numberOfMenus: PropTypes.number,
         bmpDataLayer: PropTypes.object
     };
@@ -241,12 +241,6 @@ class SwammContainer extends React.Component {
     render() {
         return (
             <div id={"swamm-container"}>
-                <button
-                    key="swamm-bmp-viewer-button"
-                    style={{...buttonStyle, display: 'none', left: 3 * 100 + 20}}
-                    onClick={() => {this.props.clickBmpManager();}}>
-                    View BMPs
-                </button>
                 {this.props.allBmps?.length > 0 ?
                     null :
                     <button style={loadingBmpStyle}>
@@ -359,7 +353,7 @@ class SwammContainer extends React.Component {
                         style={{...buttonStyle, left: (this.props.numberOfMenus + 3) * 100 + 20}}
                         className={'disabled'}
                     >
-                        <Glyphicon glyph="hourglass" />
+                        <span><Spinner color="white" style={{display: "inline-block"}} spinnerName="circle" noFadeIn/></span>
                     </button>
                 }
                 {this.props.visibleBmpManager ?
@@ -417,8 +411,8 @@ const mapStateToProps = (state) => {
         projectCode: state?.projectManager?.data?.code,
         layers: state?.layers,
         bmpOutletLayer: state?.layers?.flat?.filter((layer) => layer.name === state?.projectManager?.data?.code + "_bmp_outlet")[0],
-        bmpFootprintLayer: state?.layers?.flat?.filter((layer) => layer.name === state?.projectManager?.data?.code + "_bmp_footprint")[0],
-        bmpWatershedLayer: state?.layers?.flat?.filter((layer) => layer.name === state?.projectManager?.data?.code + "_bmp_watershed")[0],
+        // bmpFootprintLayer: state?.layers?.flat?.filter((layer) => layer.name === state?.projectManager?.data?.code + "_bmp_footprint")[0],
+        // bmpWatershedLayer: state?.layers?.flat?.filter((layer) => layer.name === state?.projectManager?.data?.code + "_bmp_watershed")[0],
         visibleBmpForm: state?.swamm?.visibleBmpForm,
         storedBmpForm: state?.swamm?.storedBmpForm,
         drawingBmpLayerName: state?.swamm?.drawingBmpLayerName,
@@ -443,9 +437,9 @@ const mapDispatchToProps = ( dispatch ) => {
         fetchSwammBmpStatuses: (mapId) => dispatch(fetchSwammBmpStatuses(mapId)),
         fetchSwammTargets: (mapId) => dispatch(fetchSwammTargets(mapId)),
         toggleLayer: (layer, isVisible) => dispatch(changeLayerProperties(layer, {visibility: isVisible})),
-        toggleOutlets: () => dispatch(toggleOutlets()),
-        toggleFootprints: () => dispatch(toggleFootprints()),
-        toggleWatersheds: () => dispatch(toggleWatersheds()),
+        // toggleOutlets: () => dispatch(toggleOutlets()),
+        // toggleFootprints: () => dispatch(toggleFootprints()),
+        // toggleWatersheds: () => dispatch(toggleWatersheds()),
         showBmpForm: () => dispatch(showBmpForm()),
         setLayer: (layerName) => dispatch(setLayer(layerName)),
         setEditingBmpFeatureId: (featureId) => dispatch(setEditingBmpFeatureId(featureId)),

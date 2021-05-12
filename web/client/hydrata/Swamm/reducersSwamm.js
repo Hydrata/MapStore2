@@ -6,9 +6,9 @@ import {
     FETCH_SWAMM_BMP_STATUSES_SUCCESS,
     FETCH_SWAMM_TARGETS_SUCCESS,
     SELECT_SWAMM_TARGET_ID,
-    TOGGLE_OUTLETS,
-    TOGGLE_FOOTPRINTS,
-    TOGGLE_WATERSHEDS,
+    // TOGGLE_OUTLETS,
+    // TOGGLE_FOOTPRINTS,
+    // TOGGLE_WATERSHEDS,
     TOGGLE_BMP_TYPE,
     SET_BMP_TYPE,
     SHOW_BMP_FORM,
@@ -143,21 +143,21 @@ export default ( state = initialState, action) => {
                 return bmpType;
             })
         };
-    case TOGGLE_OUTLETS:
-        return {
-            ...state,
-            showOutlets: !state.showOutlets
-        };
-    case TOGGLE_FOOTPRINTS:
-        return {
-            ...state,
-            showFootprints: !state.showFootprints
-        };
-    case TOGGLE_WATERSHEDS:
-        return {
-            ...state,
-            showWatersheds: !state.showWatersheds
-        };
+    // case TOGGLE_OUTLETS:
+    //     return {
+    //         ...state,
+    //         showOutlets: !state.showOutlets
+    //     };
+    // case TOGGLE_FOOTPRINTS:
+    //     return {
+    //         ...state,
+    //         showFootprints: !state.showFootprints
+    //     };
+    // case TOGGLE_WATERSHEDS:
+    //     return {
+    //         ...state,
+    //         showWatersheds: !state.showWatersheds
+    //     };
     case SET_MENU_GROUP:
         if (action.payload) {
             return {
