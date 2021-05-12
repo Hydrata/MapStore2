@@ -247,7 +247,7 @@ class SwammContainer extends React.Component {
                     onClick={() => {this.props.clickBmpManager();}}>
                     View BMPs
                 </button>
-                {this.props.allBmps ?
+                {this.props.allBmps?.length > 0 ?
                     null :
                     <button style={loadingBmpStyle}>
                         <div style={{marginBottom: "10px"}}>Loading BMP data...</div>
