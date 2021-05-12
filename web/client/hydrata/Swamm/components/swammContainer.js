@@ -3,6 +3,7 @@ import {connect} from 'react-redux';
 const PropTypes = require('prop-types');
 const {mapIdSelector} = require('../../../selectors/map');
 import {Button, Glyphicon} from "react-bootstrap";
+const Spinner = require('react-spinkit');
 import {
     fetchSwammBmpTypes,
     fetchSwammAllBmps,
@@ -111,6 +112,22 @@ const bmpProgressButtonStyle = {
     borderRadius: "4px"
 };
 
+const loadingBmpStyle = {
+    position: "absolute",
+    top: "200px",
+    left: "50%",
+    marginTop: "-100px",
+    marginLeft: "-100px",
+    opacity: "0.7",
+    width: "200px",
+    height: "100px",
+    borderRadius: "4px",
+    borderColor: "white",
+    color: "white",
+    background: "rgba(0,60,136,0.6)",
+    textAlign: "center"
+};
+
 class SwammContainer extends React.Component {
     static propTypes = {
         fetchSwammBmpTypes: PropTypes.func,
@@ -168,7 +185,8 @@ class SwammContainer extends React.Component {
         bmpOutletLayer: PropTypes.object,
         bmpFootrprintLayer: PropTypes.object,
         bmpWatershedLayer: PropTypes.object,
-        numberOfMenus: PropTypes.number
+        numberOfMenus: PropTypes.number,
+        bmpDataLayer: PropTypes.object
     };
 
     static defaultProps = {};
@@ -229,6 +247,13 @@ class SwammContainer extends React.Component {
                     onClick={() => {this.props.clickBmpManager();}}>
                     View BMPs
                 </button>
+                {this.props.allBmps ?
+                    null :
+                    <button style={loadingBmpStyle}>
+                        <div style={{marginBottom: "10px"}}>Loading BMP data...</div>
+                        <span><Spinner color="white" style={{display: "inline-block"}} spinnerName="circle" noFadeIn/></span>
+                    </button>
+                }
                 {this.props.storedBmpForm && !this.props.visibleBmpForm && !this.props.drawingBmpLayerName && !this.props.editingBmpFeatureId ?
                     <React.Fragment>
                         <Button
@@ -339,58 +364,11 @@ class SwammContainer extends React.Component {
                 }
                 {this.props.visibleBmpManager ?
                     <div style={{...panelStyle}} id="swamm-bmp-manager">
-                        <div className="btn-group" role="group" style={{display: "none", margin: "auto"}}>
-                            <button
-                                type="button"
-                                className="btn btn-xs btn-info"
-                                style={this.props.showOutlets ? filterButtonStyle : {
-                                    ...filterButtonStyle,
-                                    "background": "#5609189F"
-                                }}
-                                onClick={() => window.alert('Feature temporarily disabled')}
-                            >
-                                Show Outlets
-                            </button>
-                            <button
-                                type="button"
-                                className="btn btn-xs btn-info"
-                                style={this.props.showFootprints ? filterButtonStyle : {
-                                    ...filterButtonStyle,
-                                    "background": "#5609189F"
-                                }}
-                                onClick={() => window.alert('Feature temporarily disabled')}
-                            >
-                                Show Footprints
-                            </button>
-                            <button
-                                type="button"
-                                className="btn btn-xs btn-info"
-                                style={this.props.showWatersheds ? filterButtonStyle : {
-                                    ...filterButtonStyle,
-                                    "background": "#5609189F"
-                                }}
-                                onClick={() => window.alert('Feature temporarily disabled')}
-                            >
-                                Show Watersheds
-                            </button>
-                        </div>
                         <table className="table check1" style={{tableLayout: "fixed", marginBottom: "0"}}>
-                            {/*<thead>*/}
-                            {/*    <tr>*/}
-                            {/*        <th style={tableHeaderStyleTypes}>BMP Type</th>*/}
-                            {/*        <th style={tableHeaderStyleTypes}>Visibility</th>*/}
-                            {/*    </tr>*/}
-                            {/*</thead>*/}
                             <tbody>
                                 <tr key="r1">
-                                    {/*<td key="d1" className="h5" style={{"padding": "3px"}}>*/}
-                                    {/*    {this.props.bmpDataLayer.title}*/}
-                                    {/*</td>*/}
                                     <td key="d2">
                                         <MenuDatasetRow layer={this.props.bmpDataLayer}/>
-                                        {/*<SwammBmpToggler*/}
-                                        {/*    bmpCode={this.props.projectCode + '_' + bmpName.code.slice(bmpName.code.length - 3)}*/}
-                                        {/*/>*/}
                                     </td>
                                 </tr>
                             </tbody>
