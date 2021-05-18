@@ -618,9 +618,9 @@ const submitTargetForm = (target, mapId) => {
             ).then(
                 response => {
                     dispatch(submitTargetFormSuccess(response.data));
-                    // dispatch(fetchSwammAllBmps(mapId));
-                    // dispatch(makeExistingBmpForm(response.data));
                     dispatch(fetchSwammTargets(mapId));
+                    dispatch(hideTargetForm());
+                    dispatch(clearTargetForm());
                 }
             ).catch(
                 e => {
@@ -635,9 +635,9 @@ const submitTargetForm = (target, mapId) => {
         ).then(
             response => {
                 dispatch(submitTargetFormSuccess(response.data));
-                // dispatch(fetchSwammAllBmps(mapId));
-                // dispatch(makeExistingBmpForm(response.data));
                 dispatch(fetchSwammTargets(mapId));
+                dispatch(hideTargetForm());
+                dispatch(clearTargetForm());
             }
         ).catch(
             e => {
@@ -691,6 +691,7 @@ const deleteTarget = (mapId, targetId) => {
         ).then(
             response => {
                 dispatch(deleteTargetSuccess(targetId));
+                dispatch(fetchSwammTargets(mapId));
                 dispatch(hideTargetForm());
                 dispatch(clearTargetForm());
             }
