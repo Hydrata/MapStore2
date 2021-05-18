@@ -32,7 +32,17 @@ import {
     SET_EDITING_BMP_FEATURE_ID,
     CLEAR_EDITING_BMP_FEATURE_ID,
     DELETE_BMP_SUCCESS,
-    SET_BMP_FILTER_MODE
+    SET_BMP_FILTER_MODE,
+    SHOW_TARGET_FORM,
+    HIDE_TARGET_FORM,
+    UPDATE_TARGET_FORM,
+    CLEAR_TARGET_FORM,
+    SUBMIT_TARGET_FORM,
+    SUBMIT_TARGET_FORM_SUCCESS,
+    SUBMIT_TARGET_FORM_ERROR,
+    DELETE_TARGET,
+    DELETE_TARGET_SUCCESS,
+    DELETE_TARGET_ERROR
 } from "./actionsSwamm";
 import {
     SET_MENU_GROUP
@@ -48,6 +58,7 @@ const initialState = {
     statuses: [],
     targets: [],
     visibleBmpForm: false,
+    visibleTargetForm: true,
     creatingNewBmp: false,
     drawingBmpLayerName: false,
     bmpFilterMode: 'type'
@@ -375,6 +386,31 @@ export default ( state = initialState, action) => {
         return {
             ...state,
             bmpFilterMode: action.bmpFilterMode
+        };
+    case UPDATE_TARGET_FORM:
+        return  {
+            ...state,
+            targetForm: {
+                ...state.targetForm,
+                ...action.kv
+            }
+        };
+    case SHOW_TARGET_FORM:
+        if (action.target) {
+            return {
+                ...state,
+                visibleTargetForm: action.visibleTargetForm,
+                targetForm: action.target
+            };
+        }
+        return {
+            ...state,
+            visibleTargetForm: action.visibleTargetForm
+        };
+    case HIDE_TARGET_FORM:
+        return {
+            ...state,
+            visibleTargetForm: action.visibleTargetForm
         };
     default:
         return state;

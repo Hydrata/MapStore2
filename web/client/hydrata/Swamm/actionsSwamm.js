@@ -20,6 +20,17 @@ const SELECT_SWAMM_TARGET_ID = 'SELECT_SWAMM_TARGET_ID';
 const SHOW_SWAMM_BMP_CHART = 'SHOW_SWAMM_BMP_CHART';
 const HIDE_SWAMM_BMP_CHART = 'HIDE_SWAMM_BMP_CHART';
 
+const SHOW_TARGET_FORM = 'SHOW_TARGET_FORM';
+const HIDE_TARGET_FORM = 'HIDE_TARGET_FORM';
+const UPDATE_TARGET_FORM = 'UPDATE_TARGET_FORM';
+const CLEAR_TARGET_FORM = 'CLEAR_TARGET_FORM';
+const SUBMIT_TARGET_FORM = 'SUBMIT_TARGET_FORM';
+const SUBMIT_TARGET_FORM_SUCCESS = 'SUBMIT_TARGET_FORM_SUCCESS';
+const SUBMIT_TARGET_FORM_ERROR = 'SUBMIT_TARGET_FORM_ERROR';
+const DELETE_TARGET = 'DELETE_TARGET';
+const DELETE_TARGET_SUCCESS = 'DELETE_TARGET_SUCCESS';
+const DELETE_TARGET_ERROR = 'DELETE_TARGET_ERROR';
+
 const SHOW_SWAMM_DATA_GRID = 'SHOW_SWAMM_DATA_GRID';
 const HIDE_SWAMM_DATA_GRID = 'HIDE_SWAMM_DATA_GRID';
 const SHOW_SWAMM_FEATURE_GRID = 'SHOW_SWAMM_FEATURE_GRID';
@@ -190,36 +201,6 @@ const setBmpType = (bmpType, isVisible) => {
         });
     };
 };
-
-// const toggleOutlets = () => {
-//     return (dispatch, getState) => {
-//         const state = getState();
-//         dispatch({
-//             type: 'TOGGLE_OUTLETS',
-//             layers: state.layers
-//         });
-//     };
-// };
-//
-// const toggleFootprints = () => {
-//     return (dispatch, getState) => {
-//         const state = getState();
-//         dispatch({
-//             type: 'TOGGLE_FOOTPRINTS',
-//             layers: state.layers
-//         });
-//     };
-// };
-//
-// const toggleWatersheds = () => {
-//     return (dispatch, getState) => {
-//         const state = getState();
-//         dispatch({
-//             type: 'TOGGLE_WATERSHEDS',
-//             layers: state.layers
-//         });
-//     };
-// };
 
 const makeBmpForm = () => {
     return {
@@ -565,6 +546,163 @@ const setBmpFilterMode = (bmpFilterMode) => {
     };
 };
 
+
+const hideTargetForm = () => {
+    return {
+        type: HIDE_TARGET_FORM,
+        visibleTargetForm: false
+    };
+};
+
+
+const showTargetForm = (target = null) => {
+    return {
+        type: SHOW_TARGET_FORM,
+        visibleTargetForm: true,
+        target: target
+    };
+};
+
+
+const clearTargetForm = () => {
+    return {
+        type: CLEAR_TARGET_FORM,
+        targetForm: null
+    };
+};
+
+
+const updateTargetForm = (kv) => {
+    return {
+        type: UPDATE_TARGET_FORM,
+        kv
+    };
+};
+
+const submitTargetFormSuccess = (target) => {
+    return (dispatch) => {
+        dispatch({
+            type: SHOW_NOTIFICATION,
+            title: 'Success',
+            autoDismiss: 6,
+            position: 'tc',
+            message: `Target: ${target.id} saved`,
+            uid: uuidv1(),
+            level: 'success'
+        });
+        dispatch({
+            type: SUBMIT_TARGET_FORM_SUCCESS,
+            target
+        });
+    };
+};
+
+function submitTargetFormError(e) {
+    console.log('submitTargetFormError', e);
+    return {
+        type: SHOW_NOTIFICATION,
+        title: 'Submit Target Form Error',
+        autoDismiss: 600,
+        position: 'tc',
+        message: `Error saving Target: ${e?.data}`,
+        uid: uuidv1(),
+        level: 'error'
+    };
+}
+
+const submitTargetForm = (target, mapId) => {
+    if (target.id) {
+        return (dispatch) => {
+            console.log('updating existing Target: ', target);
+            return axios.patch(`/swamm/api/${mapId}/pollutant-loading-target/${target.id}/`, target
+            ).then(
+                response => {
+                    dispatch(submitTargetFormSuccess(response.data));
+                    // dispatch(fetchSwammAllBmps(mapId));
+                    // dispatch(makeExistingBmpForm(response.data));
+                    dispatch(fetchSwammTargets(mapId));
+                }
+            ).catch(
+                e => {
+                    dispatch(submitTargetFormError(e));
+                }
+            );
+        };
+    }
+    return (dispatch) => {
+        console.log('creating new Target: ', target);
+        return axios.post(`/swamm/api/${mapId}/pollutant-loading-target/`, target
+        ).then(
+            response => {
+                dispatch(submitTargetFormSuccess(response.data));
+                // dispatch(fetchSwammAllBmps(mapId));
+                // dispatch(makeExistingBmpForm(response.data));
+                dispatch(fetchSwammTargets(mapId));
+            }
+        ).catch(
+            e => {
+                dispatch(submitTargetFormError(e));
+            }
+        );
+    };
+};
+
+
+const deleteTargetSuccess = (targetId) => {
+    return (dispatch) => {
+        dispatch({
+            type: SHOW_NOTIFICATION,
+            title: 'Delete Target Success',
+            autoDismiss: 6,
+            position: 'tc',
+            message: `Successfully deleted Target: ${targetId}`,
+            uid: uuidv1(),
+            level: 'success'
+        });
+        dispatch({
+            type: DELETE_TARGET_SUCCESS,
+            targetId
+        });
+    };
+};
+
+const deleteTargetError = (e) => {
+    console.log('*** error:', e);
+    return (dispatch) => {
+        dispatch({
+            type: SHOW_NOTIFICATION,
+            title: 'Delete Target Error',
+            autoDismiss: 60,
+            position: 'tc',
+            message: `${e?.data}`,
+            uid: uuidv1(),
+            level: 'error'
+        });
+        dispatch({
+            type: DELETE_TARGET_ERROR,
+            error: e
+        });
+    };
+};
+
+const deleteTarget = (mapId, targetId) => {
+    return (dispatch) => {
+        return axios.delete(`/swamm/api/${mapId}/pollutant-loading-target/${targetId}/`, {}
+        ).then(
+            response => {
+                dispatch(deleteTargetSuccess(targetId));
+                dispatch(hideTargetForm());
+                dispatch(clearTargetForm());
+            }
+        ).catch(
+            e => {
+                dispatch(deleteTargetError(e));
+            }
+        );
+    };
+};
+
+
 module.exports = {
     FETCH_SWAMM_BMPTYPES, fetchSwammBmpTypes,
     FETCH_SWAMM_BMPTYPES_ERROR, fetchSwammBmpTypesError,
@@ -585,9 +723,6 @@ module.exports = {
     TOGGLE_BMP_TYPE, toggleBmpType,
     SET_BMP_TYPE, setBmpType,
     SET_STATUS_FILTER, setStatusFilter,
-    // TOGGLE_OUTLETS, toggleOutlets,
-    // TOGGLE_FOOTPRINTS, toggleFootprints,
-    // TOGGLE_WATERSHEDS, toggleWatersheds,
     SHOW_BMP_FORM, showBmpForm,
     HIDE_BMP_FORM, hideBmpForm,
     SHOW_SWAMM_DATA_GRID, showSwammDataGrid,
@@ -612,5 +747,15 @@ module.exports = {
     DELETE_BMP, deleteBmp,
     DELETE_BMP_ERROR, deleteBmpError,
     DELETE_BMP_SUCCESS, deleteBmpSuccess,
-    SET_BMP_FILTER_MODE, setBmpFilterMode
+    SET_BMP_FILTER_MODE, setBmpFilterMode,
+    SHOW_TARGET_FORM, showTargetForm,
+    HIDE_TARGET_FORM, hideTargetForm,
+    UPDATE_TARGET_FORM, updateTargetForm,
+    CLEAR_TARGET_FORM, clearTargetForm,
+    SUBMIT_TARGET_FORM, submitTargetForm,
+    SUBMIT_TARGET_FORM_SUCCESS, submitTargetFormSuccess,
+    SUBMIT_TARGET_FORM_ERROR, submitTargetFormError,
+    DELETE_TARGET, deleteTarget,
+    DELETE_TARGET_SUCCESS, deleteTargetSuccess,
+    DELETE_TARGET_ERROR, deleteTargetError
 };

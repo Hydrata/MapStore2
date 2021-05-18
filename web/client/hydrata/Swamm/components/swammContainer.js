@@ -8,9 +8,6 @@ import {
     fetchSwammBmpTypes,
     fetchSwammAllBmps,
     fetchSwammBmpStatuses,
-    // toggleOutlets,
-    // toggleFootprints,
-    // toggleWatersheds,
     showBmpForm,
     showSwammBmpChart,
     toggleBmpManager,
@@ -21,10 +18,13 @@ import {
     toggleBmpType,
     setBmpType,
     showSwammDataGrid,
-    showSwammFeatureGrid, fetchSwammTargets
+    showSwammFeatureGrid,
+    fetchSwammTargets
 } from "../actionsSwamm";
 import {SwammBmpForm} from "./swammBmpForm";
 import {SwammDataGrid} from "./swammDataGrid";
+import {SwammBmpChart} from "./swammBmpChart";
+import {MenuDatasetRow} from "../../ProjectManager/components/projectManagerMenuDatasetRow";
 import {changeLayerProperties} from "../../../actions/layers";
 import {
     setMenuGroup,
@@ -36,8 +36,6 @@ import {
     drawStopped
 } from "../../../actions/draw";
 import {query} from "../../../actions/wfsquery";
-import {SwammBmpChart} from "./swammBmpChart";
-import {MenuDatasetRow} from "../../ProjectManager/components/projectManagerMenuDatasetRow";
 
 const buttonStyle = {
     position: "absolute",
@@ -54,15 +52,6 @@ const buttonStyle = {
     borderRadius: "4px",
     color: "white",
     textAlign: "center"
-};
-
-const glyphStyle = {
-    background: "#ffffff",
-    borderRadius: "3px",
-    display: "block",
-    margin: "auto",
-    color: "limegreen",
-    fontSize: "10px"
 };
 
 const panelStyle = {
@@ -83,24 +72,6 @@ const panelStyle = {
     color: "white",
     overflowY: "auto",
     overflowX: "hidden"
-};
-
-const tableHeaderStyleOrgs = {
-    textAlign: "center",
-    width: "100px"
-};
-
-const tableHeaderStyleTypes = {
-    textAlign: "left",
-    width: "300px"
-};
-
-const filterButtonStyle = {
-    margin: "3px",
-    background: "#6aa3789F",
-    borderRadius: "4px",
-    borderColor: "white",
-    width: "100px"
 };
 
 const bmpProgressButtonStyle = {
@@ -143,9 +114,6 @@ class SwammContainer extends React.Component {
         bmpUniqueNames: PropTypes.array,
         bmpTypes: PropTypes.array,
         allBmps: PropTypes.array,
-        // toggleOutlets: PropTypes.func,
-        // toggleFootprints: PropTypes.func,
-        // toggleWatersheds: PropTypes.func,
         showOutlets: PropTypes.bool,
         showFootprints: PropTypes.bool,
         showWatersheds: PropTypes.bool,
@@ -176,6 +144,7 @@ class SwammContainer extends React.Component {
         showSwammFeatureGrid: PropTypes.func,
         showSwammDataGrid: PropTypes.func,
         visibleSwammBmpChart: PropTypes.bool,
+        visibleTargetForm: PropTypes.bool,
         showSwammBmpChart: PropTypes.func,
         clickBmpManager: PropTypes.func,
         bmpByUniqueNameSelector: PropTypes.func,
@@ -183,8 +152,8 @@ class SwammContainer extends React.Component {
         toggleViewMode: PropTypes.func,
         drawStopped: PropTypes.func,
         bmpOutletLayer: PropTypes.object,
-        // bmpFootrprintLayer: PropTypes.object,
-        // bmpWatershedLayer: PropTypes.object,
+        bmpFootrprintLayer: PropTypes.object,
+        bmpWatershedLayer: PropTypes.object,
         numberOfMenus: PropTypes.number,
         bmpDataLayer: PropTypes.object
     };
@@ -420,6 +389,7 @@ const mapStateToProps = (state) => {
         visibleBmpManager: state?.swamm?.visibleBmpManager,
         visibleSwammDataGrid: state?.swamm?.visibleSwammDataGrid,
         visibleSwammBmpChart: state?.swamm?.visibleSwammBmpChart,
+        visibleTargetForm: state?.swamm?.visibleTargetForm,
         queryStore: state?.query,
         numberOfMenus: state?.projectManager?.data?.map_store_menu_groups?.length,
         filters: {
