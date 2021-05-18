@@ -23,6 +23,7 @@ import {
 } from "../actionsSwamm";
 import {SwammBmpForm} from "./swammBmpForm";
 import {SwammDataGrid} from "./swammDataGrid";
+import {SwammTargetForm} from "./swammTargetForm";
 import {SwammBmpChart} from "./swammBmpChart";
 import {MenuDatasetRow} from "../../ProjectManager/components/projectManagerMenuDatasetRow";
 import {changeLayerProperties} from "../../../actions/layers";
@@ -337,6 +338,10 @@ class SwammContainer extends React.Component {
                             </tbody>
                         </table>
                     </div>
+                    : null
+                }
+                {this.props.visibleTargetForm ?
+                    <SwammTargetForm/>
                     : null
                 }
                 {this.props.visibleBmpForm ?

@@ -58,7 +58,7 @@ const initialState = {
     statuses: [],
     targets: [],
     visibleBmpForm: false,
-    visibleTargetForm: true,
+    visibleTargetForm: false,
     creatingNewBmp: false,
     drawingBmpLayerName: false,
     bmpFilterMode: 'type'
