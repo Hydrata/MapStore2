@@ -6,25 +6,34 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const React = require('react');
-const PropTypes = require('prop-types');
-const {DropdownList} = require('react-widgets');
-const Message = require('../../../I18N/Message');
-const {Grid, Row, Col, FormGroup, ControlLabel, FormControl, Checkbox} = require('react-bootstrap');
-const {clamp, isNil, isNumber} = require('lodash');
-const Legend = require('../legend/Legend');
-const InfoPopover = require('../../../widgets/widget/InfoPopover');
+import 'react-widgets/lib/less/react-widgets.less';
 
-require('react-widgets/lib/less/react-widgets.less');
-
-module.exports = class extends React.Component {
+import { clamp, isNil, isNumber } from 'lodash';
+import PropTypes from 'prop-types';
+import React from 'react';
+import {Checkbox, Col, ControlLabel, FormGroup, Glyphicon, Grid, Row, Button as ButtonRB} from 'react-bootstrap';
+import tooltip from '../../../misc/enhancers/buttonTooltip';
+const Button = tooltip(ButtonRB);
+import IntlNumberFormControl from '../../../I18N/IntlNumberFormControl';
+import Message from '../../../I18N/Message';
+import InfoPopover from '../../../widgets/widget/InfoPopover';
+import Legend from '../legend/Legend';
+import VisibilityLimitsForm from './VisibilityLimitsForm';
+import Select from 'react-select';
+import { DEFAULT_FORMAT_WMS, getSupportedFormat } from '../../../../utils/CatalogUtils';
+export default class extends React.Component {
     static propTypes = {
         opacityText: PropTypes.node,
         element: PropTypes.object,
         formats: PropTypes.array,
         settings: PropTypes.object,
         onChange: PropTypes.func,
-        isLocalizedLayerStylesEnabled: PropTypes.bool
+        containerWidth: PropTypes.number,
+        currentLocaleLanguage: PropTypes.string,
+        isLocalizedLayerStylesEnabled: PropTypes.bool,
+        projection: PropTypes.string,
+        resolutions: PropTypes.array,
+        zoom: PropTypes.number
     };
 
     static defaultProps = {
@@ -47,23 +56,6 @@ module.exports = class extends React.Component {
         containerWidth: 0
     };
 
-    updateState = (props) =>{
-        if (props.settings && props.settings.options) {
-            this.setState({
-                ...this.state,
-                opacity: !isNil(props.settings.options.opacity) ? Math.round(props.settings.options.opacity * 100) : this.state.opacity,
-                legendOptions: {
-                    ...this.state.legendOptions,
-                    legendHeight: props.element.legendOptions && !isNil(props.element.legendOptions.legendHeight) ?
-                        props.element.legendOptions.legendHeight : this.state.legendOptions.legendHeight,
-                    legendWidth: props.element.legendOptions && !isNil(props.element.legendOptions.legendWidth) ?
-                        props.element.legendOptions.legendWidth : this.state.legendOptions.legendWidth
-                },
-                containerWidth: this.containerRef.current && this.containerRef.current.clientWidth
-            });
-        }
-    };
-
     componentDidMount() {
         this.updateState(this.props);
     }
@@ -74,9 +66,7 @@ module.exports = class extends React.Component {
         }
     }
 
-    onChange = (event) =>{
-        const value = event.target.value;
-        const name = event.target.name;
+    onChange = (name, value) =>{
         if (name === 'opacity') {
             const opacity = value && clamp(Math.round(value), 0, 100);
             this.setState({opacity, ...this.state});
@@ -110,42 +100,70 @@ module.exports = class extends React.Component {
         });
     };
 
+    onFormatOptionsFetch = (url) => {
+        this.setState({formatLoading: true});
+        getSupportedFormat(url).then((imageFormats)=>{
+            this.props.onChange("imageFormats", imageFormats);
+            this.setState({formatLoading: false});
+        });
+    }
+
     getValidationState = (name) =>{
         if (this.state.legendOptions && this.state.legendOptions[name]) {
             return parseInt(this.state.legendOptions[name], 10) < 12 && "error";
         }
         return null;
     };
-
-    setOverFlow = () =>{
-        return this.state.legendOptions.legendWidth > this.state.containerWidth;
-    };
-
-    useLegendOptions = () =>{
-        return (
-            this.getValidationState("legendWidth") !== 'error' &&
-            this.getValidationState("legendHeight") !== 'error' &&
-            isNumber(this.state.legendOptions.legendHeight) &&
-            isNumber(this.state.legendOptions.legendWidth)
-        );
-    };
-
     render() {
         return (
             <Grid
                 fluid
-                className={"fluid-container " + (!this.props.containerWidth && "adjust-display")}>
+                className={"fluid-container ms-display-form " + (!this.props.containerWidth && "adjust-display")}>
                 {this.props.element.type === "wms" &&
                 <Row>
                     <Col xs={12}>
                         <FormGroup>
-                            <ControlLabel><Message msgId="layerProperties.format" /></ControlLabel>
-                            <DropdownList
-                                key="format-dropdown"
-                                data={this.props.formats || ["image/png", "image/png8", "image/jpeg", "image/vnd.jpeg-png", "image/gif"]}
-                                value={this.props.element && this.props.element.format || "image/png"}
-                                onChange={(value) => {
-                                    this.props.onChange("format", value);
+                            <ControlLabel><Message msgId="layerProperties.format.title" /></ControlLabel>
+                            <div className={'ms-format-container'}>
+                                <Select
+                                    className={'format-select'}
+                                    key="format-dropdown"
+                                    clearable={false}
+                                    noResultsText={<Message
+                                        msgId={this.state.formatLoading
+                                            ? "layerProperties.format.loading" : "layerProperties.format.noOption"}
+                                    />}
+                                    isLoading={!!this.state.formatLoading}
+                                    options={this.state.formatLoading
+                                        ? []
+                                        : (this.props.formats?.map((value) => ({ value, label: value }))
+                                    || this.props.element?.imageFormats
+                                    || DEFAULT_FORMAT_WMS)
+                                    }
+                                    value={this.props.element && this.props.element.format || "image/png"}
+                                    onChange={({ value }) => {
+                                        this.props.onChange("format", value);
+                                    }}/>
+                                <Button
+                                    tooltipId="layerProperties.format.refresh"
+                                    className="square-button-md no-border format-refresh"
+                                    onClick={() => {this.onFormatOptionsFetch(this.props.element?.url);}}
+                                    key="format-refresh">
+                                    <Glyphicon glyph="refresh" />
+                                </Button>
+                            </div>
+                        </FormGroup>
+                    </Col>
+                    <Col xs={12}>
+                        <FormGroup>
+                            <ControlLabel><Message msgId="WMS Layer tile size" /></ControlLabel>
+                            <Select
+                                key="wsm-layersize-dropdown"
+                                clearable={false}
+                                options={[{ value: 256, label: 256 }, { value: 512, label: 512 }]}
+                                value={this.props.element && this.props.element.tileSize || 256}
+                                onChange={({ value }) => {
+                                    this.props.onChange("tileSize", value);
                                 }}/>
                         </FormGroup>
                     </Col>
@@ -155,13 +173,28 @@ module.exports = class extends React.Component {
                     <Col xs={12}>
                         <FormGroup>
                             <ControlLabel>{this.props.opacityText} %</ControlLabel>
-                            <FormControl
+                            <IntlNumberFormControl
                                 type="number"
                                 min={0}
                                 max={100}
                                 name={"opacity"}
                                 value={this.state.opacity}
-                                onChange={this.onChange}/>
+                                onChange={(val)=> this.onChange("opacity", val)}/>
+                        </FormGroup>
+                    </Col>
+                </Row>
+
+                <Row>
+                    <Col xs={12}>
+                        <FormGroup>
+                            <VisibilityLimitsForm
+                                title={<ControlLabel><Message msgId="layerProperties.visibilityLimits.title"/></ControlLabel>}
+                                layer={this.props.element}
+                                onChange={this.props.onChange}
+                                projection={this.props.projection}
+                                resolutions={this.props.resolutions}
+                                zoom={this.props.zoom}
+                            />
                         </FormGroup>
                     </Col>
                 </Row>
@@ -200,13 +233,13 @@ module.exports = class extends React.Component {
                         <Col xs={12} sm={6} className="first-selectize">
                             <FormGroup validationState={this.getValidationState("legendWidth")}>
                                 <ControlLabel><Message msgId="layerProperties.legendOptions.legendWidth" /></ControlLabel>
-                                <FormControl
+                                <IntlNumberFormControl
                                     value={this.state.legendOptions.legendWidth}
                                     name="legendWidth"
                                     type="number"
                                     min={12}
                                     max={1000}
-                                    onChange={this.onChange}
+                                    onChange={(val)=> this.onChange("legendWidth", val)}
                                     onKeyPress={(e)=> e.key === "-" && e.preventDefault()}
                                     onBlur={this.onBlur}
                                 />
@@ -215,13 +248,13 @@ module.exports = class extends React.Component {
                         <Col xs={12} sm={6} className="second-selectize">
                             <FormGroup validationState={this.getValidationState("legendHeight")}>
                                 <ControlLabel><Message msgId="layerProperties.legendOptions.legendHeight" /></ControlLabel>
-                                <FormControl
+                                <IntlNumberFormControl
                                     value={this.state.legendOptions.legendHeight}
                                     name="legendHeight"
                                     type="number"
                                     min={12}
                                     max={1000}
-                                    onChange={this.onChange}
+                                    onChange={(val)=> this.onChange("legendHeight", val)}
                                     onKeyPress={(e)=> e.key === "-" && e.preventDefault()}
                                     onBlur={this.onBlur}
                                 />
@@ -247,4 +280,35 @@ module.exports = class extends React.Component {
             </Grid>
         );
     }
-};
+    updateState = (props) =>{
+        if (props.settings && props.settings.options) {
+            this.setState({
+                ...this.state,
+                opacity: !isNil(props.settings.options.opacity) ? Math.round(props.settings.options.opacity * 100) : this.state.opacity,
+                legendOptions: {
+                    ...this.state.legendOptions,
+                    legendHeight: props.element.legendOptions && !isNil(props.element.legendOptions.legendHeight) ?
+                        props.element.legendOptions.legendHeight : this.state.legendOptions.legendHeight,
+                    legendWidth: props.element.legendOptions && !isNil(props.element.legendOptions.legendWidth) ?
+                        props.element.legendOptions.legendWidth : this.state.legendOptions.legendWidth
+                },
+                containerWidth: this.containerRef.current && this.containerRef.current.clientWidth
+            });
+        }
+    };
+
+    setOverFlow = () =>{
+        return this.state.legendOptions.legendWidth > this.state.containerWidth;
+    };
+
+    useLegendOptions = () =>{
+        return (
+            this.getValidationState("legendWidth") !== 'error' &&
+            this.getValidationState("legendHeight") !== 'error' &&
+            isNumber(this.state.legendOptions.legendHeight) &&
+            isNumber(this.state.legendOptions.legendWidth)
+        );
+    };
+
+
+}

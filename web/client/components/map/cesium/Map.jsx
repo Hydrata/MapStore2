@@ -5,18 +5,24 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const Cesium = require('../../../libs/cesium');
-const PropTypes = require('prop-types');
-const Rx = require('rxjs');
-const React = require('react');
-const ReactDOM = require('react-dom');
-const ConfigUtils = require('../../../utils/ConfigUtils');
-const ClickUtils = require('../../../utils/cesium/ClickUtils');
-const mapUtils = require('../../../utils/MapUtils');
-const CoordinatesUtils = require('../../../utils/CoordinatesUtils');
+import Cesium from '../../../libs/cesium';
 
-const assign = require('object-assign');
-const {throttle} = require('lodash');
+import PropTypes from 'prop-types';
+import Rx from 'rxjs';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import ConfigUtils from '../../../utils/ConfigUtils';
+import ClickUtils from '../../../utils/cesium/ClickUtils';
+import {
+    ZOOM_TO_EXTENT_HOOK,
+    registerHook,
+    GET_PIXEL_FROM_COORDINATES_HOOK,
+    GET_COORDINATES_FROM_PIXEL_HOOK,
+    getResolutions
+} from '../../../utils/MapUtils';
+import { reprojectBbox } from '../../../utils/CoordinatesUtils';
+import assign from 'object-assign';
+import { throttle } from 'lodash';
 
 class CesiumMap extends React.Component {
     static propTypes = {
@@ -51,7 +57,9 @@ class CesiumMap extends React.Component {
         standardHeight: 512,
         zoomToHeight: 80000000,
         registerHooks: true,
-        hookRegister: mapUtils,
+        hookRegister: {
+            registerHook
+        },
         viewerOptions: {
             orientation: {
                 heading: 0,
@@ -74,7 +82,7 @@ class CesiumMap extends React.Component {
     }
 
     componentDidMount() {
-        var map = new Cesium.Viewer(this.getDocument().getElementById(this.props.id), assign({
+        let map = new Cesium.Viewer(this.getDocument().getElementById(this.props.id), assign({
             baseLayerPicker: false,
             animation: false,
             fullscreenButton: false,
@@ -87,6 +95,9 @@ class CesiumMap extends React.Component {
             navigationHelpButton: false,
             navigationInstructionsInitiallyVisible: false
         }, this.getMapOptions(this.props.mapOptions)));
+        if (this.props.registerHooks) {
+            this.registerHooks();
+        }
         map.scene.globe.baseColor = Cesium.Color.WHITE;
         map.imageryLayers.removeAll();
         map.camera.moveEnd.addEventListener(this.updateMapInfoState);
@@ -111,9 +122,6 @@ class CesiumMap extends React.Component {
             if (this.cesiumNavigation) {
                 this.cesiumNavigation.navigationInitialization(this.props.id, map);
             }
-        }
-        if (this.props.registerHooks) {
-            this.registerHooks();
         }
     }
 
@@ -224,7 +232,12 @@ class CesiumMap extends React.Component {
         const map = this.map;
         const mapProj = this.props.projection;
         const children = map ? React.Children.map(this.props.children, child => {
-            return child ? React.cloneElement(child, {map: map, projection: mapProj, onCreationError: this.props.onCreationError}) : null;
+            return child ? React.cloneElement(child, {
+                map: map,
+                projection: mapProj,
+                onCreationError: this.props.onCreationError,
+                zoom: this.props.zoom
+            }) : null;
         }) : null;
         return (
             <div id={this.props.id}>
@@ -333,9 +346,15 @@ class CesiumMap extends React.Component {
         this.pauserStream$ = pauserStream$;
     };
     registerHooks = () => {
-        this.props.hookRegister.registerHook(mapUtils.ZOOM_TO_EXTENT_HOOK, (extent, { crs, duration } = {}) => {
+        // Unregister hooks as coming from a leaflet or openlayer map retains hooks
+        // causing issue in feature info click
+        this.props.hookRegister.registerHook(GET_PIXEL_FROM_COORDINATES_HOOK);
+        this.props.hookRegister.registerHook(GET_COORDINATES_FROM_PIXEL_HOOK);
+
+        // Register hook
+        this.props.hookRegister.registerHook(ZOOM_TO_EXTENT_HOOK, (extent, { crs, duration } = {}) => {
             // TODO: manage padding and maxZoom
-            const bounds = CoordinatesUtils.reprojectBbox(extent, crs, 'EPSG:4326');
+            const bounds = reprojectBbox(extent, crs, 'EPSG:4326');
             if (this.map.camera.flyTo) {
                 const rectangle = Cesium.Rectangle.fromDegrees(
                     bounds[0], // west,
@@ -364,27 +383,36 @@ class CesiumMap extends React.Component {
             height: Math.round(this.props.standardWidth * (zoom + 1)),
             width: Math.round(this.props.standardHeight * (zoom + 1))
         };
-        this.props.onMapViewChanges({
-            x: center.longitude,
-            y: center.latitude,
-            crs: "EPSG:4326"
-        }, zoom, {
-            bounds: {
-                minx: -180.0,
-                miny: -90.0,
-                maxx: 180.0,
-                maxy: 90.0
+        this.props.onMapViewChanges(
+            {
+                x: center.longitude,
+                y: center.latitude,
+                crs: "EPSG:4326"
             },
-            crs: 'EPSG:4326',
-            rotation: 0
-        }, size, this.props.id, this.props.projection, {
-            orientation: {
-                heading: this.map.camera.heading,
-                pitch: this.map.camera.pitch,
-                roll: this.map.camera.roll
-            }
-        });
+            zoom,
+            {
+                bounds: {
+                    minx: -180.0,
+                    miny: -90.0,
+                    maxx: 180.0,
+                    maxy: 90.0
+                },
+                crs: 'EPSG:4326',
+                rotation: 0
+            },
+            size,
+            this.props.id,
+            this.props.projection,
+            {
+                orientation: {
+                    heading: this.map.camera.heading,
+                    pitch: this.map.camera.pitch,
+                    roll: this.map.camera.roll
+                }
+            },
+            getResolutions()[zoom]
+        );
     };
 }
 
-module.exports = CesiumMap;
+export default CesiumMap;

@@ -1,7 +1,7 @@
-const expect = require('expect');
-const React = require('react');
-const ReactDOM = require('react-dom');
-const ShapefileUploadAndStyle = require('../ShapefileUploadAndStyle');
+import expect from 'expect';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import ShapefileUploadAndStyle from '../ShapefileUploadAndStyle';
 
 describe("Test ShapefileUploadAndStyle component", () => {
     beforeEach((done) => {
@@ -108,7 +108,7 @@ describe("Test ShapefileUploadAndStyle component", () => {
                     expect(spyShapeLoading).toHaveBeenCalledWith(false);
                     expect(spyShapeLoading.calls.length).toBe(2);
                     done();
-                }, 100);
+                }, 1000);
             })
             .catch(() => {
                 expect(true).toBe(false);

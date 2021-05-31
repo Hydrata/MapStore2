@@ -6,21 +6,32 @@
  * LICENSE file in the root directory of this source tree.
 */
 
-const PropTypes = require('prop-types');
-const React = require('react');
-const {Alert, Tabs, Tab, Button, Glyphicon, Checkbox, FormControl, FormGroup, ControlLabel} = require('react-bootstrap');
-const tooltip = require('../../../components/misc/enhancers/tooltip');
+import PropTypes from 'prop-types';
+
+import React from 'react';
+
+import {
+    Alert,
+    Tabs,
+    Tab,
+    Glyphicon,
+    Checkbox,
+    FormControl,
+    FormGroup,
+    ControlLabel
+} from 'react-bootstrap';
+
+import tooltip from '../../../components/misc/enhancers/tooltip';
 const GlyphiconTooltip = tooltip(Glyphicon);
-const Dialog = require('../../../components/misc/Dialog');
-const UserGroups = require('./UserGroups');
-const assign = require('object-assign');
-const Message = require('../../../components/I18N/Message');
-const Spinner = require('react-spinkit');
-const {findIndex} = require('lodash');
-const CloseConfirmButton = require('./CloseConfirmButton').default;
-
-require('./style/userdialog.css');
-
+import Dialog from '../../../components/misc/Dialog';
+import UserGroups from './UserGroups';
+import assign from 'object-assign';
+import Message from '../../../components/I18N/Message';
+import Spinner from 'react-spinkit';
+import { findIndex } from 'lodash';
+import CloseConfirmButton from './CloseConfirmButton';
+import './style/userdialog.css';
+import Button from '../../../components/misc/Button';
 /**
  * A Modal window to show password reset form
  */
@@ -94,17 +105,35 @@ class UserDialog extends React.Component {
             return null;
         }
         let pw = this.props.user.newPassword;
-        return this.isMainPasswordValid(pw) ? "success" : "warning";
+        const validation = this.isMainPasswordValid(pw);
+        return validation.valid ? "success" : "error";
     };
 
+    getPwValidationMeta = () => {
+        if (!this.props.user || !this.props.user.newPassword) {
+            return {
+                valid: true,
+                message: "user.passwordMessage",
+                args: null
+            };
+        }
+
+        let pw = this.props.user.newPassword;
+        const validation = this.isMainPasswordValid(pw);
+        return validation;
+    }
+
     renderPasswordFields = () => {
+        const validation = this.getPwValidationMeta();
+        const tooltipId = validation.message;
+        const args = validation.args;
 
         return (
             <div>
                 <FormGroup validationState={this.getPwStyle()}>
                     <ControlLabel><Message msgId="user.password"/>
                         {' '}<span style={{ fontWeight: 'bold' }}>*</span>
-                        <GlyphiconTooltip tooltipId="user.passwordMessage" tooltipPosition="right"
+                        <GlyphiconTooltip tooltipId={tooltipId} args={args} tooltipPosition="right"
                             glyph="info-sign" style={{position: "relative", marginLeft: "10px", display: "inline-block", width: 24}}
                             helpText="Password must contain at least 6 characters"/>
                     </ControlLabel>
@@ -255,12 +284,35 @@ class UserDialog extends React.Component {
     }
 
     isMainPasswordValid = (password) => {
+        const validation = {
+            valid: true,
+            message: "user.passwordMessage",
+            args: null
+        };
         let p = password || this.props.user.newPassword || "";
+
         // Empty password field will signal the GeoStoreDAO not to change the password
         if (p === "" && this.props.user && this.props.user.id) {
-            return true;
+            return validation;
         }
-        return (p.length >= this.props.minPasswordSize) && !(/[^a-zA-Z0-9\!\@\#\$\%\&\*]/.test(p));
+
+        if (p.length < this.props.minPasswordSize) {
+            return {
+                valid: false,
+                message: "user.passwordMinlenght",
+                args: this.props.minPasswordSize
+            };
+        }
+
+        if (/[^a-zA-Z0-9\!\@\#\$\%\&\*\_]/.test(p)) {
+            return {
+                valid: false,
+                message: "user.passwordInvalidChar",
+                args: p.match(/[^a-zA-Z0-9\!\@\#\$\%\&\*\_]/).toString()
+            };
+        }
+
+        return validation;
     };
 
     isSaving = () => {
@@ -278,7 +330,7 @@ class UserDialog extends React.Component {
 
     isValidPassword = () => {
         let user = this.props.user;
-        return user && this.isMainPasswordValid(user.newPassword) && (user.confirmPassword === user.newPassword);
+        return user && this.isMainPasswordValid(user.newPassword).valid && (user.confirmPassword === user.newPassword);
     };
 
     handleChange = (event) => {
@@ -287,4 +339,4 @@ class UserDialog extends React.Component {
     };
 }
 
-module.exports = UserDialog;
+export default UserDialog;

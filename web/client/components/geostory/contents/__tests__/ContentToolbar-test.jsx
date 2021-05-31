@@ -162,7 +162,7 @@ describe('ContentToolbar component', () => {
             expect(list[3].innerText).toBe("geostory.contentToolbar.customizeThemeLabel");
             done();
         });
-        it(`remove`, (done) => {
+        it(`remove func`, (done) => {
             ReactDOM.render(<ContentToolbar
                 tools={["remove"]}
                 fit="contain"
@@ -225,7 +225,7 @@ describe('ContentToolbar component', () => {
             const buttons = document.getElementsByTagName('button');
             expect(buttons).toBeTruthy();
             expect(buttons.length).toBe(1);
-            expect(buttons[0].disabled).toBe(true);
+            expect(buttons[0].classList.contains('disabled')).toBe(true);
         });
     });
 

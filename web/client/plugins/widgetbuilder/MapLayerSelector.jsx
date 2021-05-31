@@ -5,28 +5,32 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const React = require('react');
-const {connect} = require('react-redux');
-const {createSelector} = require('reselect');
+import React from 'react';
+import { connect } from 'react-redux';
+import { branch, compose } from 'recompose';
+import { createSelector } from 'reselect';
 
-const BorderLayout = require('../../components/layout/BorderLayout');
-const {selectedCatalogSelector} = require('../../selectors/catalog');
-const Toolbar = require('../../components/misc/toolbar/Toolbar');
-const BuilderHeader = require('./BuilderHeader');
-const InfoPopover = require('../../components/widgets/widget/InfoPopover');
-const {Message, HTML} = require('../../components/I18N/I18N');
-const {compose, branch} = require('recompose');
+import { HTML, Message } from '../../components/I18N/I18N';
+import BorderLayout from '../../components/layout/BorderLayout';
+import Toolbar from '../../components/misc/toolbar/Toolbar';
+import InfoPopover from '../../components/widgets/widget/InfoPopover';
+import { selectedCatalogSelector } from '../../selectors/catalog';
+import BuilderHeader from './BuilderHeader';
+import CatalogComp from './Catalog';
 
 const Catalog = compose(
     branch(
         ({catalog} = {}) => !catalog,
         connect(createSelector(selectedCatalogSelector, catalog => ({catalog})))
-    ),
-)(require('./Catalog'));
+    )
+)(CatalogComp);
+
 /**
  * Builder page that allows layer's selection
  */
-module.exports = ({ onClose = () => { }, setSelected = () => { }, onLayerChoice = () => { }, toggleLayerSelector = () => {}, selected, canProceed, layer, catalog, catalogServices} = {}) =>
+export default ({ onClose = () => { }, setSelected = () => { }, onLayerChoice = () => { }, toggleLayerSelector = () => {}, selected, canProceed, layer,
+    catalog, onChangeSelectedService, defaultServices,
+    defaultSelectedService, onChangeCatalogMode, dashboardServices, dashboardSelectedService} = {}) =>
     (<BorderLayout
         className="bg-body layer-selector"
         header={<BuilderHeader onClose={onClose}>
@@ -52,5 +56,11 @@ module.exports = ({ onClose = () => { }, setSelected = () => { }, onLayerChoice 
                 text={<HTML msgId="widgets.builder.errors.noWidgetsAvailableDescription"/>} /> : null}
         </BuilderHeader>}
     >
-        <Catalog services={catalogServices} selected={selected} catalog={catalog} onRecordSelected={r => setSelected(r)} />
+        <Catalog
+            onChangeCatalogMode={onChangeCatalogMode}
+            selectedService={dashboardSelectedService === "" ? dashboardSelectedService : dashboardSelectedService === undefined ? defaultSelectedService : dashboardSelectedService}
+            onChangeSelectedService={(service) => onChangeSelectedService(service, dashboardServices || defaultServices)} services={ dashboardServices || defaultServices}
+            catalog={catalog}
+            selected={selected}
+            onRecordSelected={r => setSelected(r)} />
     </BorderLayout>);

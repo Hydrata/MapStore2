@@ -6,12 +6,12 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const React = require('react');
-const ReactDOM = require('react-dom');
-const ReactTestUtils = require('react-dom/test-utils');
+import React from 'react';
 
-const expect = require('expect');
-const CrossLayerFilter = require('../CrossLayerFilter');
+import ReactDOM from 'react-dom';
+import ReactTestUtils from 'react-dom/test-utils';
+import expect from 'expect';
+import CrossLayerFilter from '../CrossLayerFilter';
 describe('CrossLayerFilter component', () => {
     beforeEach((done) => {
         document.body.innerHTML = '<div id="container"></div>';
@@ -114,6 +114,44 @@ describe('CrossLayerFilter component', () => {
         const collapsablePanel = container.querySelector('.mapstore-switch-panel .panel-collapse');
         const expected = collapsablePanel.getAttribute('aria-hidden');
         expect(expected).toEqual('false');
+    });
+
+    it('Test CrossLayerFilter show tooltip for non matching layer source', () => {
+        const container = document.getElementById('container');
+        ReactDOM.render(<CrossLayerFilter
+            layers={[{name: "test", url: "https://google.com"}, {name: 'test2', url: 'https://example.com'}]}
+            queryCollection={{
+                typeName: "test",
+                geometryName: "geometry"
+            }}
+            searchUrl="https://google.com"
+            operation="WITHIN"
+            spatialOperations={[{
+                id: "WITHIN",
+                name: "Within"
+            }]}
+        />, document.getElementById("container"));
+        const infoIcon = container.querySelector('.mapstore-info-popover');
+        expect(infoIcon).toExist();
+    });
+
+    it('Test CrossLayerFilter not show tooltip for matching layer source', () => {
+        const container = document.getElementById('container');
+        ReactDOM.render(<CrossLayerFilter
+            layers={[{name: "test", url: "https://google.com"}, {name: 'test2', url: 'https://google.com'}]}
+            queryCollection={{
+                typeName: "test",
+                geometryName: "geometry"
+            }}
+            searchUrl="https://google.com"
+            operation="WITHIN"
+            spatialOperations={[{
+                id: "WITHIN",
+                name: "Within"
+            }]}
+        />, document.getElementById("container"));
+        const infoIcon = container.querySelector('.mapstore-info-popover');
+        expect(infoIcon).toNotExist();
     });
 
 });

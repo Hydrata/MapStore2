@@ -6,42 +6,71 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const React = require('react');
-const { connect } = require('react-redux');
-const { createSelector } = require('reselect');
-const Timeline = require('./timeline/Timeline');
-const InlineDateTimeSelector = require('../components/time/InlineDateTimeSelector');
-const Toolbar = require('../components/misc/toolbar/Toolbar');
-const { offsetEnabledSelector, currentTimeSelector } = require('../selectors/dimension');
-const { currentTimeRangeSelector, isVisible, rangeSelector, timelineLayersSelector, isMapSync } = require('../selectors/timeline');
-const { mapLayoutValuesSelector } = require('../selectors/maplayout');
+import { head, isString } from 'lodash';
+import moment from 'moment';
+import assign from 'object-assign';
+import React, { useEffect } from 'react';
+import { Glyphicon } from 'react-bootstrap';
+import { connect } from 'react-redux';
+import {
+    branch,
+    compose,
+    defaultProps,
+    renderNothing,
+    setDisplayName,
+    withProps,
+    withState,
+    withStateHandlers
+} from 'recompose';
+import { createSelector } from 'reselect';
 
-const { withState, compose, branch, renderNothing, withStateHandlers, withProps, defaultProps, setDisplayName } = require('recompose');
-const withResizeSpy = require('../components/misc/enhancers/withResizeSpy');
-
-const { selectTime, enableOffset, onRangeChanged, setMapSync } = require('../actions/timeline');
-const { setCurrentOffset } = require('../actions/dimension');
-const Message = require('../components/I18N/Message');
-const { selectPlaybackRange } = require('../actions/playback');
-const { playbackRangeSelector, statusSelector } = require('../selectors/playback');
-
-const { Button: ButtonRB, Glyphicon } = require('react-bootstrap');
-const tooltip = require('../components/misc/enhancers/tooltip');
+import { setCurrentOffset } from '../actions/dimension';
+import { selectPlaybackRange } from '../actions/playback';
+import { enableOffset, onRangeChanged, selectTime, setMapSync, initTimeline } from '../actions/timeline';
+import Message from '../components/I18N/Message';
+import tooltip from '../components/misc/enhancers/tooltip';
+import withResizeSpy from '../components/misc/enhancers/withResizeSpy';
+import Toolbar from '../components/misc/toolbar/Toolbar';
+import InlineDateTimeSelector from '../components/time/InlineDateTimeSelector';
+import { currentTimeSelector, offsetEnabledSelector } from '../selectors/dimension';
+import { mapLayoutValuesSelector } from '../selectors/maplayout';
+import { playbackRangeSelector, statusSelector } from '../selectors/playback';
+import {
+    currentTimeRangeSelector,
+    isMapSync,
+    isVisible,
+    rangeSelector,
+    timelineLayersSelector
+} from '../selectors/timeline';
+import Timeline from './timeline/Timeline';
+import TimelineToggle from './timeline/TimelineToggle';
+import ButtonRB from '../components/misc/Button';
 const Button = tooltip(ButtonRB);
 
-const { head, isString} = require('lodash');
-const moment = require('moment');
 const isPercent = (val) => isString(val) && val.indexOf("%") !== -1;
 const getPercent = (val) => parseInt(val, 10) / 100;
 const isValidOffset = (start, end) => moment(end).diff(start) > 0;
 
 /**
   * Timeline Plugin. Shows the timeline tool on the map.
-  * To use with Playback plugin. {@link api/plugins#plugins.Playback}
-  * For configuration, see related reducer's documentation {@link api/framework#reducers.timeline}
+  * To use with Playback plugin. {@link #plugins.Playback|Playback}
+  * For configuration, see related {@link api/framework#reducers.timeline|reducer's documentation}
   * @class  Timeline
   * @memberof plugins
   * @static
+  * @prop cfg.showHiddenLayers {boolean} false by default, when *false* the layers in timeline gets in sync with time layer's visibility (TOC)
+  * i.e when a time layer is hidden or removed, the timeline will not show the respective guide layer.
+  * Furthermore, the timeline automatically selects the next available guide layer, if the **Snap to guide layer** option is enabled in the Timeline settings.
+  * If set to *true*, the hidden layer will be shown in the timeline.
+  *
+  * @example
+  * {
+  *   "name": "TimeLine",
+  *   "cfg": {
+  *       "showHiddenLayers": false
+  *    }
+  * }
+  *
   */
 const TimelinePlugin = compose(
     connect(
@@ -69,7 +98,8 @@ const TimelinePlugin = compose(
             onOffsetEnabled: enableOffset,
             setOffset: setCurrentOffset,
             setPlaybackRange: selectPlaybackRange,
-            moveRangeTo: onRangeChanged
+            moveRangeTo: onRangeChanged,
+            onInit: initTimeline
         }),
     branch(({ visible = true, layers = [] }) => !visible || Object.keys(layers).length === 0, renderNothing),
     withState('options', 'setOptions', {collapsed: true}),
@@ -94,6 +124,7 @@ const TimelinePlugin = compose(
             withResizeSpy({ querySelector: ".ms2", closest: true, debounceTime: 100 })
         ),
         defaultProps({
+            showHiddenLayers: false,
             style: {
                 marginBottom: 35,
                 marginLeft: 100,
@@ -146,8 +177,13 @@ const TimelinePlugin = compose(
         status,
         viewRange,
         moveRangeTo,
-        compactToolbar
+        compactToolbar,
+        showHiddenLayers,
+        onInit = () => {}
     }) => {
+        useEffect(()=>{
+            onInit(showHiddenLayers);
+        }, [onInit]);
 
         const { hideLayersName, collapsed } = options;
 
@@ -292,9 +328,7 @@ const TimelinePlugin = compose(
     }
 );
 
-const assign = require('object-assign');
-const TimelineToggle = require('./timeline/TimelineToggle');
-module.exports = {
+export default {
     TimelinePlugin: assign(TimelinePlugin, {
         disablePluginIf: "{state('mapType') === 'cesium'}",
         WidgetsTray: {
@@ -303,8 +337,8 @@ module.exports = {
         }
     }),
     reducers: {
-        dimension: require('../reducers/dimension'),
-        timeline: require('../reducers/timeline')
+        dimension: require('../reducers/dimension').default,
+        timeline: require('../reducers/timeline').default
     },
-    epics: require('../epics/timeline')
+    epics: require('../epics/timeline').default
 };

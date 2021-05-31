@@ -5,8 +5,9 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-var expect = require('expect');
-var ShareUtils = require('../ShareUtils');
+import expect from 'expect';
+
+import * as ShareUtils from '../ShareUtils';
 
 
 const MAPSTORE_PATH = "/mapstore/";
@@ -61,5 +62,9 @@ describe('ShareUtils test', () => {
         expect(ShareUtils.getSharedGeostoryUrl('http://test-url/#/geostory/111')).toBe(expectedURL);
         expect(ShareUtils.getSharedGeostoryUrl('http://test-url/#/geostory/newgeostory')).toBe('http://test-url/#/geostory/newgeostory');
         expect(ShareUtils.getSharedGeostoryUrl('http://test-url/#/other')).toBe('http://test-url/#/other');
+        expect(ShareUtils.getSharedGeostoryUrl('http://test-url/#/geostory/111/section/222', true)).toBe(expectedURL);
+        expect(ShareUtils.getSharedGeostoryUrl('http://test-url/#/geostory/111/section/222', false)).toBe(`${expectedURL}/section/222`);
+        expect(ShareUtils.getSharedGeostoryUrl('http://test-url/#/geostory/111/section/222/column/333', true)).toBe(expectedURL);
+        expect(ShareUtils.getSharedGeostoryUrl('http://test-url/#/geostory/111/section/222/column/333', false)).toBe(`${expectedURL}/section/222/column/333`);
     });
 });

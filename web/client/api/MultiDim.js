@@ -6,10 +6,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const ajax = require('../libs/ajax');
-// const {endsWith, replace} = require('lodash');
-const {Observable} = require('rxjs');
-const {parseXML, interceptOGCError} = require('../utils/ObservableUtils');
+import { endsWith, replace } from 'lodash';
+import { Observable } from 'rxjs';
+
+import ajax from '../libs/ajax';
+import { interceptOGCError, parseXML } from '../utils/ObservableUtils';
 
 // TODO: remove this. It should be automatically the correct address
 // const toMultiDimURL = url => endsWith(url, "wms") ? replace(url, "wms", "gwc/service/wmts") : url;
@@ -17,7 +18,7 @@ const toMultiDimURL = url => url;
 // this fixes temporary this issue
 // https://github.com/geosolutions-it/MapStore2/issues/3144
 // can be removed or replaced with identity function when the issue is fixed
-const trimUndefinedParams = o =>
+export const trimUndefinedParams = o =>
     Object.keys(o).reduce( (acc, k) =>
         (o[k] !== undefined && o[k] !== null)
             ? {...acc, [k]: o[k]}
@@ -32,7 +33,7 @@ const trimUndefinedParams = o =>
  * @param {object} options params of the request.
  * @returns a stream that emits the request result
  */
-const describeDomains = (url, layer, dimensionIdentifiers = {}, {
+export const describeDomains = (url, layer, dimensionIdentifiers = {}, {
     service = "WMTS",
     version = "1.0.0",
     tileMatrixSet = "EPSG:4326", // this is required because this is an option of WMTS,
@@ -55,7 +56,7 @@ const describeDomains = (url, layer, dimensionIdentifiers = {}, {
     }))
         .let(interceptOGCError)
         .switchMap(response => parseXML(response.data));
-const getHistogram = (url, layer, histogram, dimensionIdentifiers, resolution, {
+export const getHistogram = (url, layer, histogram, dimensionIdentifiers, resolution, {
     service = "WMTS",
     version = "1.1.0",
     tileMatrixSet = "EPSG:4326",
@@ -88,7 +89,7 @@ const getHistogram = (url, layer, histogram, dimensionIdentifiers, resolution, {
  * @param {object} pagination options for pagination. Can contain `fromValue`, `sort` (`asc` or `desc`) and `limit`.
  * @param {options} param4 other options
  */
-const getDomainValues = (url, layer, domain, {
+export const getDomainValues = (url, layer, domain, {
     time,
     fromValue,
     sort = "asc",
@@ -117,13 +118,27 @@ const getDomainValues = (url, layer, domain, {
 }))
     .let(interceptOGCError)
     .switchMap(response => parseXML(response.data));
+
+/**
+ * Tries to guess the layer's information form the URL.
+ * TODO: find out a better way to do this
+ * @param {string} url the wms layers wms URL
+ */
+export const getMultidimURL = ({ url } = {}) =>
+    endsWith(url, "/wms")
+        ? replace(url, /\/wms$/, "/gwc/service/wmts")
+        : endsWith(url, "/ows")
+            ? replace(url, /\/ows$/, "/gwc/service/wmts")
+            : url;
+
 /**
  * API for [WMTS Multidimensional](http://docs.geoserver.org/latest/en/user/community/wmts-multidimensional/index.html) that in the future
  * should be extended to WMS.
  *
  * @memberof api
  */
-module.exports = {
+export default {
+    getMultidimURL,
     describeDomains,
     getHistogram,
     getDomainValues

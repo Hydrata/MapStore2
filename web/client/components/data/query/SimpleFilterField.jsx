@@ -1,4 +1,4 @@
-const PropTypes = require('prop-types');
+
 /**
  * Copyright 2016, GeoSolutions Sas.
  * All rights reserved.
@@ -7,16 +7,19 @@ const PropTypes = require('prop-types');
  * LICENSE file in the root directory of this source tree.
  */
 
-const React = require('react');
-const {Panel, ButtonToolbar, Button, Tooltip} = require('react-bootstrap');
-const OverlayTrigger = require('../../misc/OverlayTrigger');
-const ComboField = require('./ComboField');
-const NumberField = require('./NumberField');
-const TextField = require('./TextField');
-const {isEqual, head, findIndex} = require('lodash');
+import PropTypes from 'prop-types';
+import React from 'react';
+import { Panel, ButtonToolbar, Tooltip } from 'react-bootstrap';
+import Button from '../../misc/Button';
+import OverlayTrigger from '../../misc/OverlayTrigger';
+import ComboField from './ComboField';
+import NumberField from './NumberField';
+import TextField from './TextField';
+import { isEqual, head, findIndex } from 'lodash';
 
 class SimpleFilterField extends React.Component {
     static propTypes = {
+        dropUp: PropTypes.bool,
         operator: PropTypes.string.isRequired,
         maxLabelSize: PropTypes.number,
         label: PropTypes.string,
@@ -224,6 +227,7 @@ class SimpleFilterField extends React.Component {
         return (
             <div>
                 <ComboField
+                    dropUp={this.props.dropUp}
                     valueField="val"
                     textField="text"
                     style={this.props.comboStyle}
@@ -321,4 +325,4 @@ class SimpleFilterField extends React.Component {
     };
 }
 
-module.exports = SimpleFilterField;
+export default SimpleFilterField;

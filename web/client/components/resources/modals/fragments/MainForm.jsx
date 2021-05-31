@@ -6,16 +6,18 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const React = require('react');
-const Message = require('../../../I18N/Message');
-const {Row, Col} = require('react-bootstrap');
-const Metadata = require('../../forms/Metadata');
-const Thumbnail = require('../../forms/Thumbnail');
-const FileDrop = require('../../forms/FileDrop').default;
-const uuid = require('uuid/v1');
+import React from 'react';
+import {Col, Row} from 'react-bootstrap';
+import uuid from 'uuid/v1';
 
-module.exports = class MainForm extends React.Component {
+import Message from '../../../I18N/Message';
+import FileDrop from '../../forms/FileDrop';
+import Metadata from '../../forms/Metadata';
+import Thumbnail from '../../forms/Thumbnail';
+
+class MainForm extends React.Component {
     render() {
+        /* eslint-disable */
         const {
             resource,
             linkedResources = {},
@@ -32,6 +34,7 @@ module.exports = class MainForm extends React.Component {
             nameFieldFilter = () => { },
             onUpdateLinkedResource = () => { }
         } = this.props;
+        /* eslint-enable */
         return (<Row>
             {enableFileDrop && <Col xs={12}>
                 <FileDrop
@@ -55,7 +58,7 @@ module.exports = class MainForm extends React.Component {
                     onRemove={() => onUpdateLinkedResource("thumbnail", "NODATA", "THUMBNAIL", {
                         tail: `/raw?decode=datauri&v=${uuid()}`
                     })}
-                    onUpdate={(data) => onUpdateLinkedResource("thumbnail", data, "THUMBNAIL", {
+                    onUpdate={(data) => onUpdateLinkedResource("thumbnail", data || "NODATA", "THUMBNAIL", {
                         tail: `/raw?decode=datauri&v=${uuid()}`
                     })} />
             </Col>
@@ -74,6 +77,6 @@ module.exports = class MainForm extends React.Component {
             </Col>
         </Row>);
     }
-};
+}
 
-
+export default MainForm;

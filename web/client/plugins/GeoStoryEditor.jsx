@@ -22,7 +22,8 @@ import {
     isFocusOnContentSelector,
     settingsSelector,
     settingsChangedSelector,
-    isEditAllowedSelector
+    isEditAllowedSelector,
+    currentStoryFonts
 } from '../selectors/geostory';
 import geostory from '../reducers/geostory';
 import {
@@ -38,12 +39,14 @@ import {
 } from '../actions/geostory';
 
 import Builder from '../components/geostory/builder/Builder';
-import { Modes, scrollToContent } from '../utils/GeoStoryUtils';
+import { Modes, scrollToContent, extractFontNames } from '../utils/GeoStoryUtils';
+import { basicError } from '../utils/NotificationUtils';
 import { createPlugin } from '../utils/PluginsUtils';
 import tooltip from '../components/misc/enhancers/tooltip';
 import { withRouter } from 'react-router';
 import { removeQueryFromUrl } from '../utils/ShareUtils';
-import { Button as ButtonRB, Glyphicon } from 'react-bootstrap';
+import { Glyphicon } from 'react-bootstrap';
+import ButtonRB from '../components/misc/Button';
 const Button = tooltip(ButtonRB);
 
 const EditButton = connect(
@@ -91,6 +94,7 @@ const GeoStoryEditor = ({
     settings = {},
     settingsItems,
     selected,
+    storyFonts = [],
     setEditingMode = () => {},
     onToggleCardPreview = () => {},
     onToggleSettingsPanel = () => {},
@@ -100,39 +104,44 @@ const GeoStoryEditor = ({
     onRemove = () => {},
     onUpdate = () => {},
     onSort = () => {}
-}) => (mode === Modes.EDIT && !isFocused ? <div
-    key="left-column"
-    className="ms-geostory-editor"
-    style={{ order: -1, width: 400, position: 'relative' }}>
-    <Builder
-        currentPage={currentPage}
-        isCollapsed={isCollapsed}
-        isSettingsChanged={isSettingsChanged}
-        isSettingsEnabled={isSettingsEnabled}
-        isToolbarEnabled={isToolbarEnabled}
-        mode={mode}
-        scrollTo={(id, options = { behavior: "smooth" }) => {
-            scrollToContent(id, options);
-        }}
-        selected={selected}
-        settings={settings}
-        settingsItems={settingsItems}
-        story={story}
+}) => {
+    return mode === Modes.EDIT && !isFocused ? <div
+        key="left-column"
+        className="ms-geostory-editor"
+        style={{ order: -1, width: 400, position: 'relative' }}>
+        <Builder
+            currentPage={currentPage}
+            isCollapsed={isCollapsed}
+            isSettingsChanged={isSettingsChanged}
+            isSettingsEnabled={isSettingsEnabled}
+            isToolbarEnabled={isToolbarEnabled}
+            mode={mode}
+            scrollTo={(id, options = { behavior: "smooth" }) => {
+                scrollToContent(id, options);
+            }}
+            selected={selected}
+            settings={settings}
+            settingsItems={settingsItems}
+            story={story}
+            storyFonts={extractFontNames(storyFonts)}
+            setEditing={setEditingMode}
+            onRemove={onRemove}
+            onSelect={onSelect}
+            onSort={onSort}
+            onToggleCardPreview={onToggleCardPreview}
+            onToggleSettings={onToggleSettings}
+            onToggleSettingsPanel={onToggleSettingsPanel}
+            onUpdate={onUpdate}
+            onUpdateSettings={onUpdateSettings}
+        />
+    </div> : null;
+};
 
-        setEditing={setEditingMode}
-        onRemove={onRemove}
-        onSelect={onSelect}
-        onSort={onSort}
-        onToggleCardPreview={onToggleCardPreview}
-        onToggleSettings={onToggleSettings}
-        onToggleSettingsPanel={onToggleSettingsPanel}
-        onUpdate={onUpdate}
-        onUpdateSettings={onUpdateSettings}
-    />
-</div> : null);
 /**
- * Plugin for GeoStory side panel editor
+ * Plugin for GeoStory side panel editor. Allows editing of {@link #plugins.GeoStory|GeoStory},
+ * turning it in edit mode.
  * @name GeoStoryEditor
+ * @class
  * @memberof plugins
  */
 export default createPlugin('GeoStoryEditor', {
@@ -148,7 +157,8 @@ export default createPlugin('GeoStoryEditor', {
             isToolbarEnabled: isToolbarEnabledSelector,
             selected: selectedCardSelector,
             isSettingsEnabled: isSettingsEnabledSelector,
-            isFocused: isFocusOnContentSelector
+            isFocused: isFocusOnContentSelector,
+            storyFonts: currentStoryFonts
         }), {
             setEditingMode: setEditing,
             onUpdateSettings: updateSetting,
@@ -158,7 +168,8 @@ export default createPlugin('GeoStoryEditor', {
             onRemove: remove,
             onSelect: selectCard,
             onSort: move,
-            onUpdate: update
+            onUpdate: update,
+            onBasicError: basicError
         }
     )(GeoStoryEditor),
     containers: {

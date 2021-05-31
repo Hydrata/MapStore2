@@ -6,22 +6,30 @@
 * LICENSE file in the root directory of this source tree.
 */
 
-const React = require('react');
-const {connect} = require('react-redux');
-const {Glyphicon, Button} = require('react-bootstrap');
-const ConfirmButton = require('../components/buttons/ConfirmButton');
-const Dialog = require('../components//misc/Dialog');
-const Portal = require('../components/misc/Portal');
-const Message = require('./locale/Message');
-const {isEqual} = require('lodash');
-const {toggleControl} = require('../actions/controls');
-const {setSearchConfigProp, updateService, restServiceConfig} = require('../actions/searchconfig');
+import React from 'react';
 
-const ServiceList = require('../components/mapcontrols/searchservicesconfig/ServicesList.jsx');
-const WFSServiceProps = require('../components/mapcontrols/searchservicesconfig/WFSServiceProps.jsx');
-const ResultsProps = require('../components/mapcontrols/searchservicesconfig/ResultsProps.jsx');
-const WFSOptionalProps = require('../components/mapcontrols/searchservicesconfig/WFSOptionalProps.jsx');
-const PropTypes = require('prop-types');
+import { connect } from 'react-redux';
+import { createSelector } from 'reselect';
+import { Glyphicon } from 'react-bootstrap';
+import ConfirmButton from '../components/buttons/ConfirmButton';
+import Dialog from '../components//misc/Dialog';
+import Portal from '../components/misc/Portal';
+import Message from './locale/Message';
+import get from 'lodash/get';
+import isEqual from 'lodash/isEqual';
+import { toggleControl } from '../actions/controls';
+import { setSearchConfigProp, updateService, restServiceConfig } from '../actions/searchconfig';
+import ServiceList from '../components/mapcontrols/searchservicesconfig/ServicesList.jsx';
+import WFSServiceProps from '../components/mapcontrols/searchservicesconfig/WFSServiceProps.jsx';
+import ResultsProps from '../components/mapcontrols/searchservicesconfig/ResultsProps.jsx';
+import WFSOptionalProps from '../components/mapcontrols/searchservicesconfig/WFSOptionalProps.jsx';
+import PropTypes from 'prop-types';
+import ButtonMisc from '../components/misc/Button';
+import tooltip from '../components/misc/enhancers/tooltip';
+import { createPlugin } from '../utils/PluginsUtils';
+import searchconfigReducer from '../reducers/searchconfig';
+
+const Button = tooltip(ButtonMisc);
 
 /**
  * Text Search Services Editor Plugin. Allow to add and edit additional
@@ -218,9 +226,55 @@ const SearchServicesPlugin = connect(({controls = {}, searchconfig = {}}) => ({
     restServiceConfig,
     updateService})(SearchServicesConfigPanel);
 
-module.exports = {
-    SearchServicesConfigPlugin: SearchServicesPlugin,
-    reducers: {
-        searchconfig: require('../reducers/searchconfig')
+function SearchServiceButton({
+    activeTool,
+    enabled,
+    onToggleControl
+}) {
+
+    if (activeTool === 'addressSearch') {
+        return (<Button
+            bsStyle="default"
+            pullRight
+            className="square-button-md no-border"
+            tooltipId="search.searchservicesbutton"
+            tooltipPosition="bottom"
+            onClick={() => {
+                if (!enabled) {
+                    onToggleControl('searchservicesconfig');
+                }
+            }}
+        >
+            <Glyphicon glyph="cog"/>
+        </Button>);
     }
-};
+
+    return null;
+}
+
+const ConnectedSearchServicesConfigButton = connect(
+    createSelector([
+        state => state.search || null,
+        state => state?.controls?.searchservicesconfig?.enabled || false
+    ], (searchState, enabled) => ({
+        activeTool: get(searchState, 'activeSearchTool', 'addressSearch'),
+        enabled
+    })),
+    {
+        onToggleControl: toggleControl
+    }
+)(SearchServiceButton);
+
+export default createPlugin('SearchServicesConfig', {
+    component: SearchServicesPlugin,
+    containers: {
+        Search: {
+            name: 'SearchServicesConfigButton',
+            target: 'button',
+            component: ConnectedSearchServicesConfigButton
+        }
+    },
+    reducers: {
+        searchconfig: searchconfigReducer
+    }
+});

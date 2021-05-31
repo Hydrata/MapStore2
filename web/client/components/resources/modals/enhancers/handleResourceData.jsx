@@ -5,43 +5,63 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const React = require('react');
-const { compose, withStateHandlers, withState, branch, withHandlers, renderComponent} = require('recompose');
-const {set} = require('../../../../utils/ImmutableUtils');
-const Message = require('../../../I18N/Message');
-const ConfirmDialog = require('../ConfirmModal');
+
+import {isString} from 'lodash';
+import React from 'react';
+import { branch, compose, renderComponent, withHandlers, withState, withStateHandlers } from 'recompose';
+
+import {set} from '../../../../utils/ImmutableUtils';
+import Message from '../../../I18N/Message';
+import ConfirmDialog from '../ConfirmModal';
 
 /**
  * Enhancer to manage resource data for a Save dialog.
  * Stores the original data to handle changes.
  */
-module.exports = compose(
+export default compose(
     withStateHandlers(
-        ({resource = {}}) => ({
-            originalData: resource,
-            metadata: {
-                name: resource.name,
-                description: resource.description
-            },
-            attributes: {
-                ...resource.attributes,
-                context: resource.context || resource.attributes && resource.attributes.context
-            },
-            resource: {
-                id: resource.id,
-                attributes: {
-                    ...resource.attributes,
-                    context: resource.context || resource.attributes && resource.attributes.context
-                },
+        ({resource = {}, linkedResources = {}}) => {
+            const detailsSettingsString = resource.detailsSettings || resource.attributes?.detailsSettings;
+            let detailsSettings = {};
+
+            if (isString(detailsSettingsString)) {
+                try {
+                    detailsSettings = JSON.parse(detailsSettingsString);
+                } catch (e) {
+                    detailsSettings = {};
+                }
+            } else {
+                detailsSettings = detailsSettingsString || {};
+            }
+
+            return {
+                originalData: resource,
                 metadata: {
                     name: resource.name,
                     description: resource.description
                 },
-                createdAt: resource.creation,
-                modifiedAt: resource.lastUpdate
-            }
-
-        }),
+                attributes: {
+                    ...resource.attributes,
+                    context: resource.context || resource.attributes && resource.attributes.context,
+                    detailsSettings
+                },
+                resource: {
+                    id: resource.id,
+                    attributes: {
+                        ...resource.attributes,
+                        context: resource.context || resource.attributes && resource.attributes.context,
+                        detailsSettings
+                    },
+                    metadata: {
+                        name: resource.name,
+                        description: resource.description
+                    },
+                    createdAt: resource.creation,
+                    modifiedAt: resource.lastUpdate
+                },
+                linkedResources
+            };
+        },
         {
             onUpdate: ({resource}) => (key, value) => ({
                 hasChanges: true,

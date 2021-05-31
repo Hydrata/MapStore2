@@ -5,18 +5,17 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const React = require('react');
-const {InputGroup, Glyphicon} = require('react-bootstrap');
-
-const localizedProps = require('../misc/enhancers/localizedProps');
+import React from 'react';
+import { InputGroup, Glyphicon } from 'react-bootstrap';
+import localizedProps from '../misc/enhancers/localizedProps';
 const Select = localizedProps(['placeholder', 'clearValueText', 'noResultsText'])(require('react-select').default);
 
-module.exports = ({
-    isValidServiceSelected,
+export default ({
     services,
     selectedService,
+    onChangeSelectedService = () => {},
     onChangeCatalogMode = () => {},
-    onChangeSelectedService = () => {}
+    isValidServiceSelected
 }) => (<InputGroup>
     <Select
         clearValueText={"catalog.clearValueText"}

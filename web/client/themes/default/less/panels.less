@@ -9,6 +9,7 @@
             > div {
                 pointer-events: auto;
                 position: absolute !important;
+                transition: none !important; // See if it can be changes
             }
         }
     }
@@ -223,4 +224,8 @@
     top: 15%;
     width: 500px;
     left: ~"calc((100% - 500px) / 2)";
+}
+
+#viewer #share-panel-dialog {
+    top: -10%;
 }

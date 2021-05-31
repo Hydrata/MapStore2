@@ -15,6 +15,8 @@ import { getPluginForTest } from './pluginsTestUtils';
 import ReactTestUtils from 'react-dom/test-utils';
 import { TOGGLE_CONTROL } from '../../actions/controls';
 import { PURGE_MAPINFO_RESULTS, HIDE_MAPINFO_MARKER } from '../../actions/mapInfo';
+import mapInfo from '../../reducers/mapInfo';
+import search from '../../reducers/search';
 
 describe('Share Plugin', () => {
     beforeEach(() => {
@@ -43,6 +45,22 @@ describe('Share Plugin', () => {
         ReactDOM.render(<Plugin />, document.getElementById("container"));
         expect(document.getElementById('share-panel-dialog')).toExist();
         done();
+    });
+
+    it('Checks Share plugin supported containers', () => {
+        const controls = {
+            share: {
+                enabled: true
+            }
+        };
+        const { containers } = getPluginForTest(SharePlugin, { controls }, {
+            ToolbarPlugin: {},
+            BurgerMenuPlugin: {}
+        });
+        expect(Object.keys(containers).length).toBe(2);
+        expect(Object.keys(containers)).toEqual(['BurgerMenu', 'Toolbar']);
+        expect(containers.Toolbar).toContain({alwaysVisible: true, doNotHide: true});
+        expect(containers.BurgerMenu).toContain({position: 1000, priority: 1, doNotHide: true});
     });
 
     it('test Share plugin on close', (done) => {
@@ -422,5 +440,47 @@ describe('Share Plugin', () => {
         expect(toNumber(inputLinks[2].value)).toBe(-89.01);
         done();
     });
+    it('test Share plugin with markerAndZoom', () => {
+        let storeState = {
+            map: {
+                center: {
+                    crs: "EPSG:4326",
+                    x: -86.25,
+                    y: 38.07
+                },
+                zoom: 5
+            },
+            controls: {
+                share: {
+                    enabled: true,
+                    settings: {
+                        centerAndZoomEnabled: true
+                    }
+                }
+            },
+            search: {
+                markerPosition: {latlng: {lat: 40, lng: -80}}
+            }
+        };
+        const props = {
+            advancedSettings: {
+                centerAndZoom: true,
+                defaultEnabled: "markerAndZoom"
+            }
+        };
+        const {Plugin} = getPluginForTest({...SharePlugin, reducers: {
+            mapInfo,
+            search
+        }}, storeState);
+        ReactDOM.render(<Plugin {...props}/>, document.getElementById("container"));
 
+        expect(document.getElementById('share-panel-dialog')).toExist();
+        let inputLink = document.querySelectorAll('input.form-control');
+        let lat = inputLink[1];
+        let lon = inputLink[2];
+        let zoom = inputLink[3];
+        expect(toNumber(lat.value)).toBe(40);
+        expect(toNumber(lon.value)).toBe(-80);
+        expect(toNumber(zoom.value)).toBe(5);
+    });
 });

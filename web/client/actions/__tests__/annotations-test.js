@@ -6,10 +6,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const expect = require('expect');
-const {isFunction} = require('lodash');
+import expect from 'expect';
 
-const {
+import { isFunction } from 'lodash';
+
+import {
     EDIT_ANNOTATION,
     REMOVE_ANNOTATION,
     CONFIRM_REMOVE_ANNOTATION,
@@ -32,14 +33,22 @@ const {
     HIGHLIGHT,
     CLEAN_HIGHLIGHT,
     FILTER_ANNOTATIONS,
-    addText, ADD_TEXT,
-    CHANGE_FORMAT, changeFormat,
-    changedProperties, CHANGED_PROPERTIES,
-    toggleUnsavedStyleModal, TOGGLE_STYLE_MODAL,
-    startDrawing, START_DRAWING,
-    toggleUnsavedChangesModal, TOGGLE_CHANGES_MODAL,
-    setUnsavedStyle, UNSAVED_STYLE,
-    setUnsavedChanges, UNSAVED_CHANGES,
+    addText,
+    ADD_TEXT,
+    CHANGE_FORMAT,
+    changeFormat,
+    changedProperties,
+    CHANGED_PROPERTIES,
+    toggleUnsavedStyleModal,
+    TOGGLE_STYLE_MODAL,
+    startDrawing,
+    START_DRAWING,
+    toggleUnsavedChangesModal,
+    TOGGLE_CHANGES_MODAL,
+    setUnsavedStyle,
+    UNSAVED_STYLE,
+    setUnsavedChanges,
+    UNSAVED_CHANGES,
     editAnnotation,
     removeAnnotation,
     confirmRemoveAnnotation,
@@ -74,8 +83,19 @@ const {
     TOGGLE_DELETE_FT_MODAL, toggleDeleteFtModal,
     ADD_NEW_FEATURE, addNewFeature,
     LOAD_ANNOTATIONS, loadAnnotations,
-    UPDATE_SYMBOLS, updateSymbols
-} = require('../annotations');
+    UPDATE_SYMBOLS, updateSymbols,
+    SET_DEFAULT_STYLE, setDefaultStyle,
+    LOAD_DEFAULT_STYLES, loadDefaultStyles,
+    LOADING, loading,
+    TOGGLE_ANNOTATION_VISIBILITY, toggleVisibilityAnnotation,
+    CHANGE_GEOMETRY_TITLE, changeGeometryTitle,
+    FILTER_MARKER, filterMarker,
+    GEOMETRY_HIGHLIGHT, geometryHighlight,
+    INIT_PLUGIN, initPlugin,
+    TOGGLE_SHOW_AGAIN, toggleShowAgain,
+    HIDE_MEASURE_WARNING, hideMeasureWarning,
+    UNSELECT_FEATURE, unSelectFeature
+} from '../annotations';
 
 describe('Test correctness of the annotations actions', () => {
     it('edit annotation', (done) => {
@@ -159,9 +179,10 @@ describe('Test correctness of the annotations actions', () => {
         expect(result.format).toEqual(format);
     });
     it('confirm remove annotation', () => {
-        const result = confirmRemoveAnnotation('1');
+        const result = confirmRemoveAnnotation('1', 'geometry');
         expect(result.type).toEqual(CONFIRM_REMOVE_ANNOTATION);
         expect(result.id).toEqual('1');
+        expect(result.attribute).toEqual('geometry');
     });
     it('changedProperties', () => {
         const field = "desc";
@@ -186,12 +207,19 @@ describe('Test correctness of the annotations actions', () => {
         expect(result.unsavedStyle).toEqual(true);
     });
     it('cancel edit annotation', () => {
-        const result = cancelEditAnnotation();
+        const result = cancelEditAnnotation({id: 1});
         expect(result.type).toEqual(CANCEL_EDIT_ANNOTATION);
+        expect(result.properties).toEqual({id: 1});
     });
     it('startDrawing', () => {
         const result = startDrawing();
         expect(result.type).toEqual(START_DRAWING);
+    });
+    it('startDrawing with options', () => {
+        const options = {geodesic: false};
+        const result = startDrawing(options);
+        expect(result.type).toEqual(START_DRAWING);
+        expect(result.options).toEqual(options);
     });
     it('toggleUnsavedChangesModal', () => {
         const result = toggleUnsavedChangesModal();
@@ -250,8 +278,9 @@ describe('Test correctness of the annotations actions', () => {
     });
 
     it('remove annotation geometry', () => {
-        const result = removeAnnotationGeometry();
+        const result = removeAnnotationGeometry('1');
         expect(result.type).toEqual(REMOVE_ANNOTATION_GEOMETRY);
+        expect(result.id).toBe('1');
     });
 
     it('shows annotation', () => {
@@ -293,8 +322,9 @@ describe('Test correctness of the annotations actions', () => {
     });
 
     it('confirm close annotations', () => {
-        const result = confirmCloseAnnotations();
+        const result = confirmCloseAnnotations({id: 1});
         expect(result.type).toEqual(CONFIRM_CLOSE_ANNOTATIONS);
+        expect(result.properties).toEqual({id: 1});
     });
 
     it('changeRadius', () => {
@@ -348,5 +378,63 @@ describe('Test correctness of the annotations actions', () => {
         expect(result.type).toEqual(LOAD_ANNOTATIONS);
         expect(result.features).toExist();
         expect(result.override).toBe(false);
+    });
+    it('setDefaultStyle', () => {
+        const result = setDefaultStyle('POINT.symbol', {size: 64});
+        expect(result.type).toBe(SET_DEFAULT_STYLE);
+        expect(result.path).toBe('POINT.symbol');
+        expect(result.style).toEqual({size: 64});
+    });
+    it('loadDefaultStyles', () => {
+        const result = loadDefaultStyles('circle', 64, '#0000FF', '#00FF00', '/path/to/symbols');
+        expect(result.type).toBe(LOAD_DEFAULT_STYLES);
+        expect(result.shape).toBe('circle');
+        expect(result.size).toBe(64);
+        expect(result.fillColor).toBe('#0000FF');
+        expect(result.strokeColor).toBe('#00FF00');
+        expect(result.symbolsPath).toBe('/path/to/symbols');
+    });
+    it('loading', () => {
+        const result = loading(true, 'loadingFlag');
+        expect(result.type).toBe(LOADING);
+        expect(result.value).toBe(true);
+        expect(result.name).toBe('loadingFlag');
+    });
+    it('toggleVisibilityAnnotation ', () => {
+        const result = toggleVisibilityAnnotation('1');
+        expect(result.type).toBe(TOGGLE_ANNOTATION_VISIBILITY);
+        expect(result.id).toBe('1');
+    });
+    it('changeGeometryTitle ', () => {
+        const result = changeGeometryTitle('New title');
+        expect(result.type).toBe(CHANGE_GEOMETRY_TITLE);
+        expect(result.title).toBe('New title');
+    });
+    it('filterMarker ', () => {
+        const result = filterMarker('glass');
+        expect(result.type).toBe(FILTER_MARKER);
+        expect(result.filter).toBe('glass');
+    });
+    it('geometryHighlight ', () => {
+        const result = geometryHighlight('1', false);
+        expect(result.type).toBe(GEOMETRY_HIGHLIGHT);
+        expect(result.id).toBe('1');
+        expect(result.state).toBe(false);
+    });
+    it('initPlugin ', () => {
+        const result = initPlugin();
+        expect(result.type).toBe(INIT_PLUGIN);
+    });
+    it('toggleShowAgain ', () => {
+        const result = toggleShowAgain('glass');
+        expect(result.type).toBe(TOGGLE_SHOW_AGAIN);
+    });
+    it('hideMeasureWarning ', () => {
+        const result = hideMeasureWarning();
+        expect(result.type).toBe(HIDE_MEASURE_WARNING);
+    });
+    it('unSelectFeature ', () => {
+        const result = unSelectFeature();
+        expect(result.type).toBe(UNSELECT_FEATURE);
     });
 });

@@ -8,7 +8,7 @@ theme:
     tabs: true
   logo: 'img/mapstore2-logo.png'
   company_url: 'http://www.geo-solutions.it'
-  company_contacts: 'GeoSolutions S.a.s. | Via di Montramito 3/A, 55054 Massarosa (Lucca) - Italy info@geo-solutions.it | Tel: +39 0584 962313 | Fax: +39 0584 1660272'
+  company_contacts: 'GeoSolutions | info@geosolutionsgroup.com | US +1 (301) 337-7055 - Italy: +39 0584 962313'
   palette:
     primary: 'teal'
     accent: 'teal'
@@ -19,10 +19,13 @@ extra:
   repo_icon: 'github'
   social:
     - type: 'github'
+      icon: 'fontawesome/brands/github'
       link: 'https://github.com/geosolutions-it'
     - type: 'twitter'
+      icon: 'fontawesome/brands/twitter'
       link: 'https://twitter.com/geosolutions_it'
     - type: 'linkedin'
+      icon: 'fontawesome/brands/linkedin'
       link: 'https://it.linkedin.com/company/geosolutions-s-a-s-'
 extra_javascript:
   - 'https://code.jquery.com/jquery-3.3.1.min.js'
@@ -31,6 +34,7 @@ extra_css:
 repo_name: 'geosolutions-it/MapStore2'
 repo_url: 'https://github.com/geosolutions-it/MapStore2/'
 repo_issues: 'https://github.com/geosolutions-it/MapStore2/issues'
+repo_issues_doc: 'https://github.com/geosolutions-it/MapStore2/issues/new/choose'
 edit_uri: ''
 docs_dir: 'docs'
 markdown_extensions:
@@ -60,6 +64,7 @@ pages:
       - Filtering Layers: 'user-guide/filtering-layers.md'
       - Attribute Table: 'user-guide/attributes-table.md'
       - Widgets: 'user-guide/widgets.md'
+      - Export Layer Data: 'user-guide/export-data.md'
       - Menu Bar: 'user-guide/menu-bar.md'
       - Printing a Map: 'user-guide/print.md'
       - Importing and Exporting Files: 'user-guide/import.md'
@@ -78,6 +83,7 @@ pages:
       - Overview: 'user-guide/exploring-stories.md'
       - Story Settings: 'user-guide/story-setting.md'
       - Title Section: 'user-guide/title-section.md'
+      - Banner Section: 'user-guide/banner-section.md'
       - Paragraph Section: 'user-guide/paragraph-section.md'
       - Immersive Section: 'user-guide/immersive-section.md'
       - Media Section: 'user-guide/media-section.md'
@@ -105,6 +111,8 @@ pages:
       - Custom dependencies: 'developer-guide/custom-dependencies.md'
       - Styling and theming: 'developer-guide/customize-theme.md'
       - Application tutorial: 'developer-guide/application-tutorial.md'
+      - Working with Extensions: 'developer-guide/extensions.md'
+      - Printing Module: 'developer-guide/printing-module.md'
       - FAQ: 'developer-guide/dev-faq.md'
     - Guidelines:
       - Code Conventions: 'developer-guide/code-conventions.md'
@@ -122,6 +130,7 @@ pages:
       - Configuring plugins: 'developer-guide/plugins-documentation.md'
       - Map Configuration: 'developer-guide/maps-configuration.md'
       - Externalize Configuration: 'developer-guide/externalized-configuration.md'
+      - Configuration of Application Context Manager: 'developer-guide/context-editor-config.md'
     - Database Setup: 'developer-guide/database-setup.md'
     - Integrations:
       - users:

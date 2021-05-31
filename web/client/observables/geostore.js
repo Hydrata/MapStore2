@@ -8,7 +8,7 @@
 
 import { Observable } from 'rxjs';
 import uuid from 'uuid/v1';
-import { includes, isNil, omit, isArray, isObject, get } from 'lodash';
+import { includes, isNil, omit, isArray, isObject, get, find } from 'lodash';
 import GeoStoreDAO from '../api/GeoStoreDAO';
 
 const createLinkedResourceURL = (id, tail = "") => `rest/geostore/data/${id}${tail}`;
@@ -68,7 +68,7 @@ const updateOrDeleteLinkedResource = (id, attributeName, linkedResource = {}, re
             .switchMap( () => Observable.fromPromise( API.updateResourceAttribute(id, attributeName, "NODATA")))
         // update flow.
         : Observable.forkJoin([
-            API.putResource(resourceId, linkedResource.data)
+            Observable.defer(() => API.putResource(resourceId, linkedResource.data))
                 .switchMap(() => Observable.defer(() => API.updateResourceAttribute(id, attributeName, createLinkedResourceURL(resourceId, linkedResource.tail)))),
             ...(permission ? [updateResourcePermissions(resourceId, permission, API)] : [])
         ]);
@@ -76,13 +76,14 @@ const updateOrDeleteLinkedResource = (id, attributeName, linkedResource = {}, re
 
 /**
  * Creates a resource on GeoStore and link it to the current resource. Can be used for thumbnails, details and so on
+ * If the data for the resource is "NODATA", it won't be created.
  * @param {number} id the id of the resource
  * @param {string} attributeName the name of the attribute to link
  * @param {object} linkedResource the resource object of the resource to link. This resource have a tail option that can be used to add options URL of the link
  * @param {object} API the API to use (default GeoStoreDAO)
  */
 const createLinkedResource = (id, attributeName, linkedResource, permission, API = GeoStoreDAO) =>
-    Observable.defer(() =>
+    linkedResource.data !== 'NODATA' ? Observable.defer(() =>
         API.createResource({
             name: `${id}-${attributeName}-${uuid()}`
         },
@@ -98,7 +99,7 @@ const createLinkedResource = (id, attributeName, linkedResource, permission, API
                 ...(permission ? [updateResourcePermissions(linkedResourceId, permission, API)] : [])
 
             ]).map(() => linkedResourceId)
-        );
+        ) : Observable.of(-1);
 
 /**
  * Updates a linked resource. Check if the resource already exists as attribute.
@@ -113,15 +114,16 @@ const createLinkedResource = (id, attributeName, linkedResource, permission, API
  */
 const updateLinkedResource = (id, attributeName, linkedResource, permission, API = GeoStoreDAO) =>
     Observable.defer(
-        () => API.getResourceAttribute(id, attributeName)
-    ).pluck('data')
-        .switchMap(
-            attributeValue => getResourceIdFromURL(attributeValue)
+        () => API.getResourceAttributes(id)
+    )
+        .switchMap(attributes => {
+            const attributeValue = find(attributes, {name: attributeName})?.value;
+            return getResourceIdFromURL(attributeValue)
                 ? updateOrDeleteLinkedResource(id, attributeName, linkedResource, getResourceIdFromURL(attributeValue), permission, API)
-                : createLinkedResource(id, attributeName, linkedResource, permission, API)
-        ).catch(
-        /* if the attribute doesn't exists or if the linked resource update gave an error
-         * you have to create a new resource for the linked resource.
+                : createLinkedResource(id, attributeName, linkedResource, permission, API);
+        }).catch(
+        /* If the linked resource update gave an error
+         * you have to create a new resource for the linked resource, provided it has valid data.
          * This error can occur if:
          *  - The resource is new
          *  - The resource URL is present as attribute of the main resource but the linked resource doesn't exist anymore.
@@ -291,9 +293,11 @@ export const createCategory = (category, API = GeoStoreDAO) =>
  * @return an observable that emits the id of the updated resource
  */
 
-export const updateResource = ({ id, data, permission, metadata, linkedResources = {} } = {}, API = GeoStoreDAO) =>
-// update metadata
-    Observable.forkJoin([
+export const updateResource = ({ id, data, permission, metadata, linkedResources = {} } = {}, API = GeoStoreDAO) => {
+    const linkedResourcesKeys = Object.keys(linkedResources);
+
+    // update metadata
+    return Observable.forkJoin([
         // update data and permissions after data updated
         Observable.defer(
             () => API.putResourceMetadataAndAttributes(id, metadata)
@@ -304,17 +308,18 @@ export const updateResource = ({ id, data, permission, metadata, linkedResources
                     () => API.putResource(id, data)
                 )
                 : Observable.of(res))
-            .switchMap((res)=> permission ? Observable.defer(()=>updateResourcePermissions(id, permission, API)) : Observable.of(res)),
+            .switchMap((res) => permission ? Observable.defer(() => updateResourcePermissions(id, permission, API)) : Observable.of(res)),
         // update linkedResources and permissions after linkedResources updated
-        ...(
-            Object.keys(linkedResources).map(
+        (linkedResourcesKeys.length > 0 ? Observable.forkJoin(
+            ...linkedResourcesKeys.map(
                 attributeName => updateLinkedResource(id, attributeName, linkedResources[attributeName], permission, API)
-                    .switchMap((res)=>permission ?
-                        Observable.defer(()=> updateOtherLinkedResourcesPermissions(id, linkedResources, permission, API))
-                        : Observable.of(res))
             )
-        )
+        ) : Observable.of([]))
+            .switchMap(() => permission ?
+                Observable.defer(() => updateOtherLinkedResourcesPermissions(id, linkedResources, permission, API)) :
+                Observable.of(-1))
     ]).map(() => id);
+};
 
 /**
  * Deletes a resource and Its linked attributes

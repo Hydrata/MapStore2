@@ -5,13 +5,17 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const React = require('react');
-const expect = require('expect');
-const ReactDOM = require('react-dom');
-const FeatureInfo = require('../FeatureInfo');
-const MapInfoUtils = require('../../../../../utils/MapInfoUtils');
-const defaultInfoFormat = MapInfoUtils.getAvailableInfoFormat();
-const TestUtils = require('react-dom/test-utils');
+
+import expect from 'expect';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import TestUtils from 'react-dom/test-utils';
+
+import {getAvailableInfoFormat} from '../../../../../utils/MapInfoUtils';
+import FeatureInfo from '../FeatureInfo';
+
+const defaultInfoFormat = getAvailableInfoFormat();
+
 
 const formatCards = {
     TEXT: {
@@ -72,5 +76,11 @@ describe("test FeatureInfo", () => {
         const sideCards = document.getElementsByClassName('mapstore-side-card');
         expect(sideCards.length).toBe(4);
         TestUtils.Simulate.click(sideCards[0]);
+    });
+
+    it('test rendering with supported infoFormats from layer props', () => {
+        ReactDOM.render(<FeatureInfo element={{infoFormats: ["text/html", "text/plain"]}} formatCards={formatCards} defaultInfoFormat={defaultInfoFormat} />, document.getElementById("container"));
+        const testComponent = document.getElementsByClassName('test-preview');
+        expect(testComponent.length).toBe(2);
     });
 });

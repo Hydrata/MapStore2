@@ -6,11 +6,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const expect = require('expect');
-const {
-    MAP_TYPE_CHANGED,
-    changeMapType
-} = require('../maptype');
+import expect from 'expect';
+
+import { MAP_TYPE_CHANGED, changeMapType, updateLast2dMapType, UPDATE_LAST_2D_MAPTYPE } from '../maptype';
 
 describe('Test correctness of the maptype actions', () => {
 
@@ -19,5 +17,11 @@ describe('Test correctness of the maptype actions', () => {
         expect(retVal).toExist();
         expect(retVal.type).toBe(MAP_TYPE_CHANGED);
         expect(retVal.mapType).toBe('maptype');
+    });
+    it('updateLast2dMapType', () => {
+        const retVal = updateLast2dMapType("leaflet");
+        expect(retVal).toExist();
+        expect(retVal.type).toBe(UPDATE_LAST_2D_MAPTYPE);
+        expect(retVal.mapType).toBe('leaflet');
     });
 });

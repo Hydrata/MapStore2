@@ -8,8 +8,9 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Glyphicon, Button } from 'react-bootstrap';
+import { Glyphicon } from 'react-bootstrap';
 
+import Button from '../../misc/Button';
 import ToolbarPopover from './ToolbarPopover';
 
 import Toolbar from '../../misc/toolbar/Toolbar';
@@ -51,6 +52,7 @@ class AddBar extends React.Component {
         return (
             <ToolbarPopover
                 className="add-bar"
+                popoverClassName="add-bar-popover"
                 content={(
                     <Toolbar
                         btnDefaultProps={{ className: 'square-button btn-tray' }}

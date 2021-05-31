@@ -6,31 +6,52 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const React = require('react');
-const PropTypes = require('prop-types');
-const Message = require("../../plugins/locale/Message");
-const {FormControl, FormGroup, ControlLabel} = require('react-bootstrap');
+import React from 'react';
+
+import PropTypes from 'prop-types';
+import Message from '../../plugins/locale/Message';
+import { FormControl, FormGroup, ControlLabel } from 'react-bootstrap';
 
 
 class FeatureInfoTriggerSelector extends React.Component {
     static propTypes = {
         trigger: PropTypes.string,
-        onTriggerChange: PropTypes.func
+        onSetMapTrigger: PropTypes.func,
+        onPurgeMapInfoResults: PropTypes.func,
+        onHideMapinfoMarker: PropTypes.func,
+        hoverEnabled: PropTypes.bool
     }
+    static defaultProps = {
+        hoverEnabled: true,
+        onSetMapTrigger: () => {},
+        onPurgeMapInfoResults: () => {},
+        onHideMapinfoMarker: () => {}
+    }
+
+    /* #6870 in the following, we clear results because when passing from hover to click
+        the identify panel gets opened
+        (because it has some responses in the current state) while it should not
+    */
+    onChange = (event) => {
+        this.props.onSetMapTrigger(event.target.value);
+        this.props.onPurgeMapInfoResults();
+        this.props.onHideMapinfoMarker();
+    }
+
     render() {
         return (
             <FormGroup bsSize="small">
                 <ControlLabel>{<Message msgId="infoTriggerLabel" />}</ControlLabel>
                 <FormControl
-                    value={this.props.trigger}
+                    value={this.props.hoverEnabled ? this.props.trigger : "click"}
                     componentClass="select"
-                    onChange={this.props.onTriggerChange}>
+                    onChange={this.onChange}>
                     <option value="click" key="click">Click</option>
-                    <option value="hover" key="hover">Hover</option>
+                    <option disabled={!this.props.hoverEnabled} value="hover" key="hover">Hover</option>
                 </FormControl>
             </FormGroup>
         );
     }
 }
 
-module.exports = FeatureInfoTriggerSelector;
+export default FeatureInfoTriggerSelector;

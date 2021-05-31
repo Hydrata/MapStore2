@@ -6,25 +6,26 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const React = require('react');
-const {connect} = require('react-redux');
+import React from 'react';
+import {connect} from 'react-redux';
 
-const { compose, renameProps, branch, renderComponent} = require('recompose');
+import { compose, renameProps, branch, renderComponent} from 'recompose';
 
-const BorderLayout = require('../../components/layout/BorderLayout');
+import BorderLayout from '../../components/layout/BorderLayout';
+import {insertWidget, onEditorChange, setPage, openFilterEditor, changeEditorSetting} from '../../actions/widgets';
+import builderConfiguration from '../../components/widgets/enhancers/builderConfiguration';
+import chartLayerSelector from './enhancers/chartLayerSelector';
+import viewportBuilderConnect from './enhancers/connection/viewportBuilderConnect';
+import viewportBuilderConnectMask from './enhancers/connection/viewportBuilderConnectMask';
+import withExitButton from './enhancers/withExitButton';
+import withConnectButton from './enhancers/connection/withConnectButton';
+import {wizardStateToProps, wizardSelector} from './commons';
+import ChartWizard from '../../components/widgets/builder/wizard/ChartWizard';
+import LayerSelector from './LayerSelector';
+import BuilderHeader from './BuilderHeader';
+import Toolbar from '../../components/widgets/builder/wizard/chart/Toolbar';
+import { catalogEditorEnhancer } from './enhancers/catalogEditorEnhancer';
 
-const {insertWidget, onEditorChange, setPage, openFilterEditor, changeEditorSetting} = require('../../actions/widgets');
-
-const builderConfiguration = require('../../components/widgets/enhancers/builderConfiguration');
-const chartLayerSelector = require('./enhancers/chartLayerSelector');
-const viewportBuilderConnect = require('./enhancers/connection/viewportBuilderConnect');
-const viewportBuilderConnectMask = require('./enhancers/connection/viewportBuilderConnectMask');
-const withExitButton = require('./enhancers/withExitButton');
-const withConnectButton = require('./enhancers/connection/withConnectButton');
-const {
-    wizardStateToProps,
-    wizardSelector
-} = require('./commons');
 
 const Builder = connect(
     wizardSelector,
@@ -36,15 +37,15 @@ const Builder = connect(
     },
     wizardStateToProps
 )(compose(
-    builderConfiguration,
+    builderConfiguration({needWPS: false}),
     renameProps({
         editorData: "data",
         onEditorChange: "onChange"
     })
-)(require('../../components/widgets/builder/wizard/ChartWizard')));
+)(ChartWizard));
 
-const BuilderHeader = require('./BuilderHeader');
-const Toolbar = compose(
+
+const ChartToolbar = compose(
     connect(wizardSelector, {
         openFilterEditor,
         setPage,
@@ -57,7 +58,7 @@ const Toolbar = compose(
     withExitButton(),
     withConnectButton(({step}) => step === 1)
 
-)(require('../../components/widgets/builder/wizard/chart/Toolbar'));
+)(Toolbar);
 
 /*
  * in case you don't have a layer selected (e.g. dashboard) the chart builder
@@ -66,19 +67,19 @@ const Toolbar = compose(
 const chooseLayerEnhancer = compose(
     connect(wizardSelector),
     viewportBuilderConnectMask,
+    catalogEditorEnhancer,
     branch(
         ({layer} = {}) => !layer,
-        renderComponent(chartLayerSelector(require('./LayerSelector')))
-    ),
-
+        renderComponent(chartLayerSelector(LayerSelector))
+    )
 );
 
-module.exports = chooseLayerEnhancer(({ enabled, onClose = () => { }, exitButton, editorData, toggleConnection, availableDependencies = [], dependencies, ...props} = {}) =>
+export default chooseLayerEnhancer(({ enabled, onClose = () => { }, exitButton, editorData, toggleConnection, availableDependencies = [], dependencies, ...props} = {}) =>
 
     (<div className = "mapstore-chart-advance-options">
         <BorderLayout
             header={<BuilderHeader onClose={onClose}>
-                <Toolbar
+                <ChartToolbar
                     exitButton={exitButton}
                     editorData={editorData}
                     toggleConnection={toggleConnection}

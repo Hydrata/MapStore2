@@ -6,9 +6,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const expect = require('expect');
+import expect from 'expect';
 
-const {
+import {
     UPDATE_TEMPORARY_STYLE,
     UPDATE_STATUS,
     TOGGLE_STYLE_EDITOR,
@@ -25,6 +25,7 @@ const {
     INIT_STYLE_SERVICE,
     SET_EDIT_PERMISSION,
     SET_DEFAULT_STYLE,
+    UPDATE_EDITOR_METADATA,
     updateTemporaryStyle,
     updateStatus,
     toggleStyleEditor,
@@ -40,8 +41,9 @@ const {
     deleteStyle,
     initStyleService,
     setEditPermissionStyleEditor,
-    setDefaultStyle
-} = require('../styleeditor');
+    setDefaultStyle,
+    updateEditorMetadata
+} from '../styleeditor';
 
 describe('Test the styleeditor actions', () => {
 
@@ -179,5 +181,15 @@ describe('Test the styleeditor actions', () => {
         const retval = setDefaultStyle();
         expect(retval).toExist();
         expect(retval.type).toBe(SET_DEFAULT_STYLE);
+    });
+    it('updateEditorMetadata', () => {
+        const metadata = {
+            styleJSON: '{}',
+            editorType: 'visual' // textarea
+        };
+        const retval = updateEditorMetadata(metadata);
+        expect(retval).toExist();
+        expect(retval.type).toBe(UPDATE_EDITOR_METADATA);
+        expect(retval.metadata).toBe(metadata);
     });
 });

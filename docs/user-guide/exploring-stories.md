@@ -1,7 +1,7 @@
 # Exploring Story 
 **********************
 
-In [MapStore](https://mapstore.geo-solutions.it/mapstore/#/), StoryMap is a tool that allows to create inspiring and immersive stories by combining text, interactive maps, and other multimedia content like images and video or other third party contents. Through this tool you can simply tell your stories on the web and then publish and share them with different groups of MapStore user or make them public to everyone around the world.
+In [MapStore](https://mapstore.geo-solutions.it/mapstore/#/), GeoStory is a tool that allows to create inspiring and immersive stories by combining text, interactive maps, and other multimedia content like images and video or other third party contents. Through this tool you can simply tell your stories on the web and then publish and share them with different groups of MapStore user or make them public to everyone around the world.
 
 <img src="../img/exploring-stories/story3.gif" class="ms-docimage"/> 
 
@@ -13,15 +13,16 @@ The user can approach a story in two different ways:
 ## Edit Mode
 
 The *Edit Mode* allows the user to edit a story by adding, removing or modifying the elements inside it. This mode and its tools are used both to edit an existing story and to create a new one. <br>
-In order to create a new story, the user can click on the **New StoryMap** button <img src="../img/button/new_story_button.jpg" class="ms-docbutton"/> on [MapStore](https://mapstore.geo-solutions.it/mapstore/#/) home page. As soon as the user clicks on that button in home page the story editor opens, it is composed of two main elements: the *Builder* and the *Sections Container* (later simply called *Container*).
+In order to create a new story, the user can click on the **New GeoStory** button <img src="../img/button/new_story_button.jpg" class="ms-docbutton"/> on [MapStore](https://mapstore.geo-solutions.it/mapstore/#/) home page. As soon as the user clicks on that button in home page the story editor opens, it is composed of two main elements: the *Builder* and the *Sections Container* (later simply called *Container*).
 
 <img src="../img/exploring-stories/story-workspace.jpg" class="ms-docimage"/>
 
 The Story content is organized in Sections, that can be added with the <img src="../img/button/add-section.jpg" class="ms-docbutton"/> button in the *Container* area. In particular, the user can add to the story the following kind of sections:
 
-<img src="../img/exploring-stories/sections.jpg" class="ms-docimage"/>
+<img src="../img/exploring-stories/sections.jpg" class="ms-docimage" width="400px"/>
 
 * [Title Section](title-section.md)
+* [Banner Section](banner-section.md)
 * [Paragraph Section](paragraph-section.md)
 * [Immersive Section](immersive-section.md)
 * [Media Section](media-section.md)
@@ -51,33 +52,3 @@ The elements available in the top bar can be the following:
 The Story layout allows to navigate contents by scrolling up and down the Story page by using the mouse or the **Navigation bar**.
 
 <img src="../img/exploring-stories/view-mode-nava.gif" class="ms-docimage" width="700px"/>
-
-## Save a Story
-
-Both in edit mode and in preview mode, the story editor can save the story through the Option menu <img src="../img/button/burger.jpg" class="ms-docbutton"/>  present as usual in the top bar like in other MapStore contexts. If the story has not been saved yet, there's only the possibility to simply Save but, once the story is saved, it is possible to choose between Save and Save as. While saving a story the usual properties panel opens:
-
-<img src="../img/exploring-stories/save-page.jpg" class="ms-docimage" width="400px"/>
-
-* The **Name** of the story: it is the only mandatory field
-
-* The **Thumbnail** : the image used as a thumbnail for the story in MapStore home
-
-* The **Description** of the story that will appears in MapStore home
-
-* The **Permissions** as explained in the [Resource Properties](resources-properties.md#permission-rules) 
-
-## Share a Story
-
-The user can share the story as usual with the direct link or through the social network links supported by MapStore. With the Option menu <img src="../img/button/burger.jpg" class="ms-docbutton"/>the Share tool <img src="../img/button/share.jpg" class="ms-docbutton"style="max-height:20px;"/> is available.
-
-Inside the **Link** section the story's URL is available so that the user can copy it in the clipboard. As usual also the QR code share option is available.
-
-<img src="../img/exploring-stories/share.jpg" class="ms-docimage" width="400px"/>
-
-Inside the **Social** section, social links like Facebook, Twitter and LinkedIn are available for the story sharing.
-
-<img src="../img/exploring-stories/share-social.jpg" class="ms-docimage" width="400px"/>
-
-Through the **Advanced Options** it is possible to include an Home button to allow the possibility to brings the user to the MapStore Home Page: that button will be automatically included in view mode inside the story top bar just beside the navigation bar.
-
-<img src="../img/exploring-stories/share-page.jpg" class="ms-docimage"/>

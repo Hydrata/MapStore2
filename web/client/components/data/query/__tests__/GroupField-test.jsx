@@ -5,12 +5,11 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const React = require('react');
-const ReactDOM = require('react-dom');
+import React from 'react';
 
-const expect = require('expect');
-
-const GroupField = require('../GroupField.jsx');
+import ReactDOM from 'react-dom';
+import expect from 'expect';
+import GroupField from '../GroupField.jsx';
 
 describe('GroupField', () => {
 
@@ -99,19 +98,11 @@ describe('GroupField', () => {
         let childNodes = containerGroupPanel.childNodes;
         expect(childNodes.length).toBe(1);
 
-        let groupPanel = containerGroupPanel.getElementsByClassName('panel-body')[0];
+        let groupPanel = containerGroupPanel.getElementsByClassName('mapstore-conditions-group')[0];
         childNodes = groupPanel.childNodes;
         expect(childNodes.length).toBe(2);
-
-        for (let i = 0; i < childNodes.length; i++) {
-            let child = childNodes[i];
-            expect(
-                child.className === "container-fluid"
-                || child.className === "row"
-                || child.className === "query-content"
-                || child.className === "query-buttons"
-            ).toBe(true);
-        }
+        expect(childNodes[0].className === 'logicHeader filter-logic-header').toBeTruthy();
+        expect(childNodes[1].className === 'query-content').toBeTruthy();
 
         const buttons = document.getElementsByClassName('btn btn-default');
         expect(buttons.length).toBe(4);

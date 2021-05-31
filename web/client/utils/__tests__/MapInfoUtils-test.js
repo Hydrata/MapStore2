@@ -6,9 +6,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const React = require('react');
-var expect = require('expect');
-var {
+import React from 'react';
+
+import expect from 'expect';
+
+import {
     getAvailableInfoFormat,
     getAvailableInfoFormatLabels,
     getAvailableInfoFormatValues,
@@ -20,10 +22,11 @@ var {
     getLabelFromValue,
     getDefaultInfoFormatValueFromLayer,
     getLayerFeatureInfo,
+    defaultQueryableFilter,
     filterRequestParams
-} = require('../MapInfoUtils');
+} from '../MapInfoUtils';
 
-const CoordinatesUtils = require('../CoordinatesUtils');
+import { createBBox } from '../CoordinatesUtils';
 
 class App extends React.Component {
     render() {
@@ -81,7 +84,7 @@ describe('MapInfoUtils', () => {
     });
 
     it('it should returns a bbox', () => {
-        let results = CoordinatesUtils.createBBox(-10, 10, -10, 10);
+        let results = createBBox(-10, 10, -10, 10);
         expect(results).toExist();
         expect(results.maxx).toBe(-10);
     });
@@ -258,6 +261,29 @@ describe('MapInfoUtils', () => {
         expect(req1.request.lat).toBe(43);
     });
 
+    it('buildIdentifyRequest works with properties field not defined in the layer object', () => {
+        let props = {
+            map: {
+                zoom: 0,
+                projection: 'EPSG:4326'
+            },
+            point: {
+                latlng: {
+                    lat: 25,
+                    lng: 0
+                }
+            }
+        };
+        let layer = {
+            type: "vector",
+            name: "layer",
+            features: [{}]
+        };
+        let req1 = buildIdentifyRequest(layer, props);
+        expect(req1.request).toExist();
+        expect(req1.request.lat).toBe(25);
+    });
+
     it('getViewer and setViewer test', () => {
         let props = {
             map: {
@@ -334,6 +360,185 @@ describe('MapInfoUtils', () => {
         let validResponses = validator.getValidResponses(response);
         expect(validResponses.length).toBe(1);
     });
+
+    it('getValidResponses for vector layer', ()=>{
+        let response = [
+            {
+                "response": {
+                    "crs": null,
+                    "features": [{
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [10.728187343305999, 43.95330251168864]
+                        },
+                        "properties": {
+                            "OBJECTID_1": 8
+                        },
+                        "id": 0
+                    }
+                    ],
+                    "totalFeatures": "unknown",
+                    "type": "FeatureCollection"
+                },
+                "queryParams": {
+                    "lat": 43.95229339335166,
+                    "lng": 10.726776123046875
+                },
+                "layerMetadata": {
+                    "fields": ["OBJECTID_1"],
+                    "title": "prova",
+                    "resolution": 152.8740565703525,
+                    "buffer": 2
+                },
+                "format": "TEXT"
+            },
+            {
+                "response": {
+                    "crs": null,
+                    "features": [],
+                    "totalFeatures": "unknown",
+                    "type": "FeatureCollection"
+                },
+                "queryParams": {
+                    "lat": 43.95229339335166,
+                    "lng": 10.726776123046875
+                },
+                "layerMetadata": {
+                    "fields": ["OBJECTID_1"],
+                    "title": "prova",
+                    "resolution": 152.8740565703525,
+                    "buffer": 2
+                },
+                "format": "TEXT"
+            },
+            {
+                "response": "no features were found",
+                "queryParams": {
+                    "lat": 43.95229339335166,
+                    "lng": 10.726776123046875
+                },
+                "layerMetadata": {
+                    "fields": ["OBJECTID_1"],
+                    "title": "prova",
+                    "resolution": 152.8740565703525,
+                    "buffer": 2
+                },
+                "format": "TEXT"
+            },
+            {
+                "response": "Results for FeatureType 'https://gs-stable.geo-solutions.it/geoserver/geoserver:ny_poi'",
+                "queryParams": {
+                    "lat": 43.95229339335166,
+                    "lng": 10.726776123046875
+                },
+                "layerMetadata": {
+                    "fields": ["OBJECTID_1"],
+                    "title": "prova",
+                    "resolution": 152.8740565703525,
+                    "buffer": 2
+                },
+                "format": "TEXT"
+            },
+            undefined
+        ];
+
+        let validator = getValidator();
+        let validResponses = validator.getValidResponses(response);
+        expect(validResponses.length).toBe(1);
+
+        // Validate format 'PROPERTIES'
+        response.filter(r=> r !== undefined).forEach(res => {res.format = "PROPERTIES"; return res;});
+        validResponses = validator.getValidResponses(response);
+        expect(validResponses.length).toBe(1);
+
+        // Validate format 'JSON'
+        response.filter(r=> r !== undefined).forEach(res => {res.format = "JSON"; return res;});
+        validResponses = validator.getValidResponses(response);
+        expect(validResponses.length).toBe(1);
+    });
+
+    it('getNoValidResponses for vector layer', ()=>{
+        let response = [
+            {
+                "response": {
+                    "crs": null,
+                    "features": [{
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [10.728187343305999, 43.95330251168864]
+                        },
+                        "properties": {
+                            "OBJECTID_1": 8
+                        },
+                        "id": 0
+                    }
+                    ],
+                    "totalFeatures": "unknown",
+                    "type": "FeatureCollection"
+                },
+                "queryParams": {
+                    "lat": 43.95229339335166,
+                    "lng": 10.726776123046875
+                },
+                "layerMetadata": {
+                    "fields": ["OBJECTID_1"],
+                    "title": "prova",
+                    "resolution": 152.8740565703525,
+                    "buffer": 2
+                },
+                "format": "TEXT"
+            },
+            {
+                "response": "no features were found",
+                "queryParams": {
+                    "lat": 43.95229339335166,
+                    "lng": 10.726776123046875
+                },
+                "layerMetadata": {
+                    "fields": ["OBJECTID_1"],
+                    "title": "prova",
+                    "resolution": 152.8740565703525,
+                    "buffer": 2
+                },
+                "format": "TEXT"
+            },
+            {
+                "response": {
+                    features: []
+                },
+                "queryParams": {
+                    "lat": 43.95229339335166,
+                    "lng": 10.726776123046875
+                },
+                "layerMetadata": {
+                    "fields": ["OBJECTID_1"],
+                    "title": "prova",
+                    "resolution": 152.8740565703525,
+                    "buffer": 2
+                },
+                "format": "TEXT"
+            },
+            undefined
+        ];
+
+        let validator = getValidator();
+        let noValidResponses = validator.getNoValidResponses(response);
+        expect(noValidResponses.length).toBe(1);
+
+        // Validate format 'PROPERTIES'
+        response.filter(r=> r !== undefined).forEach(res => {res.format = "PROPERTIES"; return res;});
+        noValidResponses = validator.getNoValidResponses(response);
+        expect(noValidResponses.length).toBe(1);
+
+        // Validate format 'JSON'
+        response.filter(r=> r !== undefined).forEach(res => {res.format = "JSON"; return res;});
+        noValidResponses = validator.getNoValidResponses(response);
+        expect(noValidResponses.length).toBe(1);
+
+    });
+
     it('get the label given the text/plain value', () => {
         let label = getLabelFromValue("text/plain");
         expect(label).toBe("TEXT");
@@ -444,6 +649,7 @@ describe('MapInfoUtils', () => {
                 }
             }
         };
+
         const layer3 = {...layer1, ...layer2};
         const wmts1 = {...layer1, type: "wmts"};
         const wmts2 = { ...layer2, type: "wmts" };
@@ -457,6 +663,27 @@ describe('MapInfoUtils', () => {
         // the filterObj and CQL_FILTER must be merged into a unique filter
         expect(buildIdentifyRequest(wmts3, props).request.CQL_FILTER).toBe("((\"prop2\" = 'value2')) AND (prop1 = 'value')");
 
+    });
+
+    it('defaultQueryableFilter should return false if featureInfo format is HIDDEN', () => {
+
+        let layer4 = {
+            type: "wms",
+            queryLayers: false,
+            name: "layer",
+            url: "http://localhost",
+            featureInfo: {
+                format: "HIDDEN",
+                viewer: {
+                    type: 'customViewer'
+                }
+            },
+            group: 'background',
+            queryable: false,
+            visibility: false
+        };
+        let results = defaultQueryableFilter(layer4);
+        expect(results).toEqual(false);
     });
 
 });

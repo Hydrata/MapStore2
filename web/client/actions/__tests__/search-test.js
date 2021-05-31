@@ -6,8 +6,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-var expect = require('expect');
-var {
+import expect from 'expect';
+
+import {
     TEXT_SEARCH_RESULTS_LOADED,
     TEXT_SEARCH_LOADING,
     TEXT_SEARCH_ERROR,
@@ -16,10 +17,14 @@ var {
     TEXT_SEARCH_NESTED_SERVICES_SELECTED,
     TEXT_SEARCH_CANCEL_ITEM,
     UPDATE_RESULTS_STYLE,
-    changeActiveSearchTool, CHANGE_SEARCH_TOOL,
-    zoomAndAddPoint, ZOOM_ADD_POINT,
-    changeFormat, CHANGE_FORMAT,
-    changeCoord, CHANGE_COORD,
+    changeActiveSearchTool,
+    CHANGE_SEARCH_TOOL,
+    zoomAndAddPoint,
+    ZOOM_ADD_POINT,
+    changeFormat,
+    CHANGE_FORMAT,
+    changeCoord,
+    CHANGE_COORD,
     searchResultLoaded,
     searchTextLoading,
     searchResultError,
@@ -27,8 +32,10 @@ var {
     selectSearchItem,
     selectNestedService,
     cancelSelectedItem,
-    updateResultsStyle
-} = require('../search');
+    updateResultsStyle,
+    hideMarker,
+    HIDE_MARKER
+} from '../search';
 
 describe('Test correctness of the search actions', () => {
 
@@ -126,5 +133,10 @@ describe('Test correctness of the search actions', () => {
         expect(retval).toExist();
         expect(retval.type).toBe(CHANGE_FORMAT);
         expect(retval.format).toEqual(format);
+    });
+    it('hide marker', () => {
+        const retval = hideMarker();
+        expect(retval).toExist();
+        expect(retval.type).toBe(HIDE_MARKER);
     });
 });

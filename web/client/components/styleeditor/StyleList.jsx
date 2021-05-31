@@ -6,16 +6,20 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const React = require('react');
+import React from 'react';
+import { Glyphicon as GlyphiconRB } from 'react-bootstrap';
 
-const { Glyphicon: GlyphiconRB } = require('react-bootstrap');
-const BorderLayout = require('../layout/BorderLayout');
-const emptyState = require('../misc/enhancers/emptyState');
-const withLocal = require("../misc/enhancers/localizedProps");
-const Filter = withLocal('filterPlaceholder')(require('../misc/Filter'));
-const SVGPreview = require('./SVGPreview');
-const Message = require('../I18N/Message');
-const tooltip = require('../misc/enhancers/tooltip');
+import Message from '../I18N/Message';
+import BorderLayout from '../layout/BorderLayout';
+import SideGridComp from '../misc/cardgrids/SideGrid';
+import emptyState from '../misc/enhancers/emptyState';
+import withLocal from '../misc/enhancers/localizedProps';
+import tooltip from '../misc/enhancers/tooltip';
+import FilterComp from '../misc/Filter';
+import SVGPreview from './SVGPreview';
+
+const Filter = withLocal('filterPlaceholder')(FilterComp);
+
 const Glyphicon = tooltip(GlyphiconRB);
 
 const SideGrid = emptyState(
@@ -24,7 +28,7 @@ const SideGrid = emptyState(
         title: <Message msgId="styleeditor.filterMatchNotFound"/>,
         glyph: '1-stilo'
     }
-)(require('../misc/cardgrids/SideGrid'));
+)(SideGridComp);
 
 // get the text to use in the icon
 const getFormatText = (format) => {
@@ -76,16 +80,18 @@ const StyleList = ({
             size="sm"
             onItemClick={({ name }) => onSelect({ style: defaultStyle === name ? '' : name }, true)}
             items={availableStyles
-                .filter(({name = '', title = '', _abstract = ''}) => !filterText
+                .filter(({name = '', title = '', _abstract = '', metadata = {} }) => !filterText
                     || filterText && (
                         name.indexOf(filterText) !== -1
+                        || metadata?.title?.indexOf(filterText) !== -1
+                        || metadata?.description?.indexOf(filterText) !== -1
                         || title.indexOf(filterText) !== -1
                         || _abstract.indexOf(filterText) !== -1
                     ))
                 .map(style => ({
                     ...style,
-                    title: style.label || style.title || style.name,
-                    description: style._abstract,
+                    title: style?.metadata?.title || style.label || style.title || style.name,
+                    description: style?.metadata?.description || style._abstract,
                     selected: enabledStyle === style.name,
                     preview: style.format &&
                             <SVGPreview
@@ -104,4 +110,4 @@ const StyleList = ({
     </BorderLayout>
 );
 
-module.exports = StyleList;
+export default StyleList;

@@ -6,16 +6,15 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const {updateNode} = require('./layers');
-const WMS = require('../api/WMS');
-const WFS = require('../api/WFS');
-const WCS = require('../api/WCS');
+import { updateNode } from './layers';
 
-const LayersUtils = require('../utils/LayersUtils');
+import WMS from '../api/WMS';
+import * as WFS from '../api/WFS';
+import WCS from '../api/WCS';
+import {getCapabilitiesUrl, formatCapabitiliesOptions} from '../utils/LayersUtils';
+import { get, head } from 'lodash';
 
-const {get, head} = require('lodash');
-
-function getDescribeLayer(url, layer, options) {
+export function getDescribeLayer(url, layer, options) {
     return (dispatch /* , getState */) => {
         return WMS.describeLayer(url, layer.name, options).then((describeLayer) => {
             if (describeLayer && describeLayer.owsType === "WFS") {
@@ -53,9 +52,9 @@ function getDescribeLayer(url, layer, options) {
     };
 }
 
-function getLayerCapabilities(layer, options) {
+export function getLayerCapabilities(layer, options) {
     // geoserver's specific. TODO parse layer.capabilitiesURL.
-    const reqUrl = LayersUtils.getCapabilitiesUrl(layer);
+    const reqUrl = getCapabilitiesUrl(layer);
     return (dispatch) => {
         // TODO, look ad current cached capabilities;
         dispatch(updateNode(layer.id, "id", {
@@ -65,7 +64,7 @@ function getLayerCapabilities(layer, options) {
             const layerCapability = WMS.parseLayerCapabilities(capabilities, layer);
 
             if (layerCapability) {
-                dispatch(updateNode(layer.id, "id", LayersUtils.formatCapabitiliesOptions(layerCapability)));
+                dispatch(updateNode(layer.id, "id", formatCapabitiliesOptions(layerCapability)));
             } else {
                 dispatch(updateNode(layer.id, "id", { capabilitiesLoading: null, capabilities: { error: "error getting capabilities", details: "no layer info" }, description: null }));
             }
@@ -79,7 +78,3 @@ function getLayerCapabilities(layer, options) {
         });
     };
 }
-
-module.exports = {
-    getDescribeLayer, getLayerCapabilities
-};

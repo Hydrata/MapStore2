@@ -5,10 +5,11 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-var expect = require('expect');
+import expect from 'expect';
 
-var mapConfig = require('../config');
-const {DETAILS_LOADED, MAP_CREATED} = require('../../actions/maps');
+import mapConfig from '../config';
+import { MAP_CREATED } from '../../actions/maps';
+import { DETAILS_LOADED } from '../../actions/details';
 
 
 describe('Test the mapConfig reducer', () => {

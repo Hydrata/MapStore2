@@ -107,6 +107,50 @@ describe('Test styleeditor epics', () => {
             state);
 
     });
+    it('test toggleStyleEditorEpic with no geoserver url', (done) => {
+
+        const state = {
+            layers: {
+                flat: [
+                    {
+                        id: 'layerId',
+                        name: 'layerName',
+                        url: '/llg/'
+                    }
+                ],
+                selected: [
+                    'layerId'
+                ]
+            }
+        };
+        const NUMBER_OF_ACTIONS = 1;
+
+        const results = (actions) => {
+            expect(actions.length).toBe(NUMBER_OF_ACTIONS);
+            try {
+                actions.map((action) => {
+                    switch (action.type) {
+                    case LOADING_STYLE:
+                        expect(action.status).toBe('global');
+                        break;
+                    default:
+                        expect(true).toBe(false);
+                    }
+                });
+            } catch (e) {
+                done(e);
+            }
+            done();
+        };
+
+        testEpic(
+            toggleStyleEditorEpic,
+            NUMBER_OF_ACTIONS,
+            toggleStyleEditor(undefined, true),
+            results,
+            state);
+
+    });
     it('test toggleStyleEditorEpic enabled to false', (done) => {
 
         const state = {
@@ -575,7 +619,7 @@ describe('Test styleeditor epics', () => {
                 code: '* { stroke: #ff0000; }'
             }
         };
-        const NUMBER_OF_ACTIONS = 5;
+        const NUMBER_OF_ACTIONS = 6;
         const results = (actions) => {
             expect(actions.length).toBe(NUMBER_OF_ACTIONS);
             try {
@@ -587,10 +631,10 @@ describe('Test styleeditor epics', () => {
                     case UPDATE_NODE:
                         expect(action.node).toBe('layerId');
                         expect(action.nodeType).toBe('layer');
-                        expect(action.options._v_).toExist();
+                        expect(action.options._v_).toBeTruthy();
                         break;
                     case LOADED_STYLE:
-                        expect(action).toExist();
+                        expect(action).toBeTruthy();
                         break;
                     case UPDATE_TEMPORARY_STYLE:
                         expect(action.temporaryId).toBe(undefined);
@@ -605,6 +649,9 @@ describe('Test styleeditor epics', () => {
                         expect(action.uid).toBe('savedStyleTitle');
                         expect(action.autoDismiss).toBe(5);
                         expect(action.level).toBe('success');
+                        break;
+                    case UPDATE_SETTINGS_PARAMS:
+                        expect(action).toBeTruthy();
                         break;
                     default:
                         expect(true).toBe(false);
@@ -805,13 +852,14 @@ describe('Test styleeditor epics, with mock axios', () => {
             }
         };
 
-        const NUMBER_OF_ACTIONS = 5;
+        const NUMBER_OF_ACTIONS = 6;
 
         const results = (actions) => {
             const [
                 loadingStyleAction,
                 loadedStyleAction,
                 updateNodeAction,
+                updateSettingsParamsAction,
                 updateTemporaryStyleAction,
                 showNotificationAction
             ] = actions;
@@ -820,6 +868,7 @@ describe('Test styleeditor epics, with mock axios', () => {
                 expect(loadingStyleAction.type).toBe(LOADING_STYLE);
                 expect(loadedStyleAction.type).toBe(LOADED_STYLE);
                 expect(updateNodeAction.type).toBe(UPDATE_NODE);
+                expect(updateSettingsParamsAction.type).toBe(UPDATE_SETTINGS_PARAMS);
                 expect(updateTemporaryStyleAction.type).toBe(UPDATE_TEMPORARY_STYLE);
                 expect(showNotificationAction.type).toBe(SHOW_NOTIFICATION);
                 expect(showNotificationAction.level).toBe('success');
@@ -1263,6 +1312,10 @@ describe('Test styleeditor epics, with mock axios', () => {
             return [ 200, { about: { resource: [{ '@name': 'GeoServer', version: '2.16' }] } }];
         });
 
+        mockAxios.onGet(/\/fonts/).reply(() => {
+            return [ 200, { fonts: ['Arial'] }];
+        });
+
         mockAxios.onGet(/\/layerWorkspace/).reply(() => {
             return [ 200, ''];
         });
@@ -1286,22 +1339,29 @@ describe('Test styleeditor epics, with mock axios', () => {
                 }
             }
         };
-        const NUMBER_OF_ACTIONS = 2;
+        const NUMBER_OF_ACTIONS = 3;
 
         const results = (actions) => {
             try {
                 const [
                     loadingStyleAction,
+                    resetStyle,
                     initStyleServiceAction
                 ] = actions;
 
+                expect(resetStyle.type).toBe(RESET_STYLE_EDITOR);
                 expect(loadingStyleAction.type).toBe(LOADING_STYLE);
                 expect(initStyleServiceAction.type).toBe(INIT_STYLE_SERVICE);
                 expect(initStyleServiceAction.service).toEqual({
                     baseUrl: 'protocol://style-editor/geoserver/',
                     version: '2.16',
                     formats: [ 'css', 'sld' ],
-                    availableUrls: []
+                    availableUrls: [],
+                    fonts: ['Arial'],
+                    classificationMethods: {
+                        vector: [ 'equalInterval', 'quantile', 'jenks' ],
+                        raster: [ 'equalInterval', 'quantile', 'jenks' ]
+                    }
                 });
             } catch (e) {
                 done(e);

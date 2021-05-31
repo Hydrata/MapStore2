@@ -5,20 +5,23 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const React = require('react');
-const Message = require('../../I18N/Message');
-const BorderLayout = require('../../layout/BorderLayout');
-const LoadingSpinner = require('../../misc/LoadingSpinner');
-const EmptyRowsView = require('../../data/featuregrid/EmptyRowsView');
-const loadingState = require('../../misc/enhancers/loadingState');
-const errorChartState = require('../enhancers/errorChartState');
-const {getWidgetFilterRenderers} = require('../../../plugins/widgets/getWidgetFilterRenderers');
+import React from 'react';
 
-const FeatureGrid = errorChartState(loadingState(({ describeFeatureType }) => !describeFeatureType)(require('../../data/featuregrid/FeatureGrid')));
+import { getWidgetFilterRenderers } from '../../../plugins/widgets/getWidgetFilterRenderers';
+import EmptyRowsView from '../../data/featuregrid/EmptyRowsView';
+import FeatureGridComp from '../../data/featuregrid/FeatureGrid';
+import Message from '../../I18N/Message';
+import BorderLayout from '../../layout/BorderLayout';
+import loadingState from '../../misc/enhancers/loadingState';
+import LoadingSpinner from '../../misc/LoadingSpinner';
+import errorChartState from '../enhancers/errorChartState';
+import WidgetContainer from './WidgetContainer';
+import WidgetEmptyMessage from './WidgetEmptyMessage';
 
-const WidgetContainer = require('./WidgetContainer');
+const FeatureGrid = errorChartState(loadingState(({ describeFeatureType }) => !describeFeatureType)(FeatureGridComp));
 
-module.exports = getWidgetFilterRenderers(({
+
+export default getWidgetFilterRenderers(({
     id,
     title,
     loading,
@@ -41,6 +44,7 @@ module.exports = getWidgetFilterRenderers(({
     pages,
     error,
     pagination = {},
+    dataGrid = {},
     virtualScroll = true
 }) =>
     (<WidgetContainer
@@ -48,6 +52,7 @@ module.exports = getWidgetFilterRenderers(({
         title={title}
         headerStyle={headerStyle}
         icons={icons}
+        isDraggable={dataGrid.isDraggable}
         confirmDelete={confirmDelete}
         onDelete={onDelete}
         toggleDeleteConfirm={toggleDeleteConfirm}
@@ -63,9 +68,11 @@ module.exports = getWidgetFilterRenderers(({
                 </div>) : null}
         >
             <FeatureGrid
-                emptyRowsView={() => <EmptyRowsView loading={loading} />}
+                emptyRowsView={() => (<EmptyRowsView loading={loading}>
+                    <WidgetEmptyMessage messageId="featuregrid.noFeaturesAvailable" glyph="features-grid"/>
+                </EmptyRowsView>)}
                 gridEvents={gridEvents}
-                sortable={false}
+                sortable
                 defaultSize={false}
                 columnSettings={columnSettings}
                 pageEvents={pageEvents}

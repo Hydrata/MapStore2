@@ -6,20 +6,27 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const MapUtils = require('../MapUtils');
-const CoordinatesUtils = require('../CoordinatesUtils');
-const WMTSUtils = require('../WMTSUtils');
-const {getLayerUrl} = require('../LayersUtils');
-const {optionsToVendorParams} = require('../VendorParamsUtils');
+import {getCurrentResolution, getResolutions} from '../MapUtils';
+import {reproject, normalizeSRS} from '../CoordinatesUtils';
+import {
+    getTileMatrixSet,
+    limitMatrix,
+    getMatrixIds,
+    getDefaultMatrixId
+} from '../WMTSUtils';
+import {getLayerUrl} from '../LayersUtils';
+import {optionsToVendorParams} from '../VendorParamsUtils';
 
-const {isObject} = require('lodash');
+import {isObject, isNil} from 'lodash';
 
-const assign = require('object-assign');
+import assign from 'object-assign';
 
-module.exports = {
+export default {
     buildRequest: (layer, props) => {
-        const resolution = MapUtils.getCurrentResolution(Math.round(props.map.zoom), 0, 21, 96);
-        const resolutions = layer.resolutions || MapUtils.getResolutions();
+        const resolution = isNil(props.map.resolution)
+            ? getCurrentResolution(Math.round(props.map.zoom), 0, 21, 96)
+            : props.map.resolution;
+        const resolutions = layer.resolutions || getResolutions();
         const tileSize = layer.tileSize || 256; // tilegrid.getTileSize(props.map.zoom);
         const tileOrigin = [
             layer.originX || -20037508.3428,
@@ -30,10 +37,10 @@ module.exports = {
         // longitude restricted to the [-180°,+180°] range
         const lngCorrected = wrongLng - 360 * Math.floor(wrongLng / 360 + 0.5);
         const center = {x: lngCorrected, y: props.point.latlng.lat};
-        let centerProjected = CoordinatesUtils.reproject(center, 'EPSG:4326', props.map.projection);
+        let centerProjected = reproject(center, 'EPSG:4326', props.map.projection);
 
-        const srs = CoordinatesUtils.normalizeSRS(layer.srs || props.map.projection || 'EPSG:3857', layer.allowedSRS);
-        const tileMatrixSet = WMTSUtils.getTileMatrixSet(layer.tileMatrixSet, srs, layer.allowedSRS, layer.matrixIds);
+        const srs = normalizeSRS(layer.srs || props.map.projection || 'EPSG:3857', layer.allowedSRS);
+        const tileMatrixSet = getTileMatrixSet(layer.tileMatrixSet, srs, layer.allowedSRS, layer.matrixIds);
 
         const fx = (centerProjected.x - tileOrigin[0]) / (resolution * tileSize);
         const fy = (tileOrigin[1] - centerProjected.y) / (resolution * tileSize);
@@ -42,7 +49,7 @@ module.exports = {
         const tileI = Math.floor((fx - tileCol) * tileSize);
         const tileJ = Math.floor((fy - tileRow) * tileSize);
 
-        const matrixIds = WMTSUtils.limitMatrix(layer.matrixIds && WMTSUtils.getMatrixIds(layer.matrixIds, tileMatrixSet || srs) || WMTSUtils.getDefaultMatrixId(layer), resolutions.length);
+        const matrixIds = limitMatrix(layer.matrixIds && getMatrixIds(layer.matrixIds, tileMatrixSet || srs) || getDefaultMatrixId(layer), resolutions.length);
 
         const params = optionsToVendorParams({
             layerFilter: layer.layerFilter,

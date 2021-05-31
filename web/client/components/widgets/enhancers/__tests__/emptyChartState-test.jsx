@@ -6,11 +6,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const React = require('react');
-const ReactDOM = require('react-dom');
+import expect from 'expect';
+import React from 'react';
+import ReactDOM from 'react-dom';
 
-const expect = require('expect');
-const emptyChartState = require('../emptyChartState');
+import emptyChartState from '../emptyChartState';
 
 describe('widgets emptyChartState enhancer', () => {
     beforeEach((done) => {
@@ -31,5 +31,11 @@ describe('widgets emptyChartState enhancer', () => {
         const Dummy = emptyChartState(() => <div id="dummy"></div>);
         ReactDOM.render(<Dummy data={["a"]}/>, document.getElementById("container"));
         expect(document.getElementById("dummy")).toExist();
+    });
+
+    it("should render empty chart state", () => {
+        const Dummy = emptyChartState(() => <div id="dummy"></div>);
+        ReactDOM.render(<Dummy data={[]}/>, document.getElementById("container"));
+        expect(document.querySelector(".ms-widget-empty-message")).toExist();
     });
 });

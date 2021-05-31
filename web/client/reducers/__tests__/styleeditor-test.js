@@ -6,11 +6,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const expect = require('expect');
+import expect from 'expect';
 
-const styleeditor = require('../styleeditor');
+import styleeditor from '../styleeditor';
 
-const {
+import {
     initStyleService,
     setEditPermissionStyleEditor,
     updateTemporaryStyle,
@@ -19,8 +19,9 @@ const {
     addStyle,
     loadingStyle,
     loadedStyle,
-    errorStyle
-} = require('../../actions/styleeditor');
+    errorStyle,
+    updateEditorMetadata
+} from '../../actions/styleeditor';
 
 describe('Test styleeditor reducer', () => {
     it('test initStyleService', () => {
@@ -76,10 +77,13 @@ describe('Test styleeditor reducer', () => {
         });
     });
     it('test resetStyleEditor', () => {
-        const state = styleeditor({canEdit: true}, resetStyleEditor());
+        const state = styleeditor({
+            canEdit: true,
+            loading: true}, resetStyleEditor());
         expect(state).toEqual({
             service: {},
-            canEdit: true
+            canEdit: true,
+            loading: true
         });
     });
     it('test addStyle', () => {
@@ -91,8 +95,7 @@ describe('Test styleeditor reducer', () => {
     it('test loadingStyle', () => {
         const state = styleeditor({}, loadingStyle(true));
         expect(state).toEqual({
-            loading: true,
-            error: {}
+            loading: true
         });
     });
     it('test loadedStyle', () => {
@@ -114,6 +117,19 @@ describe('Test styleeditor reducer', () => {
                     message: 'Error on line 10, column 2',
                     line: 10,
                     column: 2
+                }
+            }
+        });
+    });
+    it('test errorStyle unmarshalling parser error ', () => {
+        const state = styleeditor({ }, errorStyle('parsingCapabilities', { message: "could not be unmarshalled" }));
+        expect(state).toEqual({
+            loading: false,
+            canEdit: false,
+            error: {
+                parsingCapabilities: {
+                    status: 404,
+                    message: 'could not be unmarshalled'
                 }
             }
         });
@@ -145,6 +161,19 @@ describe('Test styleeditor reducer', () => {
                     line: 10,
                     column: 2
                 }
+            }
+        });
+    });
+    it('test updateEditorMetadata action', () => {
+        const updateMetadata = updateEditorMetadata({
+            editorType: 'visual',
+            styleJSON: '{}'
+        });
+        const state = styleeditor({ }, updateMetadata);
+        expect(state).toEqual({
+            metadata: {
+                editorType: 'visual',
+                styleJSON: '{}'
             }
         });
     });

@@ -5,11 +5,15 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const React = require('react');
-const expect = require('expect');
-const ReactDOM = require('react-dom');
-const IdentifyContainer = require('../IdentifyContainer');
-const TestUtils = require('react-dom/test-utils');
+
+import React from 'react';
+
+import expect from 'expect';
+import ReactDOM from 'react-dom';
+import IdentifyContainer from '../IdentifyContainer';
+import TestUtils from 'react-dom/test-utils';
+import ConfigUtils from '../../../../utils/ConfigUtils';
+import getFeatureButtons from '../../../../plugins/identify/featureButtons';
 
 describe("test IdentifyContainer", () => {
     beforeEach((done) => {
@@ -117,6 +121,33 @@ describe("test IdentifyContainer", () => {
         expect(sidePanel[0].children[0].style.zIndex).toBe('7777');
     });
 
+    it('test default coordinate format from localConfig', () => {
+        ConfigUtils.setConfigProp("defaultCoordinateFormat", "aeronautical");
+        const defaultFormat = ConfigUtils.getConfigProp('defaultCoordinateFormat');
+        const point = {latlng: {lat: 39.86927447817351, lng: -81.91405928134918}};
+        let format;
+        ReactDOM.render(
+            <IdentifyContainer
+                enabled
+                requests={[{}]}
+                enabledCoordEditorButton
+                showCoordinateEditor
+                point={point}
+                formatCoord={format || defaultFormat || "decimal"}
+            />, document.getElementById("container"));
+        const inputs = document.getElementsByClassName('form-control');
+        expect(inputs.length).toBe(8);
+        expect(inputs[0].placeholder).toBe("d");
+        expect(inputs[0].value).toBe('39');
+        expect(inputs[1].placeholder).toBe("m");
+        expect(inputs[1].value).toBe('52');
+        expect(inputs[2].placeholder).toBe("s");
+        expect(inputs[2].value).toBe('9.3881');
+
+        // Clean up defaults
+        ConfigUtils.removeConfigProp("defaultCoordinateFormat");
+    });
+
     it('test edit button with PROPERTIES response', () => {
         const funcs = {
             getToolButtons: () => {}
@@ -153,5 +184,121 @@ describe("test IdentifyContainer", () => {
             responses={[{format: 'TEMPLATE', layer: {search: {url: 'search_url'}}}]}/>, document.getElementById("container"));
         expect(getToolButtonsSpy).toHaveBeenCalled();
         expect(getToolButtonsSpy.calls[0].arguments[0].showEdit).toBe(true);
+    });
+
+    it('test rendering of Layer selector in Identify panel', () => {
+        const requests = [{reqId: 1}, {reqId: 2}];
+        const responses = [{layerMetadata: {title: "Layer 1"}}, {layerMetadata: {title: "Layer 2"}}];
+        ReactDOM.render(<IdentifyContainer
+            enabled
+            index={0}
+            requests={requests}
+            responses={responses}
+        />, document.getElementById("container"));
+        const layerSelect = document.getElementById("identify-layer-select");
+        expect(layerSelect).toExist();
+    });
+
+    it('test rendering of layer select and feature buttons in Identify panel', () => {
+        const requests = [{reqId: 1}, {reqId: 2}];
+        const responses = [{layerMetadata: {title: "Layer 1"}}, {layerMetadata: {title: "Layer 2"}}];
+        ReactDOM.render(<IdentifyContainer
+            enabled
+            index={0}
+            requests={requests}
+            responses={responses}
+        />, document.getElementById("container"));
+        const layerRow = document.getElementsByClassName("layer-col");
+        expect(layerRow[0].children.length).toBe(3);
+        const layerIcon = layerRow[0].children[0];
+        const layerSelect = layerRow[0].children[1];
+        const featureButtons = layerRow[0].children[2];
+        expect(layerIcon.getAttribute('class')).toContain('glyphicon-1-layer');
+        expect(layerSelect.getAttribute('id')).toContain('identify-layer-select');
+        expect(featureButtons.getAttribute('class')).toContain('btn-group');
+    });
+
+    it('test rendering of coordinates viewer and toolbar in Identify panel', () => {
+        const requests = [{reqId: 1}, {reqId: 2}];
+        const responses = [{layerMetadata: {title: "Layer 1"}}, {layerMetadata: {title: "Layer 2"}}];
+        ReactDOM.render(<IdentifyContainer
+            enabled
+            index={0}
+            requests={requests}
+            responses={responses}
+            point={{latlng: {lat: 1, lng: 1}}}
+            showCoordinateEditor={false}
+        />, document.getElementById("container"));
+        const coordinatesRow = document.getElementsByClassName("coordinates-edit-row");
+        expect(coordinatesRow[0].children.length).toBe(3);
+        const coordinateIcon = coordinatesRow[0].children[0];
+        const coordinateViewer = coordinatesRow[0].children[1];
+        const toolbar = coordinatesRow[0].children[2];
+        expect(coordinateIcon.getAttribute('class')).toContain('glyphicon-point');
+        expect(coordinateViewer.children[0].getAttribute('class')).toContain('coordinates-text');
+        expect(toolbar.getAttribute('class')).toContain('btn-group');
+    });
+
+    it('test rendering of default feature toolbar buttons', () => {
+        const requests = [{reqId: 1}, {reqId: 2}];
+        const responses = [{layerMetadata: {title: "Layer 1"}}, {layerMetadata: {title: "Layer 2"}}];
+        ReactDOM.render(<IdentifyContainer
+            enabled
+            index={0}
+            requests={requests}
+            responses={responses}
+            getFeatureButtons={getFeatureButtons}
+            point={{latlng: {lat: 1, lng: 1}}}
+            showCoordinateEditor={false}
+        />, document.getElementById("container"));
+        let glyphIcons = document.querySelectorAll('.glyphicon');
+        expect(glyphIcons.length).toBe(5);
+        expect(glyphIcons.forEach(glyph => glyph.className) !== 'zoom-to').toBeTruthy();
+    });
+
+    it('test call toggleHighlightFeature on Close', () => {
+        const requests = [{reqId: 1}, {reqId: 2}];
+        const callbacks = {
+            toggleHighlightFeature: () => {}
+        };
+        const toggleHighlightFeatureSpy = expect.spyOn(callbacks, 'toggleHighlightFeature');
+        const responses = [{layerMetadata: {title: "Layer 1"}}, {layerMetadata: {title: "Layer 2"}}];
+        const CMP = (<IdentifyContainer
+            enabled
+            index={0}
+            requests={requests}
+            responses={responses}
+            getFeatureButtons={getFeatureButtons}
+            point={{latlng: {lat: 1, lng: 1}}}
+            showCoordinateEditor={false}
+            toggleHighlightFeature={callbacks.toggleHighlightFeature}
+        />);
+        ReactDOM.render(CMP, document.getElementById("container"));
+        const container = document.getElementById('container');
+        const closeIcon = container.querySelectorAll('.ms-close');
+        TestUtils.Simulate.click(closeIcon[0]);
+        TestUtils.act(() => {
+            ReactDOM.render(CMP, document.getElementById("container"));
+        });
+        expect(toggleHighlightFeatureSpy).toHaveBeenCalled();
+        // Test since when the highlight feature is disabled the zoom Icon is not shown
+        const zoomIcon = document.querySelector('.glyphicon-zoom-to');
+        expect(zoomIcon).toNotExist();
+    });
+
+    it('test z index to 1 for coordinate-editor if editor is active ', () => {
+        const requests = [{reqId: 1}, {reqId: 2}];
+        const responses = [{layerMetadata: {title: "Layer 1"}}, {layerMetadata: {title: "Layer 2"}}];
+        ReactDOM.render(<IdentifyContainer
+            enabled
+            index={0}
+            requests={requests}
+            responses={responses}
+            getFeatureButtons={getFeatureButtons}
+            point={{latlng: {lat: 1, lng: 1}}}
+            showCoordinateEditor
+        />, document.getElementById("container"));
+        let coordinateEditorContainer = document.querySelectorAll('.coordinate-editor');
+        expect(coordinateEditorContainer[0].style['z-index']).toBe('1');
     });
 });

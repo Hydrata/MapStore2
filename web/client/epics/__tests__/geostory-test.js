@@ -11,8 +11,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import MockAdapter from 'axios-mock-adapter';
 import { LOCATION_CHANGE, CALL_HISTORY_METHOD } from 'connected-react-router';
-
-
+import get from 'lodash/get';
 import TEST_STORY from "../../test-resources/geostory/sampleStory_1.json";
 import axios from '../../libs/ajax';
 
@@ -32,13 +31,18 @@ import {
     closeShareOnGeostoryChangeMode,
     openWebPageComponentCreator,
     editWebPageComponent,
-    handlePendingGeoStoryChanges
+    handlePendingGeoStoryChanges,
+    loadStoryOnHistoryPop,
+    scrollOnLoad,
+    urlUpdateOnScroll
 } from '../geostory';
 import {
     ADD,
     LOADING_GEOSTORY,
     loadGeostory,
     SET_CURRENT_STORY,
+    setCurrentStory,
+    GEOSTORY_SCROLLING,
     LOAD_GEOSTORY_ERROR,
     add,
     UPDATE,
@@ -56,7 +60,9 @@ import {
     SET_WEBPAGE_URL,
     editWebPage,
     setResource,
-    SET_PENDING_CHANGES
+    SET_PENDING_CHANGES,
+    LOAD_GEOSTORY,
+    updateCurrentPage
 } from '../../actions/geostory';
 import { SET_CONTROL_PROPERTY } from '../../actions/controls';
 import {
@@ -243,10 +249,18 @@ describe('Geostory Epics', () => {
                     switch (a.type) {
                     case LOADING_GEOSTORY:
                         expect(a.name).toBe("loading");
-                        expect(a.value).toBe(i === 0);
+                        expect(a.value).toBe(i === 1);
                         break;
                     case SET_CURRENT_STORY:
-                        expect(a.story).toEqual(TEST_STORY);
+                        if (a.story.sections) {
+                            a.story.sections[0].id = get(TEST_STORY, 'sections[0].id');
+                            a.story.sections[1].id = get(TEST_STORY, 'sections[1].id');
+                            a.story.sections[2].id = get(TEST_STORY, 'sections[2].id');
+                            a.story.sections[3].id = get(TEST_STORY, 'sections[3].id');
+                            expect(a.story).toEqual(TEST_STORY);
+                        } else {
+                            expect(a.story).toEqual({});
+                        }
                         break;
                     case SET_RESOURCE: {
                         expect(a.resource).toExist();
@@ -283,10 +297,18 @@ describe('Geostory Epics', () => {
                     switch (a.type) {
                     case LOADING_GEOSTORY:
                         expect(a.name).toBe("loading");
-                        expect(a.value).toBe(i === 0);
+                        expect(a.value).toBe(i === 1);
                         break;
                     case SET_CURRENT_STORY:
-                        expect(a.story).toEqual(TEST_STORY);
+                        if (a.story.sections) {
+                            a.story.sections[0].id = get(TEST_STORY, 'sections[0].id');
+                            a.story.sections[1].id = get(TEST_STORY, 'sections[1].id');
+                            a.story.sections[2].id = get(TEST_STORY, 'sections[2].id');
+                            a.story.sections[3].id = get(TEST_STORY, 'sections[3].id');
+                            expect(a.story).toEqual(TEST_STORY);
+                        } else {
+                            expect(a.story).toEqual({});
+                        }
                         break;
                     case SET_RESOURCE: {
                         expect(a.resource).toExist();
@@ -323,7 +345,7 @@ describe('Geostory Epics', () => {
                     switch (a.type) {
                     case LOADING_GEOSTORY:
                         expect(a.name).toBe("loading");
-                        expect(a.value).toBe(i === 0);
+                        expect(a.value).toBe(i === 1);
                         break;
                     case SET_CURRENT_STORY:
                         expect(a.story).toEqual({});
@@ -358,7 +380,7 @@ describe('Geostory Epics', () => {
                     switch (a.type) {
                     case LOADING_GEOSTORY:
                         expect(a.name).toBe("loading");
-                        expect(a.value).toBe(i === 0);
+                        expect(a.value).toBe(i === 1);
                         break;
                     case LOAD_GEOSTORY_ERROR:
                         expect(a.error.status).toEqual(403);
@@ -390,7 +412,7 @@ describe('Geostory Epics', () => {
                     switch (a.type) {
                     case LOADING_GEOSTORY:
                         expect(a.name).toBe("loading");
-                        expect(a.value).toBe(i === 0);
+                        expect(a.value).toBe(i === 1);
                         break;
                     case SET_CURRENT_STORY:
                         expect(a.story).toEqual({});
@@ -424,7 +446,7 @@ describe('Geostory Epics', () => {
                     switch (a.type) {
                     case LOADING_GEOSTORY:
                         expect(a.name).toBe("loading");
-                        expect(a.value).toBe(i === 0);
+                        expect(a.value).toBe(i === 1);
                         break;
                     case SET_CURRENT_STORY:
                         expect(a.story).toEqual({});
@@ -462,7 +484,7 @@ describe('Geostory Epics', () => {
                     switch (a.type) {
                     case LOADING_GEOSTORY:
                         expect(a.name).toBe("loading");
-                        expect(a.value).toBe(i === 0);
+                        expect(a.value).toBe(i === 1);
                         break;
                     case SET_CURRENT_STORY:
                         expect(a.story).toEqual({});
@@ -491,7 +513,7 @@ describe('Geostory Epics', () => {
                     switch (a.type) {
                     case LOADING_GEOSTORY:
                         expect(a.name).toBe("loading");
-                        expect(a.value).toBe(i === 0);
+                        expect(a.value).toBe(i === 1);
                         break;
                     case SET_CURRENT_STORY:
                         expect(a.story).toEqual({});
@@ -515,7 +537,7 @@ describe('Geostory Epics', () => {
             });
         });
         it('should not change mode on story with id number, if user has permission with loadGeostoryEpic', (done) => {
-            const NUM_ACTIONS = 5;
+            const NUM_ACTIONS = 6;
             mockAxios.onGet().reply(200, TEST_STORY);
             testEpic(
                 loadGeostoryEpic,
@@ -525,6 +547,7 @@ describe('Geostory Epics', () => {
                     try {
                         expect(actions.length).toBe(NUM_ACTIONS);
                         expect(actions.map(({ type }) => type)).toEqual([
+                            SET_CURRENT_STORY,
                             LOADING_GEOSTORY,
                             GEOSTORY_LOADED,
                             SET_CURRENT_STORY,
@@ -547,7 +570,7 @@ describe('Geostory Epics', () => {
             );
         });
         it('should change mode to VIEW on story with id number, if user has not permission and current mode is EDIT with loadGeostoryEpic', (done) => {
-            const NUM_ACTIONS = 6;
+            const NUM_ACTIONS = 7;
             mockAxios.onGet().reply(200, TEST_STORY);
             testEpic(
                 loadGeostoryEpic,
@@ -557,6 +580,7 @@ describe('Geostory Epics', () => {
                     try {
                         expect(actions.length).toBe(NUM_ACTIONS);
                         expect(actions.map(({ type }) => type)).toEqual([
+                            SET_CURRENT_STORY,
                             LOADING_GEOSTORY,
                             CHANGE_MODE,
                             GEOSTORY_LOADED,
@@ -565,7 +589,7 @@ describe('Geostory Epics', () => {
                             LOADING_GEOSTORY
                         ]);
 
-                        const changeModeAction = actions[1];
+                        const changeModeAction = actions[2];
                         expect(changeModeAction.mode).toBe(Modes.VIEW);
 
                     } catch (e) {
@@ -586,7 +610,7 @@ describe('Geostory Epics', () => {
             );
         });
         it('should change mode to VIEW on story with id number, if user has permission and current mode is EDIT with loadGeostoryEpic', (done) => {
-            const NUM_ACTIONS = 6;
+            const NUM_ACTIONS = 7;
             mockAxios.onGet().reply(200, { ...TEST_STORY, ShortResource: { canEdit: true } });
             testEpic(
                 loadGeostoryEpic,
@@ -596,6 +620,7 @@ describe('Geostory Epics', () => {
                     try {
                         expect(actions.length).toBe(NUM_ACTIONS);
                         expect(actions.map(({ type }) => type)).toEqual([
+                            SET_CURRENT_STORY,
                             LOADING_GEOSTORY,
                             CHANGE_MODE,
                             GEOSTORY_LOADED,
@@ -604,7 +629,7 @@ describe('Geostory Epics', () => {
                             LOADING_GEOSTORY
                         ]);
 
-                        const changeModeAction = actions[1];
+                        const changeModeAction = actions[2];
                         expect(changeModeAction.mode).toBe(Modes.EDIT);
 
                     } catch (e) {
@@ -781,6 +806,66 @@ describe('Geostory Epics', () => {
             }
         });
     });
+    it('test openMediaEditorForNewMedia with custom settings for media edtor', (done) => {
+        const NUM_ACTIONS = 2;
+        const mediaEditorSettings = {
+            sourceId: 'geostory',
+            mediaTypes: {
+                image: {
+                    defaultSource: 'geostory',
+                    sources: ['geostory']
+                },
+                video: {
+                    defaultSource: 'geostory',
+                    sources: ['geostory']
+                },
+                map: {
+                    defaultSource: 'geostory',
+                    sources: ['geostory']
+                }
+            },
+            sources: {
+                geostory: {
+                    name: 'Current story',
+                    type: 'geostory'
+                }
+            }
+        };
+        testEpic(openMediaEditorForNewMedia, NUM_ACTIONS, [
+            add(`sections[{id: "abc"}].contents[{id: "def"}]`, undefined, {type: ContentTypes.MEDIA, id: "102cbcf6-ff39-4b7f-83e4-78841ee13bb9"}),
+            chooseMedia({id: "geostory"})
+        ], (actions) => {
+            expect(actions.length).toBe(NUM_ACTIONS);
+            actions.map(a => {
+                switch (a.type) {
+                case UPDATE:
+                    break;
+                case SHOW:
+                    expect(a.owner).toEqual("geostory");
+                    expect(a.settings).toEqual(mediaEditorSettings);
+                    break;
+                default: expect(true).toBe(false);
+                    break;
+                }
+            });
+            done();
+        }, {
+            geostory: {
+                currentStory: {
+                    resources: [{
+                        id: "geostory",
+                        data: {}
+                    }]
+                },
+                mediaEditorSettings
+            },
+            mediaEditor: {
+                settings: {
+                    mediaType: "image"
+                }
+            }
+        });
+    });
     it('update story with already existing image (geostory)', (done) => {
         const NUM_ACTIONS = 3;
         testEpic(addTimeoutEpic(editMediaForBackgroundEpic), NUM_ACTIONS, [
@@ -897,7 +982,7 @@ describe('Geostory Epics', () => {
             actions.map(a => {
                 switch (a.type) {
                 case UPDATE:
-                    expect(a.element.resourceId.length).toEqual(36);
+                    expect(a.element.resourceId.length).toEqual(10);
                     expect(a.element.type).toEqual(mediaType);
                     expect(a.mode).toEqual("merge");
                     expect(a.path).toEqual(`sections[{"id": "section_id"}].contents[{"id": "content_id"}]`);
@@ -906,7 +991,7 @@ describe('Geostory Epics', () => {
                     expect(a.owner).toEqual("geostore");
                     break;
                 case ADD_RESOURCE:
-                    expect(a.id.length).toEqual(36); // uuid
+                    expect(a.id.length).toEqual(10); // uuid
                     expect(a.mediaType).toEqual(mediaType);
                     expect(a.data).toEqual({
                         id: "resourceId",
@@ -941,6 +1026,187 @@ describe('Geostory Epics', () => {
                 settings: {
                     mediaType: "map",
                     sourceId: "geostoreMap"
+                }
+            }
+        });
+    });
+    it('test removes mediaType when resousrce is empty', (done) => {
+        const NUM_ACTIONS = 3;
+        testEpic(addTimeoutEpic(editMediaForBackgroundEpic), NUM_ACTIONS, [
+            editMedia({path: `sections[{"id": "section_id"}].contents[{"id": "content_id"}]`, owner: "geostore"}),
+            chooseMedia(undefined)
+        ],  (actions) => {
+            expect(actions.length).toBe(NUM_ACTIONS);
+            actions.map(a => {
+                switch (a.type) {
+                case SHOW:
+                    expect(a.owner).toEqual("geostore");
+                    break;
+                case SELECT_ITEM:
+                    expect(a.id).toEqual("resource_id");
+                    break;
+                case REMOVE:
+                    expect(a.path).toEqual(`sections[{"id": "section_id"}].contents[{"id": "content_id"}]`);
+                    break;
+                default: expect(true).toBe(false);
+                    break;
+                }
+            });
+            done();
+        }, {
+            geostory: {
+                currentStory: {
+                    resources: [{
+                        id: "resourceId",
+                        type: "image",
+                        data: {
+                            id: "resource_id"
+                        }
+                    }],
+                    sections: [{
+                        id: "section_id",
+                        contents: [{
+                            id: "content_id",
+                            resourceId: "resource_id",
+                            type: "image"
+                        }]
+                    }]
+                }
+            },
+            mediaEditor: {
+                settings: {
+                    mediaType: "image",
+                    sourceId: "geostory"
+                }
+            }
+        });
+    });
+    it('test restore background to the empty value when resource is empty', (done) => {
+        const NUM_ACTIONS = 3;
+        testEpic(addTimeoutEpic(editMediaForBackgroundEpic), NUM_ACTIONS, [
+            editMedia({path: `sections[{"id": "section_id"}].contents[{"id": "content_id"}].background`, owner: "geostore"}),
+            chooseMedia(undefined)
+        ],  (actions) => {
+            expect(actions.length).toBe(NUM_ACTIONS);
+            actions.map(a => {
+                switch (a.type) {
+                case SHOW:
+                    expect(a.owner).toEqual("geostore");
+                    break;
+                case SELECT_ITEM:
+                    expect(a.id).toEqual("resourceId");
+                    break;
+                case REMOVE:
+                    expect(a.path).toEqual(`sections[{"id": "section_id"}].contents[{"id": "content_id"}].background`);
+                    break;
+                default: expect(true).toBe(false);
+                    break;
+                }
+            });
+            done();
+        }, {
+            geostory: {
+                currentStory: {
+                    resources: [{
+                        id: "resourceId",
+                        type: "image",
+                        data: {
+                            id: "resource_id"
+                        }
+                    }],
+                    sections: [{
+                        id: "section_id",
+                        contents: [{
+                            id: "content_id",
+                            resourceId: "resourceId",
+                            background: {
+                                resourceId: "resourceId",
+                                type: "image",
+                                fit: "cover",
+                                size: "full",
+                                align: "center"
+                            }
+                        }]
+                    }]
+                }
+            },
+            mediaEditor: {
+                settings: {
+                    mediaType: "image",
+                    sourceId: "geostory"
+                }
+            }
+        });
+    });
+    it('should use custom media editor settings if available with editMediaForBackgroundEpic', (done) => {
+        const NUM_ACTIONS = 3;
+        const mediaEditorSettings = {
+            sourceId: 'geostory',
+            mediaTypes: {
+                image: {
+                    defaultSource: 'geostory',
+                    sources: ['geostory']
+                },
+                video: {
+                    defaultSource: 'geostory',
+                    sources: ['geostory']
+                },
+                map: {
+                    defaultSource: 'geostory',
+                    sources: ['geostory']
+                }
+            },
+            sources: {
+                geostory: {
+                    name: 'Current story',
+                    type: 'geostory'
+                }
+            }
+        };
+        testEpic(addTimeoutEpic(editMediaForBackgroundEpic), NUM_ACTIONS, [
+            editMedia({path: `sections[{"id": "section_id"}].contents[{"id": "content_id"}]`, owner: "geostore"}),
+            chooseMedia({id: "resourceId"})
+        ], (actions) => {
+            expect(actions.length).toBe(NUM_ACTIONS);
+            actions.map(a => {
+                switch (a.type) {
+                case UPDATE:
+                    break;
+                case SHOW:
+                    expect(a.owner).toEqual("geostore");
+                    expect(a.settings).toEqual(mediaEditorSettings);
+                    break;
+                case SELECT_ITEM:
+                    break;
+                default: expect(true).toBe(false);
+                    break;
+                }
+            });
+            done();
+        }, {
+            geostory: {
+                currentStory: {
+                    resources: [{
+                        id: "resourceId",
+                        type: "image",
+                        data: {
+                            id: "resource_id"
+                        }
+                    }],
+                    sections: [{
+                        id: "section_id",
+                        contents: [{
+                            id: "content_id",
+                            resourceId: "resourceId"
+                        }]
+                    }]
+                },
+                mediaEditorSettings
+            },
+            mediaEditor: {
+                settings: {
+                    mediaType: "image",
+                    sourceId: "geostory"
                 }
             }
         });
@@ -1367,6 +1633,46 @@ describe('Geostory Epics', () => {
                 done();
             });
         });
+    });
 
+    it('urlUpdateOnScroll', (done) => {
+        const NUM_ACTIONS = 1;
+        testEpic(addTimeoutEpic(urlUpdateOnScroll, 100), NUM_ACTIONS, [updateCurrentPage({sectionId: "sectionId"})],
+            (actions) => {
+                expect(actions[0].type).toBe(TEST_TIMEOUT);
+                done();
+            }, {geostory: {mode: "view", updateUrlOnScroll: true, resource: {id: "1"}}});
+    });
+    it('scrollOnLoad', (done) => {
+        const NUM_ACTIONS = 2;
+        testEpic(scrollOnLoad, NUM_ACTIONS, setCurrentStory({}),
+            (actions) => {
+                expect(actions[0].type).toBe(GEOSTORY_SCROLLING);
+                expect(actions[0].status).toBe(true);
+                expect(actions[1].type).toBe(GEOSTORY_SCROLLING);
+                expect(actions[1].status).toBe(false);
+                done();
+            });
+    });
+    describe('loadStoryOnHistoryPop', () => {
+        it('loadStoryOnHistoryPop without shared', (done) => {
+            const NUM_ACTIONS = 1;
+            testEpic(loadStoryOnHistoryPop, NUM_ACTIONS, [{type: "@@router/LOCATION_CHANGE", payload: { action: "POP", location: { pathname: '/geostory/12073/'} }}],
+                (actions) => {
+                    expect(actions[0].type).toBe(LOAD_GEOSTORY);
+                    expect(actions[0].id).toBe('12073');
+                    done();
+                });
+        });
+
+        it('loadStoryOnHistoryPop with shared', (done) => {
+            const NUM_ACTIONS = 1;
+            testEpic(loadStoryOnHistoryPop, NUM_ACTIONS, [{type: "@@router/LOCATION_CHANGE", payload: { action: "POP", location: { pathname: '/geostory/shared/344/'} }}],
+                (actions) => {
+                    expect(actions[0].type).toBe(LOAD_GEOSTORY);
+                    expect(actions[0].id).toBe('344');
+                    done();
+                });
+        });
     });
 });

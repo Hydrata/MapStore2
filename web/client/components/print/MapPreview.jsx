@@ -1,4 +1,3 @@
-const PropTypes = require('prop-types');
 /**
  * Copyright 2016, GeoSolutions Sas.
  * All rights reserved.
@@ -6,14 +5,16 @@ const PropTypes = require('prop-types');
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const React = require('react');
 
-const assign = require('object-assign');
+import assign from 'object-assign';
+import PropTypes from 'prop-types';
+import React from 'react';
+import { Glyphicon } from 'react-bootstrap';
 
-const ScaleBox = require("../mapcontrols/scale/ScaleBox");
-const {Button, Glyphicon} = require('react-bootstrap');
-
-const PrintUtils = require('../../utils/PrintUtils');
+import { getMapZoom } from '../../utils/PrintUtils';
+import ScaleBox from '../mapcontrols/scale/ScaleBox';
+import Button from '../misc/Button';
+import isNil from 'lodash/isNil';
 
 let PMap;
 let Layer;
@@ -58,11 +59,11 @@ class MapPreview extends React.Component {
     };
 
     UNSAFE_componentWillMount() {
-        const mapComponents = require('../map/' + this.props.mapType + '/index');
+        const mapComponents = require('../map/' + this.props.mapType + '/index').default;
         PMap = mapComponents.LMap;
         Layer = mapComponents.LLayer;
         Feature = mapComponents.Feature;
-        require('../map/' + this.props.mapType + '/plugins/index');
+        require('../map/' + this.props.mapType + '/plugins/index').default;
     }
 
     getRatio = () => {
@@ -83,6 +84,8 @@ class MapPreview extends React.Component {
         const ratio = this.getRatio();
         const dpi = Math.round(96.0 / ratio);
         return assign({}, layer, {
+            ...(!isNil(layer?.minResolution) && { minResolution: layer.minResolution * ratio }),
+            ...(!isNil(layer?.maxResolution) && { maxResolution: layer.maxResolution * ratio }),
             params: assign({}, layer.params, {
                 "format_options": "dpi:" + dpi,
                 "MAP.RESOLUTION": dpi
@@ -129,7 +132,7 @@ class MapPreview extends React.Component {
                 interactive={false}
                 onMapViewChanges={this.props.onMapViewChanges}
                 zoomControl={false}
-                zoom={this.props.useFixedScales && this.props.scales ? PrintUtils.getMapZoom(this.props.map.scaleZoom, this.props.scales) : this.props.map.zoom}
+                zoom={this.props.useFixedScales && this.props.scales ? getMapZoom(this.props.map.scaleZoom, this.props.scales) : this.props.map.zoom}
                 center={this.props.map.center}
                 id="print_preview"
                 registerHooks={false}
@@ -156,4 +159,4 @@ class MapPreview extends React.Component {
     }
 }
 
-module.exports = MapPreview;
+export default MapPreview;

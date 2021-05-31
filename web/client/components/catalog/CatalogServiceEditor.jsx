@@ -8,8 +8,9 @@
 import React, {useState} from 'react';
 import Spinner from "react-spinkit";
 
-import { FormGroup, Button, Form, Col } from "react-bootstrap";
+import { FormGroup, Form, Col } from "react-bootstrap";
 
+import Button from '../misc/Button';
 import BorderLayout from "../layout/BorderLayout";
 import Message from "../I18N/Message";
 
@@ -45,7 +46,13 @@ export default ({
     onAddService = () => {},
     onDeleteService = () => {},
     onChangeCatalogMode = () => {},
-    isLocalizedLayerStylesEnabled
+    onFormatOptionsFetch = () => {},
+    selectedService,
+    isLocalizedLayerStylesEnabled,
+    tileSizeOptions = [256, 512],
+    formatsLoading,
+    layerOptions = {},
+    services
 }) => {
     const [valid, setValid] = useState(true);
     return (<BorderLayout
@@ -77,6 +84,11 @@ export default ({
                 onToggleTemplate={onToggleTemplate}
                 onToggleThumbnail={onToggleThumbnail}
                 isLocalizedLayerStylesEnabled={isLocalizedLayerStylesEnabled}
+                tileSizeOptions={tileSizeOptions}
+                currentWMSCatalogLayerSize={layerOptions.tileSize ? layerOptions.tileSize : 256}
+                selectedService={selectedService}
+                onFormatOptionsFetch={onFormatOptionsFetch}
+                formatsLoading={formatsLoading}
             />
             <FormGroup controlId="buttons" key="buttons">
                 <Col xs={12}>
@@ -85,7 +97,7 @@ export default ({
                         <Message msgId="save" />
                     </Button>
                     {service && !service.isNew
-                        ? <Button style={buttonStyle} onClick={() => onDeleteService()} key="catalog_delete_service_button">
+                        ? <Button style={buttonStyle} onClick={() => onDeleteService(service, services)} key="catalog_delete_service_button">
                             <Message msgId="catalog.delete" />
                         </Button>
                         : null

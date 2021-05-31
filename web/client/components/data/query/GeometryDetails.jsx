@@ -5,15 +5,15 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const React = require('react');
-const PropTypes = require('prop-types');
-const {Row, Col, FormControl} = require('react-bootstrap');
-const SwitchPanel = require('../../misc/switch/SwitchPanel');
-const I18N = require('../../I18N/I18N');
+import React from 'react';
 
-const assign = require('object-assign');
-
-const CoordinatesUtils = require("../../../utils/CoordinatesUtils");
+import PropTypes from 'prop-types';
+import { Row, Col } from 'react-bootstrap';
+import SwitchPanel from '../../misc/switch/SwitchPanel';
+import I18N from '../../I18N/I18N';
+import assign from 'object-assign';
+import { reprojectBbox, reproject, getUnits } from '../../../utils/CoordinatesUtils';
+import IntlNumberFormControl from '../../I18N/IntlNumberFormControl';
 
 
 class GeometryDetails extends React.Component {
@@ -64,7 +64,7 @@ class GeometryDetails extends React.Component {
             }
         }
 
-        let bbox = CoordinatesUtils.reprojectBbox(coordinates, 'EPSG:4326', this.props.projection);
+        let bbox = reprojectBbox(coordinates, 'EPSG:4326', this.props.projection);
 
         let geometry = {
             type: this.props.geometry.type,
@@ -86,7 +86,7 @@ class GeometryDetails extends React.Component {
             this.tempCircle[name] = parseFloat(value);
         }
         let center = !isNaN(parseFloat(this.tempCircle.x)) && !isNaN(parseFloat(this.tempCircle.y)) ?
-            CoordinatesUtils.reproject([this.tempCircle.x, this.tempCircle.y], 'EPSG:4326', this.props.projection) : [this.tempCircle.x, this.tempCircle.y];
+            reproject([this.tempCircle.x, this.tempCircle.y], 'EPSG:4326', this.props.projection) : [this.tempCircle.x, this.tempCircle.y];
 
         center = center.x === undefined ? {x: center[0], y: center[1]} : center;
         const validateCenter = {x: !isNaN(center.x) ? center.x : 0, y: !isNaN(center.y) ? center.y : 0};
@@ -122,7 +122,7 @@ class GeometryDetails extends React.Component {
         return (name === 'radius' && !this.isWGS84() && step * 10000) || step;
     };
     getBBOXDimensions = (geometry) => {
-        const extent =  CoordinatesUtils.reprojectBbox(geometry.extent, geometry.projection, 'EPSG:4326');
+        const extent =  reprojectBbox(geometry.extent, geometry.projection, 'EPSG:4326');
 
         return {
             // minx
@@ -137,9 +137,9 @@ class GeometryDetails extends React.Component {
     };
     getCircleDimensions = (geometry) => {
         // Show the center coordinates in 4326
-        const center = CoordinatesUtils.reproject(geometry.center, geometry.projection, 'EPSG:4326');
-        const centerReproject = CoordinatesUtils.reproject(geometry.center, geometry.projection, this.props.projection);
-        const radiusEnd = CoordinatesUtils.reproject([geometry.center[0] + geometry.radius, geometry.center[1]], geometry.projection, this.props.projection);
+        const center = reproject(geometry.center, geometry.projection, 'EPSG:4326');
+        const centerReproject = reproject(geometry.center, geometry.projection, this.props.projection);
+        const radiusEnd = reproject([geometry.center[0] + geometry.radius, geometry.center[1]], geometry.projection, this.props.projection);
         const radius = Math.sqrt((radiusEnd.x - centerReproject.x) * (radiusEnd.x - centerReproject.x) +
             (radiusEnd.y - centerReproject.y) * (radiusEnd.y - centerReproject.y));
 
@@ -153,24 +153,26 @@ class GeometryDetails extends React.Component {
         return (
             <div>
                 <div className="detail-field-title">{name}</div>
-                <FormControl
+                <IntlNumberFormControl
                     style={{minWidth: '105px', margin: 'auto'}}
                     type="number"
                     id={"queryform_bbox_" + name}
                     step={this.getStep(this.props.zoom)}
                     defaultValue={this.roundValue(value, 1000000)}
-                    onChange={(evt) => this.onUpdateBBOX(evt.target.value, name)}/>
+                    onChange={(val) => this.onUpdateBBOX(val, name)}/>
             </div>
         );
     };
     renderCircleField = (value, name) => {
+        // radius should have 2 decimals if uom of projections is meter (EPSG:3857)
+        // all other cases it must have at least 6 decimals because coords are converted to EPSG:4326
         return (
-            <FormControl
+            <IntlNumberFormControl
                 type="number"
                 id={"queryform_circle_" + name}
-                defaultValue={this.roundValue(value, !this.isWGS84() || name === 'radius' ? 100 : 1000000)}
+                defaultValue={this.roundValue(value, name === 'radius' && !this.isWGS84() ? 100 : 1000000)}
                 step={this.getStepCircle(this.props.zoom, name)}
-                onChange={(evt) => this.onUpdateCircle(evt.target.value, name)}/>
+                onChange={(val) => this.onUpdateCircle(val, name)}/>
         );
     };
 
@@ -227,7 +229,7 @@ class GeometryDetails extends React.Component {
             ;
         } else if (this.props.type === "Circle") {
             const circle = this.getCircleDimensions(geometry);
-            const uom = CoordinatesUtils.getUnits(this.props.projection);
+            const uom = getUnits(this.props.projection);
             detailsContent =
                 (<div>
                     <div className="container-fluid">
@@ -344,4 +346,4 @@ class GeometryDetails extends React.Component {
     };
 }
 
-module.exports = GeometryDetails;
+export default GeometryDetails;

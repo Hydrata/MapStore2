@@ -5,12 +5,13 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const PropTypes = require('prop-types');
-const React = require('react');
-const withSideEffect = require('react-side-effect');
-const ConfigUtils = require('../../utils/ConfigUtils');
-const {validateVersion} = require('../../selectors/version');
-const {trim} = require('lodash');
+import PropTypes from 'prop-types';
+
+import React from 'react';
+import withSideEffect from 'react-side-effect';
+import ConfigUtils from '../../utils/ConfigUtils';
+import { validateVersion } from '../../selectors/version';
+import { trim } from 'lodash';
 
 const reducePropsToState = (props) => {
     const innermostProps = props[props.length - 1];
@@ -19,9 +20,9 @@ const reducePropsToState = (props) => {
             version: validateVersion(innermostProps.version) ? "?" + trim(innermostProps.version) : '',
             theme: innermostProps.theme || 'default',
             themeElement: innermostProps.themeElement || 'theme_stylesheet',
-            prefix: innermostProps.prefix || ConfigUtils.getConfigProp('themePrefix') || 'ms2',
+            prefix: innermostProps.prefix || __MAPSTORE_PROJECT_CONFIG__.themePrefix || ConfigUtils.getConfigProp('themePrefix') || 'ms2',
             prefixContainer: innermostProps.prefixContainer && document.querySelector(innermostProps.prefixContainer) || document.body,
-            path: innermostProps.path || 'dist/themes',
+            path: innermostProps.path || __MAPSTORE_PROJECT_CONFIG__.themePath || 'dist/themes',
             onLoad: innermostProps.onLoad || null
         };
     }
@@ -82,4 +83,4 @@ class Theme extends React.Component {
     }
 }
 
-module.exports = withSideEffect(reducePropsToState, handleStateChangeOnClient)(Theme);
+export default withSideEffect(reducePropsToState, handleStateChangeOnClient)(Theme);

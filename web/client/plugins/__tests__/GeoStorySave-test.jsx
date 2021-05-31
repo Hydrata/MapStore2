@@ -8,6 +8,7 @@
 import expect from 'expect';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import TestUtils from 'react-dom/test-utils';
 
 import {GeoStorySave, GeoStorySaveAs} from '../GeoStorySave';
 import { getPluginForTest } from './pluginsTestUtils';
@@ -43,8 +44,8 @@ describe('GeoStorySave Plugins (GeoStorySave, GeoStorySaveAs)', () => {
             // check log-in logout properties selector for button in burger menu
             // hide when not logged in
             expect(containers.BurgerMenu.selector({ security: {} }).style.display).toBe("none");
-            // show when logged in
-            expect(containers.BurgerMenu.selector({security: {user: {}}}).style.display).toNotExist();
+            // hide when logged in if resource is not set
+            expect(containers.BurgerMenu.selector({security: {user: {}}}).style.display).toBe("none");
             // hide if you don't have permissions
             expect(containers.BurgerMenu.selector({ security: { user: {} }, geostory: { resource: { id: 1234, canEdit: false } } }).style.display ).toBe("none");
         });
@@ -52,6 +53,17 @@ describe('GeoStorySave Plugins (GeoStorySave, GeoStorySaveAs)', () => {
             const { Plugin } = getPluginForTest(GeoStorySave, stateMocker(DUMMY_ACTION, setControl(Controls.SHOW_SAVE, "save")));
             ReactDOM.render(<Plugin />, document.getElementById("container"));
             expect(document.getElementsByClassName('modal-fixed').length).toBe(1);
+        });
+        it('title is editable when no resource provided', () => {
+            const { Plugin } = getPluginForTest(GeoStorySave, stateMocker(DUMMY_ACTION, setControl(Controls.SHOW_SAVE, "save")));
+            ReactDOM.render(<Plugin />, document.getElementById("container"));
+            const modal = document.getElementsByClassName('modal-fixed')[0];
+            expect(modal).toExist();
+            const inputEl = modal.getElementsByTagName('input')[1];
+            expect(inputEl).toExist();
+            inputEl.value = 'f';
+            TestUtils.Simulate.change(inputEl);
+            expect(inputEl.value).toBe('f');
         });
     });
     describe('GeoStorySaveAs', () => {
@@ -67,8 +79,8 @@ describe('GeoStorySave Plugins (GeoStorySave, GeoStorySaveAs)', () => {
             // check log-in logout properties selector for button in burger menu
             // hide when not logged in
             expect(containers.BurgerMenu.selector({ security: {} }).style.display).toBe("none");
-            // hide when logged in if resource is not set
-            expect(containers.BurgerMenu.selector({ security: { user: {} } }).style.display).toBe("none");
+            // show when logged in
+            expect(containers.BurgerMenu.selector({ security: { user: {} } }).style.display).toNotExist();
             // show if resource is available for clone
             expect(containers.BurgerMenu.selector({
                 security: { user: {} },
@@ -79,6 +91,17 @@ describe('GeoStorySave Plugins (GeoStorySave, GeoStorySaveAs)', () => {
             const { Plugin } = getPluginForTest(GeoStorySaveAs, stateMocker(DUMMY_ACTION, setControl(Controls.SHOW_SAVE, "saveAs")));
             ReactDOM.render(<Plugin />, document.getElementById("container"));
             expect(document.getElementsByClassName('modal-fixed').length).toBe(1);
+        });
+        it('title is editable', () => {
+            const { Plugin } = getPluginForTest(GeoStorySaveAs, stateMocker(DUMMY_ACTION, setControl(Controls.SHOW_SAVE, "saveAs")));
+            ReactDOM.render(<Plugin />, document.getElementById("container"));
+            const modal = document.getElementsByClassName('modal-fixed')[0];
+            expect(modal).toExist();
+            const inputEl = modal.getElementsByTagName('input')[1];
+            expect(inputEl).toExist();
+            inputEl.value = 'f';
+            TestUtils.Simulate.change(inputEl);
+            expect(inputEl.value).toBe('f');
         });
     });
 });

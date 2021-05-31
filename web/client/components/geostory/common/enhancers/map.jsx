@@ -5,25 +5,22 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
+
+import { find, isEqual } from 'lodash';
 import React from 'react';
-import {withProps, compose, withHandlers, withStateHandlers, branch, withPropsOnChange, mapPropsStream, createEventHandler} from 'recompose';
 import {connect} from 'react-redux';
+import {branch, compose, createEventHandler, mapPropsStream, withHandlers, withProps, withPropsOnChange, withStateHandlers} from 'recompose';
 import {createSelector} from 'reselect';
-import { find, isEqual} from 'lodash';
 import uuid from "uuid";
 
-
 import {show} from '../../../../actions/mapEditor';
-
+import {getCurrentFocusedContentEl, isFocusOnContentSelector, resourcesSelector} from '../../../../selectors/geostory';
 import {createMapObject} from '../../../../utils/GeoStoryUtils';
-import {resourcesSelector, getCurrentFocusedContentEl, isFocusOnContentSelector} from '../../../../selectors/geostory';
-
-
 import Message from '../../../I18N/Message';
+import ToolbarButton from '../../../misc/toolbar/ToolbarButton';
+import withConfirm from '../../../misc/withConfirm';
 import withNodeSelection from '../../../widgets/builder/wizard/map/enhancers/handleNodeSelection';
 
-import withConfirm from '../../../misc/withConfirm';
-import ToolbarButton from '../../../misc/toolbar/ToolbarButton';
 const ConfirmButton = withConfirm(ToolbarButton);
 
 /**
@@ -214,12 +211,12 @@ const isNearlyEqual = function(a, b) {
  * Handle editing, when mapEditing is true, map changes updates the geostory state, otherwise local map state is updated
  */
 export const withMapEditingAndLocalMapState = withHandlers( {
-    onMapViewChanges: ({update, editMap = false, onMapViewLocalChanges, map: {center: oCenter = {}, zoom: oZoom} = {}} = {}) => ({center = {}, zoom, mapStateSource}) => {
+    onMapViewChanges: ({update, editMap = false, onMapViewLocalChanges, map: {center: oCenter = {}, zoom: oZoom} = {}} = {}) => ({center = {}, zoom, mapStateSource, resolution}) => {
         const equalCenter =  isNearlyEqual(oCenter.x, center.x) && isNearlyEqual(oCenter.y, center.y);
         if (editMap && !(equalCenter && oZoom === zoom)) {
-            update("map", {center, zoom, mapStateSource: uuid()}, 'merge');
+            update("map", {center, zoom, mapStateSource: uuid(), resolution}, 'merge');
         } else {
-            onMapViewLocalChanges({center, zoom, mapStateSource});
+            onMapViewLocalChanges({center, zoom, mapStateSource, resolution});
         }
     }
 });

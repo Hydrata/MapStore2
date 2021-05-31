@@ -6,10 +6,11 @@
  * LICENSE file in the root directory of this source tree.
 */
 
-const React = require('react');
-const PropTypes = require('prop-types');
-const CoordinatesEditor = require('./CoordinatesEditor');
-const {getComponents} = require('../../../utils/AnnotationsUtils');
+import React from 'react';
+
+import PropTypes from 'prop-types';
+import CoordinatesEditor from './CoordinatesEditor';
+import { getComponents } from '../../../utils/AnnotationsUtils';
 
 class GeometryEditor extends React.Component {
     static propTypes = {
@@ -28,7 +29,8 @@ class GeometryEditor extends React.Component {
         onChangeRadius: PropTypes.func,
         onSetInvalidSelected: PropTypes.func,
         aeronauticalOptions: PropTypes.object,
-        onChangeText: PropTypes.func
+        onChangeText: PropTypes.func,
+        renderer: PropTypes.string
     };
 
     static defaultProps = {
@@ -67,12 +69,14 @@ class GeometryEditor extends React.Component {
             onHighlightPoint={this.props.onHighlightPoint}
             onSetInvalidSelected={this.props.onSetInvalidSelected}
             onChangeText={this.props.onChangeText}
+            renderer={this.props.renderer}
             onChange={(components, radius, text, crs) => {
                 let coords = components.map(c => [c.lon, c.lat]);
                 this.props.onChange(coords, radius, text, crs);
             }}/>);
+
     }
 
 }
 
-module.exports = GeometryEditor;
+export default GeometryEditor;

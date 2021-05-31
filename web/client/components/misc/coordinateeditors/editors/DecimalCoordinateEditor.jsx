@@ -6,10 +6,12 @@
  * LICENSE file in the root directory of this source tree.
 */
 
-const React = require('react');
-const PropTypes = require('prop-types');
-const {FormGroup, FormControl} = require('react-bootstrap');
-const {capitalize} = require('lodash');
+import {capitalize} from 'lodash';
+import PropTypes from 'prop-types';
+import React from 'react';
+import {FormGroup} from 'react-bootstrap';
+
+import IntlNumberFormControl from '../../../I18N/IntlNumberFormControl';
 
 /**
  This component renders a coordiante inpout for decimal degrees
@@ -24,7 +26,8 @@ class DecimalCoordinateEditor extends React.Component {
         coordinate: PropTypes.string,
         onChange: PropTypes.func,
         onKeyDown: PropTypes.func,
-        onSubmit: PropTypes.func
+        onSubmit: PropTypes.func,
+        disabled: PropTypes.bool
     };
     static defaultProps = {
         format: "decimal",
@@ -41,34 +44,37 @@ class DecimalCoordinateEditor extends React.Component {
                 }
             }
         },
-        onKeyDown: () => {}
+        onKeyDown: () => {},
+        disabled: false
     }
 
 
     render() {
-        const {coordinate, value, onChange} = this.props;
+        const {coordinate, value, onChange, disabled} = this.props;
         const validateNameFunc = "validateDecimal" + capitalize(coordinate);
         return (
             <FormGroup
                 validationState={this[validateNameFunc](value)}>
-                <FormControl
+                <IntlNumberFormControl
+                    disabled={disabled}
                     key={coordinate}
                     value={value}
                     placeholder={coordinate}
-                    onChange={e => {
+                    onChange={val => {
                         // when inserting 4eee5 as number here it comes "" that makes the re-render fail
-                        if (e.target.value === "") {
+                        if (val === "") {
                             onChange("");
-                        }
-                        if (this[validateNameFunc](e.target.value) === null) {
-                            onChange(e.target.value);
+                        } else if (this[validateNameFunc](val) === null) {
+                            onChange(val);
+                        } else {
+                            onChange(value);
                         }
                     }}
-                    onKeyDown={(event) => {
-                        this.verifyOnKeyDownEvent(event);
-                    }}
+                    onKeyDown={this.verifyOnKeyDownEvent}
                     step={1}
-                    type="number"/>
+                    validateNameFunc={this[validateNameFunc]}
+                    type="number"
+                />
             </FormGroup>
         );
     }
@@ -85,7 +91,7 @@ class DecimalCoordinateEditor extends React.Component {
         if (event.keyCode === 13) {
             event.preventDefault();
             event.stopPropagation();
-            this.props.onKeyDown();
+            this.props.onKeyDown(event);
         }
     };
 
@@ -110,4 +116,4 @@ class DecimalCoordinateEditor extends React.Component {
     }
 }
 
-module.exports = DecimalCoordinateEditor;
+export default DecimalCoordinateEditor;

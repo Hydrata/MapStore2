@@ -85,6 +85,8 @@
             "propertiesFormatDescription": "Prikaz informacija o objektu kao lista svojstava",
             "templateFormatTitle": "PREDLOŽAK",
             "templateFormatDescription": "Prilagodba prikaza informacija o objektu",
+            "hideFormatTitle": "DÉSACTIVER L'IDENTIFICATION",
+            "hideFormatDescription": "Tiltsa le a funkció információit ehhez a réteghez",
             "templateFormatInfoAlert1": "Klikni na dugme za editiranje za dodavanje novog predloška.",
             "templateFormatInfoAlert2": "Koristi ${ attribute } za označavanje atributa za prikaz",
             "templateFormatInfoAlertExample": "Id objekta je ${ properties }",
@@ -141,6 +143,9 @@
         "elevationNotAvailable": "N/A",
         "mapScale": "Mjerilo:",
         "showMousePositionCoordinates": "Prikaži/Sakrij koordinate",
+        "showCrsSelector": "Select projection",
+        "crsSelectorFilterPlaceholder": "Filter projection",
+        "crsSelectorSelectedCRS": "Selected:",
         "menu": "Meni",
         "options": "Mogućnosti",
         "settings": "Postavke",
@@ -188,7 +193,7 @@
             "Examples": "Primjeri",
             "LinkedinGroup": "Mapstore Linkedin grupa",
             "scrollTop": "Pomakni gore na vrh stranice",
-            "footerDescription": "<small>GeoSolutions S.a.s. | Via di Montramito 3/A, 55054 Massarosa (Lucca) - Italy info@geo-solutions.it | Tel: +39 0584 962313 | Fax: +39 0584 1660272</small>",
+            "footerDescription": "<strong>GeoSolutions</strong> <a href=\"mailto:info@geosolutionsgroup.com\">info@geosolutionsgroup.com</a> <strong>US</strong> +1 (301) 337-7055 -  <strong>Italy</strong>: +39 0584 962313",
             "ml": {
                 "title": "Ostanite u kontaktu i informirani putem E-mail lista",
                 "subscribe_users": "Pretplati se na korisničku E-mail listu",
@@ -428,7 +433,6 @@
             "removeLayer": "Ukloni sloj",
             "loadingerror": "Sloj se nije učitao ispravno ili nije dostupan",
             "measure": "Izmjeri",
-            "backgroundSwitcher": "Podloge",
             "layers": "Slojevi",
             "drawerButton": "Slojevi",
             "refreshTitle": "Ažuriraj slojeve",
@@ -772,7 +776,6 @@
             "settingsPanel": "Ovo je pomoć za kontrolu postavki",
             "gohome": "Ovo je pomoć za kontrolu početne stranice",
             "measureComponent": "Ovo je pomoć za kontrolu mjerenja",
-            "backgroundSwitcher": "Ovo je pomoć za kontrolu promjene podloga",
             "layerSwitcher": "Ovo je pomoć za kontrolu prekidača za slojeve",
             "infoButton": "Ovo je pomoć za kontrolu dohvata informacija",
             "locateBtn": "Ovo je pomoć za kontrolu lokacije",
@@ -877,7 +880,8 @@
                 "operation": "Operacija",
                 "placeholder": "Odaberi sloj",
                 "errors": {
-                    "noCrossLayerAvailable": "Unakrsni filter više slojeva nije omogućen za odabrani sloj"
+                    "noCrossLayerAvailable": "Unakrsni filter više slojeva nije omogućen za odabrani sloj",
+                    "layersExcluded": "Kao ciljni sloj za ovaj filtar slojeva mogu se odabrati samo slojevi koji dolaze iz istog izvora"
                 }
             },
             "changedFilter": "Filter prominjenjen",
@@ -896,7 +900,7 @@
             "cancel": "Odustani",
             "back": "Natrag",
             "applyStyle": "Primijeni stil",
-            "addMarker": "Dodaj novu oznaku na karti",
+            "addGeometry": "Dodaj novu oznaku na karti",
             "styleGeometry": "Odaberi različiti stil za točke",
             "deleteGeometry": "Ukloni geometrije pribilješki",
             "removeannotation": "Želite li ukloniti pribilješku sa naslovom: {title}?",
@@ -971,7 +975,7 @@
             "changePwd": "Promijeni zaporku",
             "newPwd": "Nova zaporka",
             "retypePwd": "Ponovno upiši zaporku",
-            "passwordMinlenght": "Vaša zaporka mora imati najmanje {minSize} znakova",
+            "passwordMinlenght": "Vaša zaporka mora imati najmanje {data} znakova",
             "passwordCheckFail": "Zaporke se ne podudaraju!",
             "passwordInvalid": "Neispravna zaporka",
             "username": "Korisničko ime",
@@ -1361,7 +1365,7 @@
                 "createNewChart": "Kreiraj grafikon za odabrani sloj"
             }
         },
-        "wfsdownload": {
+        "layerdownload": {
             "title": "Izvezi podatke",
             "format": "Format datoteke",
             "srs":  "Koordinatni sustav",

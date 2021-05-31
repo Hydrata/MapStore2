@@ -6,19 +6,19 @@
  * LICENSE file in the root directory of this source tree.
 */
 
-const PropTypes = require('prop-types');
-const React = require('react');
-const {Row, Col, FormControl} = require('react-bootstrap');
-const Combobox = require('react-widgets').Combobox;
-const Slider = require('react-nouislider');
+import PropTypes from 'prop-types';
 
-const numberLocalizer = require('react-widgets/lib/localizers/simple-number');
+import React from 'react';
+import { Combobox } from 'react-widgets';
+import Slider from 'react-nouislider';
+import IntlNumberFormControl from '../../I18N/IntlNumberFormControl';
+import numberLocalizer from 'react-widgets/lib/localizers/simple-number';
 // not sure this is needed, TODO check!
 numberLocalizer();
 
-const Message = require('../../I18N/Message');
-const LocaleUtils = require('../../../utils/LocaleUtils');
-const {createFont} = require('../../../utils/AnnotationsUtils');
+import Message from '../../I18N/Message';
+import { getMessageById } from '../../../utils/LocaleUtils';
+import { createFont } from '../../../utils/AnnotationsUtils';
 
 /**
  * Styler for the stroke properties of a vector style
@@ -60,22 +60,20 @@ class Text extends React.Component {
 
     render() {
         const messages = {
-            emptyList: LocaleUtils.getMessageById(this.context.messages, "queryform.attributefilter.autocomplete.emptyList"),
-            open: LocaleUtils.getMessageById(this.context.messages, "queryform.attributefilter.autocomplete.open"),
-            emptyFilter: LocaleUtils.getMessageById(this.context.messages, "queryform.attributefilter.autocomplete.emptyFilter")
+            emptyList: getMessageById(this.context.messages, "queryform.attributefilter.autocomplete.emptyList"),
+            open: getMessageById(this.context.messages, "queryform.attributefilter.autocomplete.open"),
+            emptyFilter: getMessageById(this.context.messages, "queryform.attributefilter.autocomplete.emptyFilter")
         };
         const {style} = this.props;
-        return (<div>
-            <Row>
-                <Col xs={12}>
-                    <strong><Message msgId="draw.fontTitle"/></strong>
-                </Col>
-            </Row>
-            <Row>
-                <Col xs={6}>
+        return (<div className={"ms-text-style"}>
+            <div className={"content"}>
+                <strong><Message msgId="draw.fontTitle"/></strong>
+            </div>
+            <div className={"content"}>
+                <div className="left">
                     <Message msgId="draw.font.family"/>
-                </Col>
-                <Col xs={6} style={{position: 'static'}}>
+                </div>
+                <div  className="right">
                     <Combobox
                         value={this.state.fontFamily || "Arial"}
                         textField="value"
@@ -92,25 +90,26 @@ class Text extends React.Component {
                             this.props.onChange(style.id, {fontFamily, font});
                         }}
                     />
-                </Col>
-            </Row>
-            <Row>
-                <Col xs={6}>
+                </div>
+            </div>
+            <div className={"content"}>
+                <div className="left">
                     <Message msgId="draw.font.size"/>
-                </Col>
-                <Col xs={4} style={{position: 'static'}}>
-                    <FormControl
-                        value={style.fontSize || 14}
-                        placeholder=""
-                        onChange={(e) => {
-                            const fontSize = e.target.value || 14;
-                            const font = createFont({...style, fontSize});
-                            this.props.onChange(style.id, {fontSize, font});
-                        }}
-                        type="number"/>
-                </Col>
-                <Col xs={2}>
+                </div>
+                <div className="right" style={{display: "flex"}}>
+                    <div className="left font-size">
+                        <IntlNumberFormControl
+                            value={style.fontSize || 14}
+                            placeholder=""
+                            onChange={(val) => {
+                                const fontSize = val || 14;
+                                const font = createFont({...style, fontSize});
+                                this.props.onChange(style.id, {fontSize, font});
+                            }}
+                            type="number"/>
+                    </div>
                     <Combobox
+                        className={"font-uom"}
                         value={style.fontSizeUom || "px"}
                         textField="value"
                         valueField="value"
@@ -125,13 +124,13 @@ class Text extends React.Component {
                             this.props.onChange(style.id, {fontSizeUom, font});
                         }}
                     />
-                </Col>
-            </Row>
-            <Row>
-                <Col xs={6}>
+                </div>
+            </div>
+            <div className={"content"}>
+                <div className="left">
                     <Message msgId="draw.font.style"/>
-                </Col>
-                <Col xs={6} style={{position: 'static'}}>
+                </div>
+                <div className="right">
                     <Combobox
                         value={style.fontStyle || "normal"}
                         textField="value"
@@ -147,13 +146,13 @@ class Text extends React.Component {
                             this.props.onChange(style.id, {fontStyle, font});
                         }}
                     />
-                </Col>
-            </Row>
-            <Row>
-                <Col xs={6}>
+                </div>
+            </div>
+            <div className={"content"}>
+                <div className="left">
                     <Message msgId="draw.font.weight"/>
-                </Col>
-                <Col xs={6} style={{position: 'static'}}>
+                </div>
+                <div className="right">
                     <Combobox
                         value={style.fontWeight || "normal"}
                         textField="value"
@@ -169,18 +168,18 @@ class Text extends React.Component {
                             this.props.onChange(style.id, {fontWeight, font});
                         }}
                     />
-                </Col>
-            </Row>
-            <Row>
-                <Col xs={12}>
+                </div>
+            </div>
+            <div className={"content"}>
+                <div className="left">
                     <strong><Message msgId="draw.text"/></strong>
-                </Col>
-            </Row>
-            <Row>
-                <Col xs={6}>
+                </div>
+            </div>
+            <div className={"content"}>
+                <div className="left">
                     <Message msgId="draw.font.textAlign"/>
-                </Col>
-                <Col xs={6} style={{position: 'static'}}>
+                </div>
+                <div className="right">
                     <Combobox
                         value={style.textAlign || "center"}
                         textField="label"
@@ -195,13 +194,13 @@ class Text extends React.Component {
                             this.props.onChange(style.id, {textAlign});
                         }}
                     />
-                </Col>
-            </Row>
-            <Row>
-                <Col xs={6}>
+                </div>
+            </div>
+            <div className={"content"}>
+                <div className="left">
                     <Message msgId="draw.textRotation"/>
-                </Col>
-                <Col xs={6} style={{position: "static"}}>
+                </div>
+                <div className="right">
                     <div className="mapstore-slider with-tooltip">
                         <Slider
                             tooltips
@@ -221,10 +220,10 @@ class Text extends React.Component {
                             }}
                         />
                     </div>
-                </Col>
-            </Row>
+                </div>
+            </div>
         </div>);
     }
 }
 
-module.exports = Text;
+export default Text;

@@ -6,18 +6,21 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const React = require('react');
-const {connect} = require('react-redux');
-const {compose} = require("recompose");
+import PropTypes from 'prop-types';
+import React, { Suspense } from 'react';
+import LoadingView from '../components/misc/LoadingView';
 
-const {createSelector} = require('reselect');
-const {selectedRules, filterSelector, isEditorActive, triggerLoadSel} = require('../selectors/rulesmanager');
+import ContainerDimensions from 'react-container-dimensions';
+import { connect } from 'react-redux';
+import { compose } from 'recompose';
+import { createSelector } from 'reselect';
 
-const ContainerDimensions = require('react-container-dimensions').default;
-const PropTypes = require('prop-types');
-const {rulesSelected, setLoading, setFilter} = require("../actions/rulesmanager");
-const {error} = require('../actions/notifications');
-
+import { error } from '../actions/notifications';
+import { rulesSelected, setFilter, setLoading } from '../actions/rulesmanager';
+import rulesgridComp from '../components/manager/rulesmanager/rulesgrid/enhancers/rulesgrid';
+import rulesmanager from '../reducers/rulesmanager';
+import { filterSelector, isEditorActive, selectedRules, triggerLoadSel } from '../selectors/rulesmanager';
+const RulesGridComp = React.lazy(() => import('../components/manager/rulesmanager/rulesgrid/RulesGrid'));
 const ruelsSelector = createSelector([selectedRules, filterSelector, triggerLoadSel], (rules, filters, triggerLoad) => {
     return {
         selectedIds: rules.map(r => r.id),
@@ -27,9 +30,9 @@ const ruelsSelector = createSelector([selectedRules, filterSelector, triggerLoad
 });
 const rulesGridEnhancer = compose(
     connect( ruelsSelector, {onSelect: rulesSelected, onLoadError: error, setLoading, setFilters: setFilter}),
-    require('../components/manager/rulesmanager/rulesgrid/enhancers/rulesgrid'));
+    rulesgridComp);
 
-const RulesGrid = rulesGridEnhancer(require('../components/manager/rulesmanager/rulesgrid/RulesGrid'));
+const RulesGrid = rulesGridEnhancer(RulesGridComp);
 
 /**
   * @name RulesDataGrid
@@ -56,7 +59,9 @@ class RulesDataGrid extends React.Component {
          return (<ContainerDimensions>{({width, height}) =>
              (<div className={`rules-data-gird ${this.props.enabled ? "" : "hide-locked-cell"}`}>
                  {!this.props.enabled && (<div className="ms-overlay"/>)}
-                 <RulesGrid width={width} height={height}/>
+                 <Suspense fallback={<LoadingView />}>
+                     <RulesGrid width={width} height={height}/>
+                 </Suspense>
              </div>)
          }
          </ContainerDimensions>);
@@ -72,7 +77,8 @@ const RulesDataGridPlugin = connect(
         // onUnmount: () => setEditorAvailable(false)
     }
 )(RulesDataGrid);
-module.exports = {
+
+export default {
     RulesDataGridPlugin,
-    reducers: {rulesmanager: require('../reducers/rulesmanager')}
+    reducers: {rulesmanager}
 };

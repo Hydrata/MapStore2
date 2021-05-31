@@ -5,11 +5,14 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-var React = require('react');
-var ReactDOM = require('react-dom');
-var Toolbar = require('../Toolbar');
-var expect = require('expect');
-const {filter} = require('lodash');
+
+import expect from 'expect';
+import {filter} from 'lodash';
+import React from 'react';
+import ReactDOM from 'react-dom';
+
+import Toolbar from '../Toolbar';
+
 const spyOn = expect.spyOn;
 
 const isVisibleButton = (el) => {
@@ -308,25 +311,28 @@ describe('Featuregrid toolbar component', () => {
         ReactDOM.render(<Toolbar mode="EDIT" selectedCount={0} hasSupportedGeometry={false} />, document.getElementById("container"));
         const el = document.getElementsByClassName("featuregrid-toolbar")[0];
         expect(el).toExist();
-        expect(filter(document.getElementsByClassName("square-button"), function(b) { return isVisibleButton(b); }).length).toBe(1);
+        expect(filter(document.getElementsByClassName("square-button"), function(b) { return isVisibleButton(b); }).length).toBe(2);
         expect(isVisibleButton(document.getElementById("fg-add-feature"))).toBe(false);
         expect(isVisibleButton(document.getElementById("fg-back-view"))).toBe(true);
+        expect(isVisibleButton(document.getElementById("fg-grid-map-filter"))).toBe(true);
 
         ReactDOM.render(<Toolbar mode="EDIT" selectedCount={1} hasSupportedGeometry={false} />, document.getElementById("container"));
-        expect(filter(document.getElementsByClassName("square-button"), function(b) { return isVisibleButton(b); }).length).toBe(2);
+        expect(filter(document.getElementsByClassName("square-button"), function(b) { return isVisibleButton(b); }).length).toBe(3);
         expect(isVisibleButton(document.getElementById("fg-add-feature"))).toBe(false);
         expect(isVisibleButton(document.getElementById("fg-draw-feature"))).toBe(false);
         expect(isVisibleButton(document.getElementById("fg-delete-geometry"))).toBe(false);
         expect(isVisibleButton(document.getElementById("fg-remove-features"))).toBe(true);
         expect(isVisibleButton(document.getElementById("fg-back-view"))).toBe(true);
+        expect(isVisibleButton(document.getElementById("fg-grid-map-filter"))).toBe(true);
         ReactDOM.unmountComponentAtNode(document.getElementById("container"));
 
         ReactDOM.render(<Toolbar mode="EDIT" selectedCount={1} hasSupportedGeometry={false} hasChanges/>, document.getElementById("container"));
-        expect(filter(document.getElementsByClassName("square-button"), function(b) { return isVisibleButton(b); }).length).toBe(2);
+        expect(filter(document.getElementsByClassName("square-button"), function(b) { return isVisibleButton(b); }).length).toBe(3);
         expect(isVisibleButton(document.getElementById("fg-draw-feature"))).toBe(false);
         expect(isVisibleButton(document.getElementById("fg-delete-geometry"))).toBe(false);
         expect(isVisibleButton(document.getElementById("fg-save-feature"))).toBe(true);
         expect(isVisibleButton(document.getElementById("fg-cancel-editing"))).toBe(true);
+        expect(isVisibleButton(document.getElementById("fg-grid-map-filter"))).toBe(true);
     });
 
     it('check zoom-all button if all features has no geom', () => {
@@ -339,10 +345,10 @@ describe('Featuregrid toolbar component', () => {
         expect(el).toExist();
         let zoomAllButton = document.getElementById("fg-zoom-all");
         expect(isVisibleButton(zoomAllButton)).toBe(true);
-        expect(el.children[2].disabled).toBe(true);
+        expect(el.children[2].classList.contains('disabled')).toBe(true);
         ReactDOM.render(<Toolbar events={events} mode="VIEW" disableZoomAll={false}/>, document.getElementById("container"));
         zoomAllButton = document.getElementById("fg-zoom-all");
-        expect(el.children[2].disabled).toBe(false);
+        expect(el.children[2].classList.contains('disabled')).toBe(false);
     });
     describe('time sync button', () => {
         it('visibility', () => {

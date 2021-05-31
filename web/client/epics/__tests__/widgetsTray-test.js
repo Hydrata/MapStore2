@@ -5,19 +5,26 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const expect = require('expect');
-const { testEpic, TEST_TIMEOUT, addTimeoutEpic } = require('./epicTestUtils');
-const { configureMap } = require('../../actions/config');
+import expect from 'expect';
 
-const { updateLayerDimensionData } = require('../../actions/dimension');
-const { changeLayerProperties } = require('../../actions/layers');
-const { SHOW_NOTIFICATION } = require('../../actions/notifications');
-const { rangeDataLoaded, setCollapsed, SET_COLLAPSED } = require('../../actions/timeline');
-const { deleteWidget, insertWidget, toggleCollapseAll, updateWidgetProperty, TOGGLE_COLLAPSE_ALL } = require('../../actions/widgets');
+import { testEpic, TEST_TIMEOUT, addTimeoutEpic } from './epicTestUtils';
+import { configureMap } from '../../actions/config';
+import { updateLayerDimensionData } from '../../actions/dimension';
+import { changeLayerProperties } from '../../actions/layers';
+import { SHOW_NOTIFICATION } from '../../actions/notifications';
+import { rangeDataLoaded, setCollapsed, SET_COLLAPSED } from '../../actions/timeline';
 
-const timeline = require('../../reducers/timeline');
-const dimension = require('../../reducers/dimension');
-const widgets = require('../../reducers/widgets');
+import {
+    deleteWidget,
+    insertWidget,
+    toggleCollapseAll,
+    updateWidgetProperty,
+    TOGGLE_COLLAPSE_ALL
+} from '../../actions/widgets';
+
+import timeline from '../../reducers/timeline';
+import dimension from '../../reducers/dimension';
+import widgets from '../../reducers/widgets';
 // TEST DATA
 const T1 = '2016-01-01T00:00:00.000Z';
 const T2 = '2016-02-01T00:00:00.000Z';
@@ -50,17 +57,19 @@ const TIMELINE_STATE_VALUES = timeline(undefined, rangeDataLoaded(
 
 // sample dimension state for TEST_LAYER
 const DIMENSION_STATE = dimension(undefined, updateLayerDimensionData(TEST_LAYER_ID, "time", TIME_DIMENSION_DATA));
-
+const VISIBILITY = {visibility: true};
 const LAYERS_NO_TIME_STATE = {
     flat: [{
-        id: TEST_LAYER_ID
+        id: TEST_LAYER_ID,
+        ...VISIBILITY
     }]
 };
 
 const LAYERS_WITH_TIME = {
     flat: [{
         id: TEST_LAYER_ID,
-        dimensions: [TIME_DIMENSION_DATA]
+        dimensions: [TIME_DIMENSION_DATA],
+        ...VISIBILITY
     }]
 };
 
@@ -89,11 +98,11 @@ const NO_WIDGETS_STATE = {
 };
 
 // EPICS TO TEST
-const {
+import {
     collapseTimelineOnWidgetsEvents,
     collapseWidgetsOnTimelineEvents,
     expandTimelineIfCollapsedOnTrayUnmount
-} = require('../widgetsTray');
+} from '../widgetsTray';
 
 
 describe('widgetsTray epics', () => {

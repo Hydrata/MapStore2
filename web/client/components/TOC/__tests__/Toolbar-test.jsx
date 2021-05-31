@@ -5,13 +5,12 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const React = require('react');
-const ReactDOM = require('react-dom');
+import React from 'react';
 
-const Toolbar = require('../Toolbar');
-const expect = require('expect');
-
-const TestUtils = require('react-dom/test-utils');
+import ReactDOM from 'react-dom';
+import Toolbar from '../Toolbar';
+import expect from 'expect';
+import TestUtils from 'react-dom/test-utils';
 
 const onToolsActions = {
     onZoom: () => {},
@@ -30,7 +29,8 @@ const onToolsActions = {
     onAddGroup: () => {},
     onGetMetadataRecord: () => {},
     onHideLayerMetadata: () => {},
-    onShow: () => {}
+    onShow: () => {},
+    onLayerInfo: () => {}
 };
 
 describe('TOC Toolbar', () => {
@@ -46,18 +46,22 @@ describe('TOC Toolbar', () => {
     });
 
     it('deselected element', () => {
+        const spyLayerInfo = expect.spyOn(onToolsActions, 'onLayerInfo');
         const spyAddLayer = expect.spyOn(onToolsActions, 'onAddLayer');
         const spyAddGroup = expect.spyOn(onToolsActions, 'onAddGroup');
         ReactDOM.render(<Toolbar onToolsActions={onToolsActions}/>, document.getElementById("container"));
         const el = document.getElementsByClassName("btn-group").item(0);
         expect(el).toExist();
         const btn = el.getElementsByClassName("btn");
-        expect(btn.length).toBe(2);
-        expect(btn[0].innerHTML).toContain('add-layer');
-        expect(btn[1].innerHTML).toContain('add-folder');
+        expect(btn.length).toBe(3);
+        expect(btn[0].innerHTML).toContain('layer-info');
+        expect(btn[1].innerHTML).toContain('add-layer');
+        expect(btn[2].innerHTML).toContain('add-folder');
         TestUtils.Simulate.click(btn[0]);
-        expect(spyAddLayer).toHaveBeenCalled();
+        expect(spyLayerInfo).toHaveBeenCalled();
         TestUtils.Simulate.click(btn[1]);
+        expect(spyAddLayer).toHaveBeenCalled();
+        TestUtils.Simulate.click(btn[2]);
         expect(spyAddGroup).toHaveBeenCalled();
     });
 
@@ -526,6 +530,10 @@ describe('TOC Toolbar', () => {
                         minx: -10,
                         miny: -9
                     }, crs: 'EPSG:3003'
+                },
+                search: {
+                    type: "wfs",
+                    url: "/geoserver/wfs"
                 }
             }];
             const activateTool = {
@@ -563,12 +571,36 @@ describe('TOC Toolbar', () => {
                         minx: -10,
                         miny: -9
                     }, crs: 'EPSG:3003'
+                },
+                search: {
+                    type: "wfs",
+                    url: "/geoserver/wfs"
                 }
             }];
             ReactDOM.render(<Toolbar activateTool={{ activateWidgetTool: true }} selectedLayers={selectedLayers} />, document.getElementById("container"));
             const widgetButton = document.querySelector(WIDGET_TOOL_SELECTOR);
             expect(widgetButton).toNotExist();
 
+        });
+
+        it('deactivate layers without search property(Raster Layers)', () => {
+            const selectedLayers = [{
+                id: 'l002',
+                title: 'layer002',
+                type: 'wms',
+                name: 'layer001name',
+                bbox: {
+                    bounds: {
+                        maxx: 10,
+                        maxy: 9,
+                        minx: -10,
+                        miny: -9
+                    }, crs: 'EPSG:3003'
+                }
+            }];
+            ReactDOM.render(<Toolbar activateTool={{ activateWidgetTool: true }} selectedLayers={selectedLayers} />, document.getElementById("container"));
+            const widgetButton = document.querySelector(WIDGET_TOOL_SELECTOR);
+            expect(widgetButton).toNotExist();
         });
     });
 

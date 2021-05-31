@@ -6,20 +6,35 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const { EDIT_NEW, INSERT, EDIT, UPDATE_PROPERTY, UPDATE_LAYER, DELETE, EDITOR_CHANGE, EDITOR_SETTING_CHANGE, CHANGE_LAYOUT, CLEAR_WIDGETS, DEFAULT_TARGET,
-    ADD_DEPENDENCY, REMOVE_DEPENDENCY, LOAD_DEPENDENCIES, RESET_DEPENDENCIES, TOGGLE_COLLAPSE, TOGGLE_COLLAPSE_ALL, TOGGLE_TRAY, toggleCollapse} = require('../actions/widgets');
-const {
-    MAP_CONFIG_LOADED
-} = require('../actions/config');
-const {
-    DASHBOARD_LOADED,
-    DASHBOARD_RESET
-} = require('../actions/dashboard');
+import {
+    EDIT_NEW,
+    INSERT,
+    EDIT,
+    UPDATE_PROPERTY,
+    UPDATE_LAYER,
+    DELETE,
+    EDITOR_CHANGE,
+    EDITOR_SETTING_CHANGE,
+    CHANGE_LAYOUT,
+    CLEAR_WIDGETS,
+    DEFAULT_TARGET,
+    ADD_DEPENDENCY,
+    REMOVE_DEPENDENCY,
+    LOAD_DEPENDENCIES,
+    RESET_DEPENDENCIES,
+    TOGGLE_COLLAPSE,
+    TOGGLE_MAXIMIZE,
+    TOGGLE_COLLAPSE_ALL,
+    TOGGLE_TRAY,
+    toggleCollapse
+} from '../actions/widgets';
 
-const assign = require('object-assign');
-const set = require('lodash/fp/set');
-const { get, find, omit, mapValues, castArray} = require('lodash');
-const {arrayUpsert, compose, arrayDelete} = require('../utils/ImmutableUtils');
+import { MAP_CONFIG_LOADED } from '../actions/config';
+import { DASHBOARD_LOADED, DASHBOARD_RESET } from '../actions/dashboard';
+import assign from 'object-assign';
+import set from 'lodash/fp/set';
+import { get, find, omit, mapValues, castArray } from 'lodash';
+import { arrayUpsert, compose, arrayDelete } from '../utils/ImmutableUtils';
 
 const emptyState = {
     dependencies: {
@@ -102,7 +117,7 @@ function widgetsReducer(state = emptyState, action) {
             set(
                 action.key,
                 action.mode === "merge" ? assign({}, oldWidget[action.key], action.value) : action.value,
-                oldWidget,
+                oldWidget
             ), {
                 id: action.id
             }, state);
@@ -150,7 +165,7 @@ function widgetsReducer(state = emptyState, action) {
         return set(`dependencies`, dependencies, state);
     case RESET_DEPENDENCIES:
         return set('dependencies', emptyState.dependencies, state);
-    case TOGGLE_COLLAPSE:
+    case TOGGLE_COLLAPSE: {
         /*
              * Collapse functionality has been implemented keeping the widget unchanged, adding it's layout is added to a map of collapsed objects.
              * The widgets plugin filters out the collapsed widget from the widgets list to render
@@ -220,6 +235,73 @@ function widgetsReducer(state = emptyState, action) {
                 v => find(v, {i: widget.id})
             )
         }, state);
+    }
+    case TOGGLE_MAXIMIZE: {
+        const widget = action.widget;
+        const maximized = state?.containers?.[action.target]?.maximized;
+
+        if (!widget || widget.dataGrid?.static) {
+            return state;
+        }
+
+        if (maximized?.widget) {
+            return compose(
+                set(`containers[${action.target}].layout`, maximized.layout),
+                set(`containers[${action.target}].layouts`, maximized.layouts),
+                set(`containers[${action.target}].maximized`, {}),
+                set(`containers[${action.target}].widgets`, state?.containers?.[action.target]?.widgets?.map(w => w.id === maximized.widget.id ?
+                    {
+                        ...w,
+                        dataGrid: {
+                            ...w.dataGrid,
+                            isDraggable: true,
+                            isResizable: true
+                        }
+                    } : w)
+                )
+            )(state);
+        }
+
+        if (state?.containers?.[action.target]?.collapsed?.[widget.id]) {
+            return state;
+        }
+
+        // we assume that react-grid-layout has just one cell with one xxs breakpoint at 0, that is covering
+        // the area that is supposed to be taken by maximized widget, when maximized state is present
+        const newLayoutValues = {
+            x: 0,
+            y: 0,
+            w: 1,
+            h: 1
+        };
+        const oldLayoutValue = find(state?.containers?.[action.target]?.layout, {i: widget.id});
+        const newLayoutValue = {
+            ...oldLayoutValue,
+            ...newLayoutValues
+        };
+
+        return compose(
+            set(`containers[${action.target}].maximized`, {
+                widget,
+                layout: state?.containers?.[action.target]?.layout,
+                layouts: state?.containers?.[action.target]?.layouts
+            }),
+            set(`containers[${action.target}].layout`, [newLayoutValue]),
+            set(`containers[${action.target}].layouts`, {
+                xxs: [newLayoutValue]
+            }),
+            set(`containers[${action.target}].widgets`, state?.containers?.[action.target]?.widgets?.map(w => w.id === widget.id ?
+                {
+                    ...w,
+                    dataGrid: {
+                        ...w.dataGrid,
+                        isDraggable: false,
+                        isResizable: false
+                    }
+                } : w)
+            )
+        )(state);
+    }
     case TOGGLE_COLLAPSE_ALL: {
         // get widgets excluding static widgets
         const widgets = get(state, `containers[${action.target}].widgets`, [])
@@ -248,4 +330,4 @@ function widgetsReducer(state = emptyState, action) {
     }
 }
 
-module.exports = widgetsReducer;
+export default widgetsReducer;

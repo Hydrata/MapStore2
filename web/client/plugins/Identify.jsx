@@ -5,43 +5,80 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const React = require('react');
-const {Glyphicon} = require('react-bootstrap');
-const {connect} = require('react-redux');
-const { createSelector, createStructuredSelector} = require('reselect');
-const assign = require('object-assign');
-const {mapSelector, isMouseMoveIdentifyActiveSelector} = require('../selectors/map');
-const {layersSelector} = require('../selectors/layers');
-const { mapTypeSelector, isCesium } = require('../selectors/maptype');
 
-const { generalInfoFormatSelector, clickPointSelector, indexSelector, responsesSelector, validResponsesSelector, showEmptyMessageGFISelector, isHighlightEnabledSelector, currentFeatureSelector, currentFeatureCrsSelector } = require('../selectors/mapInfo');
-const { isEditingAllowedSelector } = require('../selectors/featuregrid');
+import './identify/identify.css';
 
+import { isUndefined } from 'lodash';
+import assign from 'object-assign';
+import React from 'react';
+import { Glyphicon } from 'react-bootstrap';
+import { connect } from 'react-redux';
+import { compose, defaultProps } from 'recompose';
+import { createSelector, createStructuredSelector } from 'reselect';
 
-const { hideMapinfoMarker, showMapinfoRevGeocode, hideMapinfoRevGeocode, clearWarning, toggleMapInfoState, changeMapInfoFormat, updateCenterToMarker, closeIdentify, purgeMapInfoResults, updateFeatureInfoClickPoint, changeFormat, toggleShowCoordinateEditor, changePage, toggleHighlightFeature, editLayerFeatures} = require('../actions/mapInfo');
-const { changeMousePointer, zoomToExtent, registerEventListener, unRegisterEventListener} = require('../actions/map');
-
-
-const {currentLocaleSelector} = require('../selectors/locale');
-const {mapLayoutValuesSelector} = require('../selectors/maplayout');
-
-const { compose, defaultProps } = require('recompose');
-const MapInfoUtils = require('../utils/MapInfoUtils');
-const loadingState = require('../components/misc/enhancers/loadingState');
-const {defaultViewerHandlers, defaultViewerDefaultProps} = require('../components/data/identify/enhancers/defaultViewer');
-const {identifyLifecycle} = require('../components/data/identify/enhancers/identify');
-const zoomToFeatureHandler = require('..//components/data/identify/enhancers/zoomToFeatureHandler');
-const getToolButtons = require('./identify/toolButtons');
-const getNavigationButtons = require('./identify/navigationButtons');
-const Message = require('./locale/Message');
-
-require('./identify/identify.css');
+import { changeMousePointer, zoomToExtent } from '../actions/map';
+import {
+    changeFormat,
+    changeMapInfoFormat,
+    changePage,
+    clearWarning,
+    setShowInMapPopup,
+    closeIdentify,
+    editLayerFeatures,
+    hideMapinfoMarker,
+    hideMapinfoRevGeocode,
+    purgeMapInfoResults,
+    setMapTrigger,
+    showMapinfoRevGeocode,
+    toggleHighlightFeature,
+    toggleMapInfoState,
+    toggleShowCoordinateEditor,
+    updateCenterToMarker,
+    updateFeatureInfoClickPoint
+} from '../actions/mapInfo';
+import DefaultViewerComp from '../components/data/identify/DefaultViewer';
+import { defaultViewerDefaultProps, defaultViewerHandlers } from '../components/data/identify/enhancers/defaultViewer';
+import { identifyLifecycle } from '../components/data/identify/enhancers/identify';
+import zoomToFeatureHandler from '../components/data/identify/enhancers/zoomToFeatureHandler';
+import IdentifyContainer from '../components/data/identify/IdentifyContainer';
+import loadingState from '../components/misc/enhancers/loadingState';
+import FeatureInfoFormatSelectorComp from '../components/misc/FeatureInfoFormatSelector';
+import FeatureInfoTriggerSelectorComp from '../components/misc/FeatureInfoTriggerSelector';
+import epics from '../epics/identify';
+import mapInfo from '../reducers/mapInfo';
+import mapPopups from '../reducers/mapPopups';
+import { isEditingAllowedSelector } from '../selectors/featuregrid';
+import { layersSelector } from '../selectors/layers';
+import { currentLocaleSelector } from '../selectors/locale';
+import { isMouseMoveIdentifyActiveSelector, mapSelector } from '../selectors/map';
+import {
+    clickPointSelector,
+    currentFeatureCrsSelector,
+    currentFeatureSelector,
+    generalInfoFormatSelector,
+    indexSelector,
+    isHighlightEnabledSelector,
+    isLoadedResponseSelector,
+    requestsSelector,
+    responsesSelector,
+    showEmptyMessageGFISelector,
+    validResponsesSelector,
+    hoverEnabledSelector,
+    mapInfoEnabledSelector
+} from '../selectors/mapInfo';
+import { mapLayoutValuesSelector } from '../selectors/maplayout';
+import { isCesium, mapTypeSelector } from '../selectors/maptype';
+import ConfigUtils from '../utils/ConfigUtils';
+import { getDefaultInfoFormatValue, getValidator } from '../utils/MapInfoUtils';
+import getFeatureButtons from './identify/featureButtons';
+import getToolButtons from './identify/toolButtons';
+import Message from './locale/Message';
 
 const selector = createStructuredSelector({
-    enabled: (state) => state.mapInfo && state.mapInfo.enabled || state.controls && state.controls.info && state.controls.info.enabled || false,
+    enabled: (state) => mapInfoEnabledSelector(state) || state.controls && state.controls.info && state.controls.info.enabled || false,
     responses: responsesSelector,
     validResponses: validResponsesSelector,
-    requests: (state) => state.mapInfo && state.mapInfo.requests || [],
+    requests: requestsSelector,
     format: generalInfoFormatSelector,
     map: mapSelector,
     layers: layersSelector,
@@ -50,8 +87,8 @@ const selector = createStructuredSelector({
     reverseGeocodeData: (state) => state.mapInfo && state.mapInfo.reverseGeocodeData,
     warning: (state) => state.mapInfo && state.mapInfo.warning,
     currentLocale: currentLocaleSelector,
-    dockStyle: state => mapLayoutValuesSelector(state, {height: true}),
-    formatCoord: (state) => state.mapInfo && state.mapInfo.formatCoord,
+    dockStyle: state => mapLayoutValuesSelector(state, { height: true }),
+    formatCoord: (state) => state.mapInfo && state.mapInfo.formatCoord || ConfigUtils.getConfigProp('defaultCoordinateFormat'),
     showCoordinateEditor: (state) => state.mapInfo && state.mapInfo.showCoordinateEditor,
     showEmptyMessageGFI: state => showEmptyMessageGFISelector(state),
     isEditingAllowed: isEditingAllowedSelector,
@@ -65,22 +102,18 @@ const selector = createStructuredSelector({
  */
 const identifyIndex = compose(
     connect(
-        createSelector(indexSelector, (index) => ({ index })),
+        createSelector(indexSelector, isLoadedResponseSelector, (state) => state.browser && state.browser.mobile, (index, loaded, isMobile) => ({ index, loaded, isMobile })),
         {
             setIndex: changePage
         }
-    ),
-    defaultProps({
-        index: 0
-    })
-)
-;
+    )
+);
 const DefaultViewer = compose(
     identifyIndex,
     defaultViewerDefaultProps,
     defaultViewerHandlers,
-    loadingState(({responses}) => responses.length === 0)
-)(require('../components/data/identify/DefaultViewer'));
+    loadingState(({ loaded }) => isUndefined(loaded))
+)(DefaultViewerComp);
 
 
 const identifyDefaultProps = defaultProps({
@@ -88,17 +121,17 @@ const identifyDefaultProps = defaultProps({
     enabled: false,
     draggable: true,
     collapsible: false,
-    format: MapInfoUtils.getDefaultInfoFormatValue(),
+    format: getDefaultInfoFormatValue(),
     requests: [],
     responses: [],
     viewerOptions: {},
     viewer: DefaultViewer,
-    purgeResults: () => {},
-    hideMarker: () => {},
-    clearWarning: () => {},
-    changeMousePointer: () => {},
-    showRevGeocode: () => {},
-    hideRevGeocode: () => {},
+    purgeResults: () => { },
+    hideMarker: () => { },
+    clearWarning: () => { },
+    changeMousePointer: () => { },
+    showRevGeocode: () => { },
+    hideRevGeocode: () => { },
     containerProps: {
         continuous: false
     },
@@ -125,14 +158,15 @@ const identifyDefaultProps = defaultProps({
     showTabs: true,
     showCoords: true,
     showLayerTitle: true,
+    showMoreInfo: true,
     showEdit: false,
     position: 'right',
     size: 660,
     getToolButtons,
-    getNavigationButtons,
+    getFeatureButtons,
     showFullscreen: false,
     validResponses: [],
-    validator: MapInfoUtils.getValidator, // TODO: move all validation from the components to the selectors
+    validator: getValidator, // TODO: move all validation from the components to the selectors
     zIndex: 1050
 });
 
@@ -164,6 +198,7 @@ const identifyDefaultProps = defaultProps({
  * @prop cfg.disableCenterToMarker {bool} disable zoom to marker action
  * @prop cfg.zIndex {number} component z index order
  * @prop cfg.showInMapPopup {boolean} if true show the identify as popup
+ * @prop cfg.showMoreInfo {boolean} if true shows the more info icon which allow user to show/hide Geocode viewer as popup (true by default)
  *
  * @example
  * {
@@ -180,7 +215,6 @@ const identifyDefaultProps = defaultProps({
  * }
  *
  */
-
 const IdentifyPlugin = compose(
     connect(selector, {
         purgeResults: purgeMapInfoResults,
@@ -220,30 +254,36 @@ const IdentifyPlugin = compose(
     identifyDefaultProps,
     identifyIndex,
     defaultViewerHandlers,
+    connect(() => ({}), {
+        setShowInMapPopup
+    }),
     identifyLifecycle
-)(require('../components/data/identify/IdentifyContainer'));
+)(IdentifyContainer);
 
 // configuration UI
 const FeatureInfoFormatSelector = connect((state) => ({
     infoFormat: generalInfoFormatSelector(state)
 }), {
     onInfoFormatChange: changeMapInfoFormat
-})(require("../components/misc/FeatureInfoFormatSelector").default);
+})(FeatureInfoFormatSelectorComp);
 
 const FeatureInfoTriggerSelector = connect((state) => ({
-    trigger: isMouseMoveIdentifyActiveSelector(state) ? 'hover' : 'click'
+    trigger: isMouseMoveIdentifyActiveSelector(state) ? 'hover' : 'click',
+    hoverEnabled: hoverEnabledSelector(state)
 }), {
-    onTriggerChange: (event) => event.target.value === 'hover' ? registerEventListener('mousemove', 'identifyFloatingTool') : unRegisterEventListener('mousemove', 'identifyFloatingTool')
-})(require("../components/misc/FeatureInfoTriggerSelector"));
+    onSetMapTrigger: setMapTrigger,
+    onPurgeMapInfoResults: purgeMapInfoResults,
+    onHideMapinfoMarker: hideMapinfoMarker
+})(FeatureInfoTriggerSelectorComp);
 
-module.exports = {
+export default {
     IdentifyPlugin: assign(IdentifyPlugin, {
         Toolbar: {
             name: 'info',
             position: 6,
             tooltip: "info.tooltip",
-            icon: <Glyphicon glyph="map-marker"/>,
-            help: <Message msgId="helptexts.infoButton"/>,
+            icon: <Glyphicon glyph="map-marker" />,
+            help: <Message msgId="helptexts.infoButton" />,
             action: toggleMapInfoState,
             selector: (state) => ({
                 bsStyle: state.mapInfo && state.mapInfo.enabled ? "success" : "primary",
@@ -254,11 +294,11 @@ module.exports = {
             tool: [<FeatureInfoFormatSelector
                 key="featureinfoformat"
                 label={<Message msgId="infoFormatLbl" />
-                }/>, <FeatureInfoTriggerSelector
+                } />, <FeatureInfoTriggerSelector
                 key="featureinfotrigger" />],
             position: 3
         }
     }),
-    reducers: {mapInfo: require('../reducers/mapInfo')},
-    epics: require('../epics/identify').default
+    reducers: { mapInfo, mapPopups },
+    epics
 };

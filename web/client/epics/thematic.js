@@ -6,13 +6,21 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const { LOAD_FIELDS, LOAD_CLASSIFICATION, fieldsLoaded, fieldsError, classificationLoaded, classificationError} = require('../actions/thematic');
-const { UPDATE_NODE, changeLayerParams } = require('../actions/layers');
-const Rx = require('rxjs');
-const axios = require('../libs/ajax');
-const {head} = require('lodash');
+import {
+    LOAD_FIELDS,
+    LOAD_CLASSIFICATION,
+    fieldsLoaded,
+    fieldsError,
+    classificationLoaded,
+    classificationError
+} from '../actions/thematic';
 
-module.exports = (config) => ({
+import { UPDATE_NODE, changeLayerParams } from '../actions/layers';
+import Rx from 'rxjs';
+import axios from '../libs/ajax';
+import { head } from 'lodash';
+
+export default (config) => ({
     loadFieldsEpic: (action$) =>
         action$.ofType(LOAD_FIELDS)
             .switchMap((action) => {
@@ -28,8 +36,9 @@ module.exports = (config) => ({
         action$.ofType(LOAD_CLASSIFICATION)
             .switchMap((action) => {
                 const url = config.getStyleMetadataService(action.layer, action.params);
+                const method = action.params?.method;
                 return Rx.Observable.defer(() => axios.get(url))
-                    .switchMap((response) => Rx.Observable.of(classificationLoaded(action.layer, config.readClassification(response.data))))
+                    .switchMap((response) => Rx.Observable.of(classificationLoaded(action.layer, config.readClassification(response.data, method))))
                     .catch(e => Rx.Observable.of(classificationError(action.layer, e)));
             }),
     removeThematicEpic: (action$, store) =>

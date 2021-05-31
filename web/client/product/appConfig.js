@@ -6,27 +6,27 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-module.exports = {
+export default {
     pages: [{
         name: "home",
         path: "/",
-        component: require('./pages/Maps')
+        component: require('./pages/Maps').default
     }, {
         name: "maps",
         path: "/maps",
-        component: require('./pages/Maps')
+        component: require('./pages/Maps').default
     }, {
         name: "mapviewer",
         path: "/viewer/:mapType/:mapId",
-        component: require('./pages/MapViewer')
+        component: require('./pages/MapViewer').default
     }, {
         name: "mapviewer",
         path: "/viewer/:mapType/:mapId/context/:contextId",
-        component: require('./pages/MapViewer')
+        component: require('./pages/MapViewer').default
     }, {
         name: "mapviewer",
         path: "/viewer/:mapId",
-        component: require('./pages/MapViewer')
+        component: require('./pages/MapViewer').default
     }, {
         name: 'context',
         path: "/context/:contextName",
@@ -42,11 +42,11 @@ module.exports = {
     }, {
         name: "manager",
         path: "/manager",
-        component: require('./pages/Manager')
+        component: require('./pages/Manager').default
     }, {
         name: "manager",
         path: "/manager/:tool",
-        component: require('./pages/Manager')
+        component: require('./pages/Manager').default
     }, {
         name: "context-manager",
         path: "/context-manager",
@@ -54,22 +54,40 @@ module.exports = {
     }, {
         name: "dashboard",
         path: "/dashboard",
-        component: require('./pages/Dashboard')
+        component: require('./pages/Dashboard').default
     }, {
         name: "dashboard",
         path: "/dashboard/:did",
-        component: require('./pages/Dashboard')
+        component: require('./pages/Dashboard').default
     }, {
         name: "rulesmanager",
         path: "/rules-manager",
-        component: require('./pages/RulesManager')
+        component: require('./pages/RulesManager').default
     }, {
         name: "geostory",
         path: "/geostory/:gid",
         component: require('./pages/GeoStory').default
     }, {
         name: "geostory",
+        path: "/geostory/:gid/section/:sectionId",
+        component: require('./pages/GeoStory').default
+    }, {
+        name: "geostory",
+        path: "/geostory/:gid/section/:sectionId/column/:columnId",
+        component: require('./pages/GeoStory').default
+    }, {
+        name: "geostory",
         path: "/geostory/shared/:gid",
+        component: require('./pages/GeoStory').default
+    },
+    {
+        name: "geostory",
+        path: "/geostory/shared/:gid/section/:sectionId",
+        component: require('./pages/GeoStory').default
+    },
+    {
+        name: "geostory",
+        path: "/geostory/shared/:gid/section/:sectionId/column/:columnId",
         component: require('./pages/GeoStory').default
     }],
     initialState: {

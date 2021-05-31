@@ -13,8 +13,8 @@ import head from 'lodash/head';
 import last from 'lodash/last';
 
 
-import SecurityUtils from '../../../../utils/SecurityUtils';
-import WMTSUtils from '../../../../utils/WMTSUtils';
+import {addAuthenticationParameter} from '../../../../utils/SecurityUtils';
+import * as WMTSUtils from '../../../../utils/WMTSUtils';
 import CoordinatesUtils from '../../../../utils/CoordinatesUtils';
 import MapUtils from '../../../../utils/MapUtils';
 import { isVectorFormat} from '../../../../utils/VectorTileUtils';
@@ -99,7 +99,7 @@ const createLayer = options => {
         extent = projection.getExtent();
     }
     const queryParameters = {};
-    urls.forEach(url => SecurityUtils.addAuthenticationParameter(url, queryParameters, options.securityToken));
+    urls.forEach(url => addAuthenticationParameter(url, queryParameters, options.securityToken));
     const queryParametersString = urlParser.format({ query: { ...queryParameters } });
 
     // TODO: support tileSizes from  matrix
@@ -136,9 +136,11 @@ const createLayer = options => {
     const wmtsSource = new WMTS(wmtsOptions);
     const Layer = isVector ? VectorTileLayer : TileLayer;
     const wmtsLayer = new Layer({
+        msId: options.id,
         opacity: options.opacity !== undefined ? options.opacity : 1,
         zIndex: options.zIndex,
-        maxResolution,
+        minResolution: options.minResolution,
+        maxResolution: options.maxResolution < maxResolution ? options.maxResolution : maxResolution,
         visible: options.visibility !== false,
         source: isVector
             ? new VectorTile({
@@ -162,6 +164,12 @@ const updateLayer = (layer, newOptions, oldOptions) => {
     || oldOptions.format !== newOptions.format
     || oldOptions.style !== newOptions.style) {
         return createLayer(newOptions);
+    }
+    if (oldOptions.minResolution !== newOptions.minResolution) {
+        layer.setMinResolution(newOptions.minResolution === undefined ? 0 : newOptions.minResolution);
+    }
+    if (oldOptions.maxResolution !== newOptions.maxResolution) {
+        layer.setMaxResolution(newOptions.maxResolution === undefined ? Infinity : newOptions.maxResolution);
     }
     return null;
 };

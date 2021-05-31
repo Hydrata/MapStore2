@@ -6,11 +6,11 @@
  * LICENSE file in the root directory of this source tree.
 */
 
-const PropTypes = require('prop-types');
-const React = require('react');
-const Select = require('react-select').default;
-const { join} = require('lodash');
-require('react-widgets/lib/less/react-widgets.less');
+import PropTypes from 'prop-types';
+
+import React from 'react';
+import Select from 'react-select';
+import { join } from 'lodash';
 
 /**
  * Component used to manage dashArray property for a stroke style
@@ -24,8 +24,12 @@ class DashArray extends React.Component {
         optionRenderer: PropTypes.func,
         styleRendererPattern: PropTypes.node,
         valueRenderer: PropTypes.func,
+        disabled: PropTypes.bool,
         onChange: PropTypes.func,
-        options: PropTypes.array
+        options: PropTypes.array,
+        creatable: PropTypes.bool,
+        isValidNewOption: PropTypes.func,
+        defaultStrokeWidth: PropTypes.number
     };
 
     static defaultProps = {
@@ -34,21 +38,35 @@ class DashArray extends React.Component {
         clearable: false,
         onChange: () => {},
         // these should come from configuration
-        options: [{value: "1 0"}, {value: "10 50 30"}, {value: "6 6"}, {value: "20 20"}, {value: "30 30"}]
+        options: [{value: "1 0"}, {value: "10 50 30"}, {value: "6 6"}, {value: "20 20"}, {value: "30 30"}],
+        defaultStrokeWidth: 4
     };
 
     render() {
+        const dashArray = join(this.props.dashArray || "1 0", ' ');
+        const isValueCustom = !this.props.options.find(option => option.value === dashArray);
+        const options = isValueCustom
+            ? [{ value: dashArray }, ...this.props.options]
+            : this.props.options;
+
+        const SelectInput = this.props.creatable
+            ? Select.Creatable
+            : Select;
         return (
-            <Select
-                options={this.props.options}
+            <SelectInput
+                options={options}
+                disabled={this.props.disabled}
                 menuPlacement={this.props.menuPlacement}
                 clearable={this.props.clearable}
                 optionRenderer={this.props.optionRenderer || this.styleRenderer}
                 valueRenderer={this.props.valueRenderer || this.styleRenderer}
-                value={join(this.props.dashArray || "1 0", ' ')}
-                onChange={({value}) => {
-                    const dashArray = value.split(' ');
-                    this.props.onChange(dashArray);
+                value={dashArray}
+                isValidNewOption={this.props.isValidNewOption}
+                onChange={(option) => {
+                    if (option) {
+                        const newDashArray = option.value.split(' ');
+                        this.props.onChange(newDashArray);
+                    }
                 }}
             />);
     }
@@ -57,13 +75,13 @@ class DashArray extends React.Component {
      * function used to render a pattern for the linedash
      * @prop {object} option to render
     */
-    styleRenderer = (option) => {
+    styleRenderer = (option, idx, value) => {
         const pattern = this.props.styleRendererPattern ||
             (<svg style={{ height: 33, width: '100%' }} viewBox="0 0 300 25">
                 <path
                     stroke={'#333333'}
-                    strokeWidth={4}
-                    strokeDasharray={option.value}
+                    strokeWidth={this.props.defaultStrokeWidth}
+                    strokeDasharray={value || option.value}
                     d="M0 12.5, 300 12.5" />
             </svg>);
         return (
@@ -73,4 +91,4 @@ class DashArray extends React.Component {
     }
 }
 
-module.exports = DashArray;
+export default DashArray;

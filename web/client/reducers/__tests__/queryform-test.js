@@ -5,18 +5,26 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const expect = require('expect');
-const queryform = require('../queryform');
+import expect from 'expect';
 
-const {featureCollection} = require('../../test-resources/featureCollectionZone.js');
-const {
-    UPDATE_FILTER_FIELD_OPTIONS, SET_AUTOCOMPLETE_MODE, TOGGLE_AUTOCOMPLETE_MENU,
+import queryform from '../queryform';
+import { featureCollection } from '../../test-resources/featureCollectionZone.js';
+
+import {
+    UPDATE_FILTER_FIELD_OPTIONS,
+    SET_AUTOCOMPLETE_MODE,
+    TOGGLE_AUTOCOMPLETE_MENU,
     loadFilter,
-    expandCrossLayerFilterPanel, setCrossLayerFilterParameter, resetCrossLayerFilter,
-    addCrossLayerFilterField, updateCrossLayerFilterField, removeCrossLayerFilterField,
+    expandCrossLayerFilterPanel,
+    setCrossLayerFilterParameter,
+    resetCrossLayerFilter,
+    addCrossLayerFilterField,
+    updateCrossLayerFilterField,
+    removeCrossLayerFilterField,
     changeSpatialFilterValue
-} = require('../../actions/queryform');
-const {END_DRAWING, CHANGE_DRAWING_STATUS} = require('../../actions/draw');
+} from '../../actions/queryform';
+
+import { END_DRAWING, CHANGE_DRAWING_STATUS } from '../../actions/draw';
 
 describe('Test the queryform reducer', () => {
 
@@ -945,7 +953,8 @@ describe('Test the queryform reducer', () => {
         let testAction = {
             type: TOGGLE_AUTOCOMPLETE_MENU,
             rowId: 100,
-            status: true
+            status: true,
+            "layerFilterType": "filterField"
         };
 
         let initialState = {
@@ -960,6 +969,31 @@ describe('Test the queryform reducer', () => {
         expect(state).toExist();
 
         expect(state.filterFields[0].openAutocompleteMenu).toBe(true);
+
+    });
+    it('toggle autocomplete mode crossLayerFilter', () => {
+        let testAction = {
+            type: TOGGLE_AUTOCOMPLETE_MENU,
+            rowId: 100,
+            status: true,
+            "layerFilterType": "crossLayer"
+        };
+
+        let initialState = {
+            openAutocompleteMenu: false,
+            crossLayerFilter: {collectGeometries: {
+                queryCollection: {
+                    filterFields: [{
+                        rowId: 100,
+                        openAutocompleteMenu: false
+                    }]
+                }
+            } }
+        };
+
+        let state = queryform(initialState, testAction);
+        expect(state).toExist();
+        expect(state.crossLayerFilter.collectGeometries.queryCollection.filterFields[0].openAutocompleteMenu).toBe(true);
 
     });
     it('toggle crosslayer', () => {

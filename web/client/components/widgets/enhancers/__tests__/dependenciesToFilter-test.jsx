@@ -15,7 +15,11 @@ import dependenciesToFilter from '../dependenciesToFilter';
 import {
     inputFilterObjSpatial,
     inputQuickFiltersStateAbbr,
+    spatialFilterMultiple,
+    resultSpatialFilterMultiple,
     inputLayerFilterSTATENAME,
+    layerFilter,
+    emptyLayerFilter,
     resultFilterOnly,
     resultFilterObjRes1,
     resultMergeFilterRes,
@@ -23,10 +27,12 @@ import {
     resultQuickFilters,
     resultQuickFiltersAndDependenciesQF,
     resultQuickFiltersAndDependenciesFilter,
-    resultSpatialAndQuickFilters
+    resultSpatialAndQuickFilters,
+    resultLayerFilter
 } from '../../../../test-resources/widgets/dependenciesToFiltersData';
 
 describe('widgets dependenciesToFilter enhancer', () => {
+
     beforeEach((done) => {
         document.body.innerHTML = '<div id="container"></div>';
         setTimeout(done);
@@ -122,6 +128,14 @@ describe('widgets dependenciesToFilter enhancer', () => {
         }));
         ReactDOM.render(<Sink filter={inputFilterObjSpatial}/>, document.getElementById("container"));
     });
+    it('dependenciesToFilter with custom spatialFieldOpeartor filter', (done) => {
+        const Sink = dependenciesToFilter(createSink(props => {
+            expect(props).toExist();
+            expect(props.filter).toBe(resultSpatialFilterMultiple);
+            done();
+        }));
+        ReactDOM.render(<Sink filter={spatialFilterMultiple} />, document.getElementById("container"));
+    });
     it('dependenciesToFilter with mapsync and spatial filter', (done) => {
         const Sink = dependenciesToFilter(createSink( props => {
             expect(props).toExist();
@@ -154,6 +168,35 @@ describe('widgets dependenciesToFilter enhancer', () => {
                 }}],
                 viewport: { "bounds": { "minx": "-1", "miny": "-1", "maxx": "1", "maxy": "1" }, "crs": "EPSG:4326", "rotation": 0 }
             }} filter={inputFilterObjSpatial} />, document.getElementById("container"));
+
+    });
+
+    it('dependenciesToFilter with layerFilter', (done) => {
+
+        const Sink = dependenciesToFilter(createSink(props => {
+            expect(props).toExist();
+            expect(props.filter).toBe(resultLayerFilter);
+            expect(props.layer.layerFilter.disabled).toBe(false);
+            done();
+        }));
+        ReactDOM.render(<Sink
+            mapSync
+            layer={layerFilter}
+        />, document.getElementById("container"));
+
+    });
+
+    it('dependenciesToFilter with empty layerFilter', (done) => {
+
+        const Sink = dependenciesToFilter(createSink(props => {
+            expect(props).toExist();
+            expect(props.layer.layerFilter).toBe(undefined);
+            done();
+        }));
+        ReactDOM.render(<Sink
+            mapSync
+            layer={emptyLayerFilter}
+        />, document.getElementById("container"));
 
     });
 });

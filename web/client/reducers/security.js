@@ -6,14 +6,23 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const { LOGIN_SUCCESS, LOGIN_FAIL, LOGOUT, CHANGE_PASSWORD_SUCCESS, CHANGE_PASSWORD_FAIL, RESET_ERROR, REFRESH_SUCCESS, SESSION_VALID } = require('../actions/security');
-const { SET_CONTROL_PROPERTY } = require('../actions/controls');
-const { USERMANAGER_UPDATE_USER } = require('../actions/users');
+import {
+    LOGIN_SUCCESS,
+    LOGIN_FAIL,
+    LOGOUT,
+    CHANGE_PASSWORD_SUCCESS,
+    CHANGE_PASSWORD_FAIL,
+    RESET_ERROR,
+    REFRESH_SUCCESS,
+    SESSION_VALID,
+    CHANGE_PASSWORD
+} from '../actions/security';
 
-const SecurityUtils = require('../utils/SecurityUtils');
-
-const assign = require('object-assign');
-const {cloneDeep, head} = require('lodash');
+import { SET_CONTROL_PROPERTY } from '../actions/controls';
+import { USERMANAGER_UPDATE_USER } from '../actions/users';
+import {getUserAttributes} from '../utils/SecurityUtils';
+import assign from 'object-assign';
+import { cloneDeep, head } from 'lodash';
 
 function security(state = {user: null, errorCause: null}, action) {
     switch (action.type) {
@@ -34,7 +43,7 @@ function security(state = {user: null, errorCause: null}, action) {
         return state;
     case LOGIN_SUCCESS:
     {
-        const userAttributes = SecurityUtils.getUserAttributes(action.userDetails.User);
+        const userAttributes = getUserAttributes(action.userDetails.User);
         const userUuid = head(userAttributes.filter(attribute => attribute.name.toLowerCase() === 'uuid'));
         const timestamp = new Date() / 1000 | 0;
         return assign({}, state, {
@@ -72,17 +81,25 @@ function security(state = {user: null, errorCause: null}, action) {
             authHeader: null,
             loginError: null
         });
+    case CHANGE_PASSWORD:
+        return  assign({}, state, {
+            passwordError: null,
+            changePasswordLoading: true
+        });
     case CHANGE_PASSWORD_SUCCESS:
         return assign({}, state, {
             user: assign({}, state.user, assign({}, action.user, {date: new Date().getTime()})),
             authHeader: action.authHeader,
             passwordChanged: true,
-            passwordError: null
+            passwordError: null,
+            changePasswordLoading: false
         });
     case CHANGE_PASSWORD_FAIL:
         return assign({}, state, {
             passwordError: action.error,
-            passwordChanged: false
+            passwordChanged: false,
+            changePasswordLoading: false
+
         });
     case SESSION_VALID:
     {
@@ -96,4 +113,4 @@ function security(state = {user: null, errorCause: null}, action) {
     }
 }
 
-module.exports = security;
+export default security;

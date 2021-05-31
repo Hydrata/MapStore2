@@ -6,17 +6,17 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const {Observable} = require('rxjs');
+import {Observable} from 'rxjs';
 
-const CoordinatesUtils = require('../CoordinatesUtils');
-const { getLayerUrl } = require('../LayersUtils');
-const { isObject } = require('lodash');
-const { optionsToVendorParams } = require('../VendorParamsUtils');
-const { describeFeatureType, getFeature } = require('../../api/WFS');
-const { extractGeometryAttributeName } = require('../WFSLayerUtils');
+import {normalizeSRS} from '../CoordinatesUtils';
+import { getLayerUrl } from '../LayersUtils';
+import { isObject } from 'lodash';
+import { optionsToVendorParams } from '../VendorParamsUtils';
+import { describeFeatureType, getFeature } from '../../api/WFS';
+import { extractGeometryAttributeName } from '../WFSLayerUtils';
 
-const SecurityUtils = require('../SecurityUtils');
-const assign = require('object-assign');
+import {addAuthenticationToSLD} from '../SecurityUtils';
+import assign from 'object-assign';
 
 /**
  * Creates the request object and it's metadata for WFS GetFeature to simulate GetFeatureInfo.
@@ -32,7 +32,7 @@ const buildRequest = (layer, { map = {}, point, currentLocale, params, maxItems 
      * center point is re-projected then is built a box of 101x101pixel around it
      */
     return {
-        request: SecurityUtils.addAuthenticationToSLD({
+        request: addAuthenticationToSLD({
             point, // THIS WILL NOT BE PASSED TO FINAL REQUEST, BUT USED IN getRetrieveFlow
             service: 'WFS',
             version: '1.1.1',
@@ -41,7 +41,7 @@ const buildRequest = (layer, { map = {}, point, currentLocale, params, maxItems 
             exceptions: 'application/json',
             id: layer.id,
             typeName: layer.name,
-            srs: CoordinatesUtils.normalizeSRS(map.projection) || 'EPSG:4326',
+            srs: normalizeSRS(map.projection) || 'EPSG:4326',
             feature_count: maxItems,
             ...assign({ params })
         }, layer),
@@ -72,7 +72,7 @@ const getIdentifyGeometry = point => {
     };
 };
 
-module.exports = {
+export default {
     buildRequest,
     getIdentifyFlow: (layer, baseURL, defaultParams) => {
         const { point, ...baseParams} = defaultParams;

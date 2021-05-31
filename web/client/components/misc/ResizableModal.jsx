@@ -6,13 +6,14 @@
 * LICENSE file in the root directory of this source tree.
 */
 
-const React = require('react');
-const {Glyphicon} = require('react-bootstrap');
-const Dialog = require('./Dialog');
-const Toolbar = require('./toolbar/Toolbar');
-const {withState} = require('recompose');
-const ReactCSSTransitionGroup = require('react-addons-css-transition-group');
-const LoadingSpinner = require('./LoadingSpinner');
+import React from 'react';
+
+import { Glyphicon } from 'react-bootstrap';
+import Dialog from './Dialog';
+import Toolbar from './toolbar/Toolbar';
+import { withState } from 'recompose';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import LoadingSpinner from './LoadingSpinner';
 
 
 const sizes = {
@@ -47,6 +48,8 @@ const fullscreen = {
  * @memberof components.ResizableModal
  * @class
  * @prop {bool} show show modal. Default false
+ * @prop {bool} loading enable loading spinner
+ * @prop {element} loadingText if loading is true display this element next to the loading spinner
  * @prop {bool} showFullscreen enable fullscreen. Default false
  * @prop {bool} clickOutEnabled click on background overlay to close modal. Default true
  * @prop {string} fullscreenType type of fullscreen sm, lg or md/empty.
@@ -60,9 +63,10 @@ const fullscreen = {
  * @prop {string} dialogClassName custom class for the dialog component
  */
 
-const ResizableModal = ({
+const ResizableModalComp = ({
     show = false,
     loading,
+    loadingText,
     onClose = () => {},
     title = '',
     clickOutEnabled = true,
@@ -80,7 +84,8 @@ const ResizableModal = ({
     fade = false,
     fitContent,
     modalClassName = '',
-    dialogClassName = ''
+    dialogClassName = '',
+    enableFooter = true
 }) => {
     const sizeClassName = sizes[size] || '';
     const fullscreenClassName = showFullscreen && fullscreenState === 'expanded' && fullscreen.className[fullscreenType] || '';
@@ -115,15 +120,17 @@ const ResizableModal = ({
                 <div role="body" className={bodyClassName}>
                     {children}
                 </div>
-                <div role="footer">
-                    {loading ? <LoadingSpinner style={{
-                        position: "absolute",
-                        left: 0,
-                        bottom: 0,
-                        margin: 18
-                    }}/> : null}
-                    <Toolbar buttons={buttons}/>
-                </div>
+                {enableFooter && (
+                    <div style={{display: 'flex'}} role="footer">
+                        <div className="ms-resizable-modal-loading-spinner-container">
+                            {loading ? <LoadingSpinner/> : null}
+                        </div>
+                        <div className="ms-resizable-modal-loading-text">
+                            {loading ? loadingText : null}
+                        </div>
+                        <Toolbar buttons={buttons}/>
+                    </div>
+                )}
             </Dialog>
         </div>) : null;
     return fade ?
@@ -135,4 +142,6 @@ const ResizableModal = ({
         </ReactCSSTransitionGroup>) : dialog;
 };
 
-module.exports = withState('fullscreenState', 'onFullscreen', ({initialFullscreenState = 'collapsed'}) => initialFullscreenState)(ResizableModal);
+const ResizableModal = withState('fullscreenState', 'onFullscreen', ({initialFullscreenState = 'collapsed'}) => initialFullscreenState)(ResizableModalComp);
+
+export default ResizableModal;

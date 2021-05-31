@@ -1,4 +1,3 @@
-const PropTypes = require('prop-types');
 /**
  * Copyright 2016, GeoSolutions Sas.
  * All rights reserved.
@@ -7,15 +6,18 @@ const PropTypes = require('prop-types');
  * LICENSE file in the root directory of this source tree.
  */
 
-const React = require('react');
+import React from 'react';
+import PropTypes from 'prop-types';
+import { Grid, Row, Col, Alert, ButtonToolbar } from 'react-bootstrap';
+import { Promise } from 'es6-promise';
 
-const Message = require('../../I18N/Message');
-const LocaleUtils = require('../../../utils/LocaleUtils');
-const {isAnnotation} = require('../../../utils/AnnotationsUtils');
-let { toVectorStyle } = require('../../../utils/StyleUtils');
-const { Grid, Row, Col, Button, Alert, ButtonToolbar} = require('react-bootstrap');
+import Message from '../../I18N/Message';
+import { getMessageById } from '../../../utils/LocaleUtils';
+import { isAnnotation } from '../../../utils/AnnotationsUtils';
+import { toVectorStyle } from '../../../utils/StyleUtils';
 
-const {Promise} = require('es6-promise');
+import Button from '../../misc/Button';
+import { checkFeaturesStyle } from '../../../utils/ImporterUtils';
 
 class StylePanel extends React.Component {
     static propTypes = {
@@ -137,7 +139,16 @@ class StylePanel extends React.Component {
         </Row>);
     };
 
+    renderDisableStyleCustomization = (hasCustomStyle) => {
+        return hasCustomStyle ? (
+            <div className="alert alert-info mb-2 style-customisation-disabled-container">
+                <Message msgId="shapefile.styleCustomizationDisabled"/>
+            </div>
+        ) : null;
+    }
+
     render() {
+        const hasCustomStyle = checkFeaturesStyle(this.props.selected);
         return (
             <Grid role="body" style={{width: "400px"}} fluid>
                 {this.props.errors ? this.renderError() : null}
@@ -148,15 +159,20 @@ class StylePanel extends React.Component {
                     </h4>
                 </Row>
                 <Row key="styler" style={{marginBottom: 10}}>
-                    {this.state.useDefaultStyle ? null : this.props.stylers[this.getGeomType(this.props.selected)]}
+                    {(this.state.useDefaultStyle || hasCustomStyle) ? null : this.props.stylers[this.getGeomType(this.props.selected)]}
                 </Row>
+                {this.renderDisableStyleCustomization(hasCustomStyle)}
                 <Row key="options">
                     {isAnnotation(this.props.selected) ?
                         this.annotationOptions()
                         :
                         <>
                             <Col xs={2}>
-                                <input aria-label="..." type="checkbox" defaultChecked={this.state.useDefaultStyle} onChange={(e) => { this.setState({ useDefaultStyle: e.target.checked }); }} />
+                                <input aria-label="..." type="checkbox"
+                                    disabled={hasCustomStyle}
+                                    checked={hasCustomStyle || this.state.useDefaultStyle}
+                                    defaultChecked={hasCustomStyle || this.state.useDefaultStyle}
+                                    onChange={(e) => { this.setState({ useDefaultStyle: e.target.checked }); }} />
                             </Col>
                             <Col style={{ paddingLeft: 0, paddingTop: 1 }} xs={10}>
                                 <label><Message msgId="shapefile.defaultStyle" /></label>
@@ -212,9 +228,8 @@ class StylePanel extends React.Component {
                 }
             }
             this.props.onSuccess(this.props.layers.length > 1
-                ? isAnnotationLayer ? "Annotation" : this.props.layers[0].name + LocaleUtils.getMessageById(this.context.messages, "shapefile.success")
+                ? isAnnotationLayer ? "Annotation" : this.props.layers[0].name + getMessageById(this.context.messages, "shapefile.success")
                 : undefined);
-
             this.props.onLayerAdded(this.props.selected);
         }).catch(e => {
             this.props.onError({ type: "error", name: isAnnotationLayer ? "Annotation" : this.props.layers[0].name, error: e, message: 'shapefile.error.genericLoadError'});
@@ -241,4 +256,4 @@ class StylePanel extends React.Component {
 }
 
 
-module.exports = StylePanel;
+export default StylePanel;

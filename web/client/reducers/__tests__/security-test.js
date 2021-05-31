@@ -5,11 +5,24 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const expect = require('expect');
-const security = require('../security');
-const {LOGIN_SUCCESS, LOGIN_FAIL, RESET_ERROR, LOGOUT, CHANGE_PASSWORD_SUCCESS, CHANGE_PASSWORD_FAIL, REFRESH_SUCCESS, SESSION_VALID} = require('../../actions/security');
-const { SET_CONTROL_PROPERTY } = require('../../actions/controls');
-const {USERMANAGER_UPDATE_USER} = require('../../actions/users');
+import expect from 'expect';
+
+import security from '../security';
+
+import {
+    LOGIN_SUCCESS,
+    LOGIN_FAIL,
+    RESET_ERROR,
+    LOGOUT,
+    CHANGE_PASSWORD_SUCCESS,
+    CHANGE_PASSWORD_FAIL,
+    REFRESH_SUCCESS,
+    SESSION_VALID,
+    CHANGE_PASSWORD
+} from '../../actions/security';
+
+import { SET_CONTROL_PROPERTY } from '../../actions/controls';
+import { USERMANAGER_UPDATE_USER } from '../../actions/users';
 
 describe('Test the security reducer', () => {
     const testToken = "260a670e-4dc0-4719-8bc9-85555d7dcbe1";
@@ -128,6 +141,13 @@ describe('Test the security reducer', () => {
         expect(state.user.name).toBe("user");
     });
 
+    it('change password start set changePasswordLoading', () => {
+        let state = security({user: testUser.User}, {type: CHANGE_PASSWORD});
+        expect(state).toExist();
+        expect(state.changePasswordLoading).toBeTruthy();
+        expect(state.passwordError).toBe(null);
+    });
+
     it('change password success', () => {
         let state = security({user: testUser.User}, {type: CHANGE_PASSWORD_SUCCESS, user: {
             id: 6,
@@ -136,12 +156,15 @@ describe('Test the security reducer', () => {
         expect(state).toExist();
         expect(state.user.password).toBe("newpassword");
         expect(state.passwordChanged).toBe(true);
+        expect(state.changePasswordLoading).toBeFalsy();
+
     });
 
     it('change password fail', () => {
         let state = security({user: testUser.User}, {type: CHANGE_PASSWORD_FAIL, error: {message: 'error'}});
         expect(state).toExist();
         expect(state.passwordError).toExist();
+        expect(state.changePasswordLoading).toBeFalsy();
     });
 
     it('reset password error', () => {

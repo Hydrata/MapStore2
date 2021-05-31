@@ -5,14 +5,17 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const expect = require('expect');
-const {
+import expect from 'expect';
+
+import {
     createFromSearch,
     getTooltip,
     getTooltipFragment,
     flattenGroups,
-    getTitleAndTooltip
-} = require('../TOCUtils');
+    getTitleAndTooltip,
+    getLabelName
+} from '../TOCUtils';
+
 let options = [{label: "lab1", value: "val1"}];
 const groups = [{
     "id": "first",
@@ -189,5 +192,35 @@ describe('TOCUtils', () => {
         const {title, tooltipText} = getTitleAndTooltip({node, currentLocale});
         expect(title).toBe("Livello");
         expect(tooltipText).toBe("");
+    });
+    it('test default value getLabelName from object', () => {
+        const groupLabel = "Default";
+        const nodes = [{
+            name: 'Default',
+            title: {
+                'default': 'Layer',
+                'no-exist': 'Label of an unknown language'
+            },
+            id: "layer00",
+            description: "desc",
+            tooltipOptions: "none"
+        }];
+        const label = getLabelName(groupLabel, nodes);
+        expect(label).toBe("Layer");
+    });
+    it('test localized value getLabelName from object', () => {
+        const groupLabel = "Default";
+        const nodes = [{
+            name: 'Default',
+            title: {
+                'default': 'Group Layer',
+                'en-US': 'Group Layer'
+            },
+            id: "layer00",
+            description: "desc",
+            tooltipOptions: "none"
+        }];
+        const label = getLabelName(groupLabel, nodes);
+        expect(label).toBe("Group Layer");
     });
 });

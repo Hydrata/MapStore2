@@ -6,8 +6,9 @@
 * LICENSE file in the root directory of this source tree.
 */
 
-const expect = require('expect');
-const {
+import expect from 'expect';
+
+import {
     isCollapsed,
     hasLayers,
     isVisible,
@@ -15,14 +16,15 @@ const {
     currentTimeRangeSelector,
     itemsSelector,
     rangeDataSelector,
-    multidimOptionsSelectorCreator
-} = require('../timeline');
-const { set, compose } = require('../../utils/ImmutableUtils');
+    multidimOptionsSelectorCreator,
+    timelineLayersSelector
+} from '../timeline';
 
-const timeline = require('../../reducers/timeline');
-const { rangeDataLoaded } = require('../../actions/timeline');
-const dimension = require('../../reducers/dimension');
-const { updateLayerDimensionData } = require('../../actions/dimension');
+import { set, compose } from '../../utils/ImmutableUtils';
+import timeline from '../../reducers/timeline';
+import { rangeDataLoaded } from '../../actions/timeline';
+import dimension from '../../reducers/dimension';
+import { updateLayerDimensionData } from '../../actions/dimension';
 
 const T1 = '2016-01-01T00:00:00.000Z';
 const T2 = '2016-02-01T00:00:00.000Z';
@@ -98,6 +100,7 @@ const SAMPLE_STATE_DOMAIN_VALUES = {
     dimension: DIMENSION_STATE,
     timeline: TIMELINE_STATE_VALUES
 };
+const SHOW_HIDDEN_LAYER = { showHiddenLayers: true };
 
 describe('timeline selector', () => {
     it('isCollapsed', () => {
@@ -107,7 +110,7 @@ describe('timeline selector', () => {
     });
     it('hasLayers', () => {
         expect(hasLayers({})).toBe(false);
-        expect(hasLayers({ timeline: TIMELINE_STATE_VALUES, layers: LAYERS_WITH_TIME, dimension: DIMENSION_STATE })).toBe(true);
+        expect(hasLayers({ timeline: {settings: SHOW_HIDDEN_LAYER}, layers: LAYERS_WITH_TIME, dimension: DIMENSION_STATE })).toBe(true);
     });
     it('isVisible', () => {
         expect(isVisible({})).toBe(false);
@@ -115,9 +118,9 @@ describe('timeline selector', () => {
         // collapsed, no time data
         expect(isVisible({ timeline: { settings: { collapsed: true } } })).toBe(false);
         // not collapsed, with time data
-        expect(isVisible({ timeline: { ...TIMELINE_STATE_VALUES, settings: { collapsed: false }}, layers: LAYERS_WITH_TIME })).toBe(true);
+        expect(isVisible({ timeline: { ...TIMELINE_STATE_VALUES, settings: { collapsed: false, ...SHOW_HIDDEN_LAYER }}, layers: LAYERS_WITH_TIME })).toBe(true);
         // collapsed with time data
-        expect(isVisible({ timeline: { ...TIMELINE_STATE_VALUES, settings: { collapsed: true }}, layers: LAYERS_WITH_TIME })).toBe(false);
+        expect(isVisible({ timeline: { ...TIMELINE_STATE_VALUES, settings: { collapsed: true, ...SHOW_HIDDEN_LAYER }}, layers: LAYERS_WITH_TIME })).toBe(false);
     });
     it('isAutoSelectEnabled', () => {
         expect(isAutoSelectEnabled({})).toBeFalsy();
@@ -132,6 +135,21 @@ describe('timeline selector', () => {
     it('rangeSelector', () => {
         expect(rangeDataSelector(SAMPLE_STATE_HISTOGRAM)[TEST_LAYER_ID]).toExist();
     });
+    describe('timelineLayersSelector', () => {
+        const dimensions = [{ source: { type: 'multidim-extension', url: 'some url'}, name: 'time'}];
+        const state = {...SAMPLE_STATE_DOMAIN_VALUES, layers: {flat: [
+            {id: "test", visibility: true, dimensions},
+            {id: "test2", visibility: false, dimensions }]}
+        };
+        it('timelineLayersSelector with default settings', ()=>{
+            expect(timelineLayersSelector(state).length).toBe(1);
+        });
+        it('timelineLayersSelector with showHiddenLayers', ()=>{
+            const _state = {...state, timeline: {...state, settings: SHOW_HIDDEN_LAYER}};
+            expect(timelineLayersSelector(_state).length).toBe(2);
+        });
+    });
+
     it('itemsSelector', () => {
         const histogramItems = itemsSelector(SAMPLE_STATE_HISTOGRAM);
         expect(histogramItems.length).toBe(31);

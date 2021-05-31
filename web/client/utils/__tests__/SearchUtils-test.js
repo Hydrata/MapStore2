@@ -5,8 +5,9 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const expect = require('expect');
-const {defaultIconStyle, showGFIForService} = require('../SearchUtils');
+import expect from 'expect';
+
+import { defaultIconStyle, showGFIForService, layerIsVisibleForGFI } from '../SearchUtils';
 
 
 describe('SearchUtils test', () => {
@@ -21,18 +22,21 @@ describe('SearchUtils test', () => {
         });
     });
     it('showGFIForService with feature info button enabled', () => {
-        expect(showGFIForService({visibility: true}, {launchInfoPanel: 'single_layer', openFeatureInfoButtonEnabled: true})).toBe(true);
+        expect(showGFIForService({launchInfoPanel: 'single_layer', openFeatureInfoButtonEnabled: true})).toBe(true);
     });
     it('showGFIForService with feature info button disabled', () => {
-        expect(showGFIForService({visibility: true}, {launchInfoPanel: 'single_layer', openFeatureInfoButtonEnabled: false})).toBe(false);
+        expect(showGFIForService({launchInfoPanel: 'single_layer', openFeatureInfoButtonEnabled: false})).toBe(false);
     });
     it('showGFIForService wrong launch info panel', () => {
-        expect(showGFIForService({visibility: true}, {launchInfoPanel: 'all_layers', openFeatureInfoButtonEnabled: true})).toBe(false);
+        expect(showGFIForService({launchInfoPanel: 'all_layers', openFeatureInfoButtonEnabled: true})).toBe(false);
     });
-    it('showGFIForService layer hidden no force visibility', () => {
-        expect(showGFIForService({visibility: false}, {launchInfoPanel: 'single_layer', openFeatureInfoButtonEnabled: true})).toBe(false);
+    it('layerIsVisibleForGFI layer hidden no force visibility', () => {
+        expect(layerIsVisibleForGFI({visibility: false}, {launchInfoPanel: 'single_layer', openFeatureInfoButtonEnabled: true})).toBe(false);
     });
-    it('showGFIForService layer hidden with force visibility', () => {
-        expect(showGFIForService({visibility: false}, {launchInfoPanel: 'single_layer', openFeatureInfoButtonEnabled: true, forceSearchLayerVisibility: true})).toBe(true);
+    it('layerIsVisibleForGFI layer hidden with force visibility', () => {
+        expect(layerIsVisibleForGFI({visibility: false}, {launchInfoPanel: 'single_layer', openFeatureInfoButtonEnabled: true, forceSearchLayerVisibility: true})).toBe(true);
+    });
+    it('layerIsVisibleForGFI layer doesn\'t exist', () => {
+        expect(layerIsVisibleForGFI(undefined, {launchInfoPanel: 'single_layer', openFeatureInfoButtonEnabled: true, forceSearchLayerVisibility: true})).toBe(false);
     });
 });

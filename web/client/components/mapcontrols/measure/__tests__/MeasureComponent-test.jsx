@@ -5,16 +5,18 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
 */
-const expect = require('expect');
-const assign = require('object-assign');
+import expect from 'expect';
+import assign from 'object-assign';
+import React from 'react';
+import {DragDropContext as dragDropContext} from 'react-dnd';
+import testBackend from 'react-dnd-test-backend';
+import ReactDOM from 'react-dom';
+import TestUtils from 'react-dom/test-utils';
 
-const React = require('react');
-const ReactDOM = require('react-dom');
-const dragDropContext = require('react-dnd').DragDropContext;
-const testBackend = require('react-dnd-test-backend');
-const MeasureComponent = dragDropContext(testBackend)(require('../MeasureComponent'));
-const TestUtils = require('react-dom/test-utils');
-const Message = require('../../../I18N/Message');
+import Message from '../../../I18N/Message';
+import MeasureComponentComp from '../MeasureComponent';
+
+const MeasureComponent = dragDropContext(testBackend)(MeasureComponentComp);
 
 describe("test the MeasureComponent", () => {
     beforeEach((done) => {
@@ -64,6 +66,7 @@ describe("test the MeasureComponent", () => {
         const cmp = ReactDOM.render(
             <MeasureComponent
                 measurement={measurement}
+                geomType={'Polygon'}
                 toggleMeasure={(data) => {
                     newMeasureState = data;
                 }}
@@ -235,7 +238,7 @@ describe("test the MeasureComponent", () => {
         cmp = ReactDOM.render(
             <MeasureComponent measurement={{...measurement, bearing: 45}} bearingMeasureEnabled bearingMeasureValueEnabled trueBearingLabel = {<Message msgId="True Bearing"/>}/>, document.getElementById("container")
         );
-        expect(bearingSpan.innerHTML).toBe("<h3><strong>045° T</strong></h3>");
+        expect(bearingSpan.innerHTML).toBe("<h3><strong>045°</strong></h3>");
 
         const bearingTitleText = TestUtils.findRenderedDOMComponentWithClass(cmp, 'form-group');
         expect(bearingTitleText.textContent).toContain('True Bearing');
@@ -243,17 +246,17 @@ describe("test the MeasureComponent", () => {
         cmp = ReactDOM.render(
             <MeasureComponent measurement={{...measurement, bearing: 135.235648, trueBearing: {...measurement.trueBearing, fractionDigits: 4}}} bearingMeasureEnabled bearingMeasureValueEnabled/>, document.getElementById("container")
         );
-        expect(bearingSpan.innerHTML).toBe("<h3><strong>135.2356° T</strong></h3>");
+        expect(bearingSpan.innerHTML).toBe("<h3><strong>135.2356°</strong></h3>");
 
         cmp = ReactDOM.render(
             <MeasureComponent measurement={{...measurement, bearing: 225.83202, trueBearing: {...measurement.trueBearing, fractionDigits: 2}}} bearingMeasureEnabled bearingMeasureValueEnabled/>, document.getElementById("container")
         );
-        expect(bearingSpan.innerHTML).toBe("<h3><strong>225.83° T</strong></h3>");
+        expect(bearingSpan.innerHTML).toBe("<h3><strong>225.83°</strong></h3>");
 
         cmp = ReactDOM.render(
             <MeasureComponent measurement={assign({}, measurement, {bearing: 315})} bearingMeasureEnabled bearingMeasureValueEnabled/>, document.getElementById("container")
         );
-        expect(bearingSpan.innerHTML).toBe("<h3><strong>315° T</strong></h3>");
+        expect(bearingSpan.innerHTML).toBe("<h3><strong>315°</strong></h3>");
     });
 
     it('test uom format area and lenght', () => {
@@ -403,5 +406,165 @@ describe("test the MeasureComponent", () => {
         expect(submits.length).toBe(4);
         expect(isInValid.length).toBe(1);
 
+    });
+
+    it('test showing measurement from annotation', () => {
+        let measurement = {
+            lineMeasureEnabled: true,
+            areaMeasureEnabled: false,
+            bearingMeasureEnabled: false,
+            geomType: 'LineString',
+            features: [{
+                type: "Feature",
+                geometry: {
+                    type: "LineString",
+                    coordinates: [[1, 2], [2, 5]]
+                },
+                properties: {}
+            }],
+            textLabels: [{position: [1, 1], text: "1,714 m"}],
+            id: 1,
+            geomTypeSelected: ['LineString'],
+            exportToAnnotation: true,
+            len: 0,
+            area: 0,
+            bearing: 0
+        };
+        const uom = {
+            length: {unit: 'km', label: 'km'},
+            area: {unit: 'sqkm', label: 'km²'}
+        };
+        const actions = {
+            onAddAnnotation: () => {}
+        };
+        const spyOnAddAnnotation = expect.spyOn(actions, "onAddAnnotation");
+        let cmp = ReactDOM.render(
+            <MeasureComponent
+                onAddAnnotation={actions.onAddAnnotation}
+                uom={uom}
+                measurement={measurement}
+                format="decimal"
+                isDraggable
+                useSingleFeature
+                lineMeasureEnabled
+                showAddAsAnnotation
+            />, document.getElementById("container")
+        );
+        expect(cmp).toExist();
+        const toolbar = TestUtils.scryRenderedDOMComponentsWithClass(cmp, "btn-toolbar");
+        const toolBarGroup = TestUtils.scryRenderedDOMComponentsWithClass(cmp, "btn-group");
+        expect(toolbar).toExist();
+        expect(toolBarGroup.length).toBe(3);
+
+        const buttons = document.querySelectorAll('button');
+        expect(buttons.length).toBe(7);
+        expect(buttons[0].classList.contains('disabled')).toBe(false);
+        expect(buttons[1].classList.contains('disabled')).toBe(false);
+        expect(buttons[2].classList.contains('disabled')).toBe(false);
+        expect(buttons[3].classList.contains('disabled')).toBe(false);
+        expect(buttons[4].classList.contains('disabled')).toBe(false);
+        expect(buttons[5].classList.contains('disabled')).toBe(true); // Add as layer button
+        expect(buttons[6].classList.contains('disabled')).toBe(false);
+        expect(buttons[6].childNodes[0].className).toContain('floppy-disk');
+
+        // Save annotation
+        TestUtils.Simulate.click(buttons[6]);
+        expect(spyOnAddAnnotation).toHaveBeenCalled();
+        expect(spyOnAddAnnotation.calls[0].arguments).toBeTruthy();
+        expect(spyOnAddAnnotation.calls[0].arguments.length).toBe(5);
+        expect(spyOnAddAnnotation.calls[0].arguments[0]).toEqual(measurement.features);
+        expect(spyOnAddAnnotation.calls[0].arguments[1]).toEqual(measurement.textLabels);
+        expect(spyOnAddAnnotation.calls[0].arguments[2]).toEqual(uom);
+        expect(spyOnAddAnnotation.calls[0].arguments[3]).toBe(false);
+        expect(spyOnAddAnnotation.calls[0].arguments[4].id).toBe(1);
+    });
+
+    it("test Measurement default", () =>{
+        let measurement = {
+            lineMeasureEnabled: true,
+            features: [{
+                type: "Feature",
+                geometry: {
+                    type: "LineString",
+                    coordinates: [[1, 2], [2, 5]]
+                },
+                properties: {}
+            }],
+            textLabels: [{position: [1, 1], text: "1,714 m"}],
+            id: 1,
+            len: 0,
+            area: 0,
+            bearing: 0
+        };
+        let cmp = ReactDOM.render(
+            <MeasureComponent
+                measurement={measurement}
+                format="decimal"
+                isDraggable
+                useSingleFeature
+                lineMeasureEnabled
+                showAddAsAnnotation
+            />, document.getElementById("container")
+        );
+        expect(cmp).toExist();
+        const toolbar = TestUtils.scryRenderedDOMComponentsWithClass(cmp, "btn-toolbar");
+        const toolBarGroup = TestUtils.scryRenderedDOMComponentsWithClass(cmp, "btn-group");
+        expect(toolbar).toExist();
+        expect(toolBarGroup.length).toBe(3);
+
+        const buttons = document.querySelectorAll('button');
+        expect(buttons.length).toBe(7);
+        // By default LineString is selected
+        expect(buttons[0].className).toContain('active');
+
+        // Restrict unselect of the geometry
+        TestUtils.Simulate.click(buttons[0]);
+        expect(buttons[0].className).toContain('active');
+    });
+    it("test Measurement with invalid features", () =>{
+        let measurement = {
+            lineMeasureEnabled: true,
+            features: [{
+                type: "Feature",
+                geometry: {
+                    type: "LineString",
+                    coordinates: [[1, 2], [2, 5], ["", ""]]
+                },
+                properties: {
+                    disabled: true
+                }
+            }],
+            textLabels: [{position: [1, 2], text: "1,714 m"},
+                {position: [1, 1], text: "1,723 m"}],
+            id: 1,
+            len: 0,
+            area: 0,
+            bearing: 0
+        };
+        let cmp = ReactDOM.render(
+            <MeasureComponent
+                measurement={measurement}
+                format="decimal"
+                isDraggable
+                useSingleFeature
+                lineMeasureEnabled
+                showAddAsAnnotation
+            />, document.getElementById("container")
+        );
+        expect(cmp).toExist();
+        const toolbar = TestUtils.scryRenderedDOMComponentsWithClass(cmp, "btn-toolbar");
+        const toolBarGroup = TestUtils.scryRenderedDOMComponentsWithClass(cmp, "btn-group");
+        expect(toolbar).toExist();
+        expect(toolBarGroup.length).toBe(3);
+        const geomTypeButtons = toolBarGroup[0].querySelectorAll('button');
+        expect(geomTypeButtons.length).toBe(3);
+        geomTypeButtons.forEach((btn, i)=> {
+            if (i === 0) return expect(btn.className).toContain('active');
+            return expect(btn.className).toContain('disabled');
+        });
+
+        const exportTools = toolBarGroup[2].querySelectorAll('button');
+        expect(exportTools.length).toBe(3);
+        exportTools.forEach((btn)=> expect(btn.className).toContain('disabled'));
     });
 });

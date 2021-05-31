@@ -5,13 +5,16 @@
 * This source code is licensed under the BSD-style license found in the
 * LICENSE file in the root directory of this source tree.
 */
-const React = require("react");
-const PropTypes = require("prop-types");
-const {FormControl, FormGroup, Row, Col} = require("react-bootstrap");
-const Message = require('../../../../I18N/Message');
-const {toNumber, isNumber} = require("lodash");
-const withLocalized = require("../../../../misc/enhancers/localizedProps");
-const {compose, defaultProps} = require("recompose");
+
+import {isNumber, toNumber} from "lodash";
+import PropTypes from "prop-types";
+import React from "react";
+import {Col, FormGroup, Row} from "react-bootstrap";
+import {compose, defaultProps} from "recompose";
+
+import IntlNumberFormControl from '../../../../I18N/IntlNumberFormControl';
+import Message from '../../../../I18N/Message';
+import withLocalized from "../../../../misc/enhancers/localizedProps";
 
 class Priority extends React.Component {
     static propTypes = {
@@ -39,7 +42,7 @@ class Priority extends React.Component {
                 </Col>
                 <Col xs={12} sm={6}>
                     <FormGroup validationState={this.getValidationState()}>
-                        <FormControl
+                        <IntlNumberFormControl
                             min="0"
                             type="number"
                             value={selected}
@@ -51,12 +54,12 @@ class Priority extends React.Component {
             </Row>
         );
     }
-    handleChange = (e) => {
-        this.props.setOption({key: "priority", value: e.target.value});
+    handleChange = (value) => {
+        this.props.setOption({key: "priority", value});
     }
 }
 
-module.exports = compose(
+export default compose(
     defaultProps({
         placeholder: "rulesmanager.placeholders.priority"
     }),

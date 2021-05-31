@@ -6,41 +6,36 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const React = require('react');
-const PropTypes = require('prop-types');
-const { connect } = require('react-redux');
-const { createSelector } = require('reselect');
-const { compose, branch, toClass, lifecycle } = require('recompose');
-const assign = require('object-assign');
-const { isArray, isString } = require('lodash');
+import { isArray, isString } from 'lodash';
+import assign from 'object-assign';
+import PropTypes from 'prop-types';
+import React from 'react';
+import { connect } from 'react-redux';
+import { branch, compose, lifecycle, toClass } from 'recompose';
+import { createSelector } from 'reselect';
 
-const Loader = require('../components/misc/Loader');
-const BorderLayout = require('../components/layout/BorderLayout');
-const loadingState = require('../components/misc/enhancers/loadingState');
-const emptyState = require('../components/misc/enhancers/emptyState');
-const HTML = require('../components/I18N/HTML');
-
-const {
-    statusStyleSelector,
-    loadingStyleSelector,
-    getUpdatedLayer,
-    errorStyleSelector,
+import { updateSettingsParams } from '../actions/layers';
+import { initStyleService, toggleStyleEditor } from '../actions/styleeditor';
+import HTML from '../components/I18N/HTML';
+import BorderLayout from '../components/layout/BorderLayout';
+import emptyState from '../components/misc/enhancers/emptyState';
+import loadingState from '../components/misc/enhancers/loadingState';
+import Loader from '../components/misc/Loader';
+import { userRoleSelector } from '../selectors/security';
+import {
     canEditStyleSelector,
+    errorStyleSelector,
+    getUpdatedLayer,
+    loadingStyleSelector,
+    statusStyleSelector,
     styleServiceSelector
-} = require('../selectors/styleeditor');
-
-const { userRoleSelector } = require('../selectors/security');
-
-const { initStyleService, toggleStyleEditor } = require('../actions/styleeditor');
-const { updateSettingsParams } = require('../actions/layers');
-
-const {
+} from '../selectors/styleeditor';
+import { isSameOrigin } from '../utils/StyleEditorUtils';
+import {
+    StyleCodeEditor,
     StyleSelector,
-    StyleToolbar,
-    StyleCodeEditor
-} = require('./styleeditor/index');
-
-const { isSameOrigin } = require('../utils/StyleEditorUtils');
+    StyleToolbar
+} from './styleeditor/index';
 
 class StyleEditorPanel extends React.Component {
     static propTypes = {
@@ -53,7 +48,8 @@ class StyleEditorPanel extends React.Component {
         userRole: PropTypes.string,
         editingAllowedRoles: PropTypes.array,
         enableSetDefaultStyle: PropTypes.bool,
-        canEdit: PropTypes.bool
+        canEdit: PropTypes.bool,
+        editorConfig: PropTypes.object
     };
 
     static defaultProps = {
@@ -61,7 +57,8 @@ class StyleEditorPanel extends React.Component {
         onInit: () => {},
         editingAllowedRoles: [
             'ADMIN'
-        ]
+        ],
+        editorConfig: {}
     };
 
     UNSAFE_componentWillMount() {
@@ -85,7 +82,7 @@ class StyleEditorPanel extends React.Component {
                 }
                 footer={<div style={{ height: 25 }} />}>
                 {this.props.isEditing
-                    ? <StyleCodeEditor />
+                    ? <StyleCodeEditor config={this.props.editorConfig}/>
                     : <StyleSelector
                         showDefaultStyleIcon={this.props.canEdit && this.props.enableSetDefaultStyle}/>}
             </BorderLayout>
@@ -106,6 +103,18 @@ class StyleEditorPanel extends React.Component {
  * @prop {array} cfg.styleService.formats supported formats, could be one of [ 'sld' ] or [ 'sld', 'css' ]
  * @prop {array} cfg.editingAllowedRoles all roles with edit permission eg: [ 'ADMIN' ], if null all roles have edit permission
  * @prop {array} cfg.enableSetDefaultStyle enable set default style functionality
+ * @prop {array} cfg.editorConfig contains editor configurations
+ * @prop {array} cfg.editorConfig.classification configuration of the classification symbolizer
+ * For example adding default editor configuration to the classification
+ * ```
+ * "cfg": {
+ *    "editorConfig" : {
+ *       "classification": {
+ *           "intervalsForUnique": 100
+ *       },
+ *    }
+ *  }
+ * ```
  * @memberof plugins
  * @class StyleEditor
  */
@@ -135,7 +144,7 @@ const StyleEditorPlugin = compose(
                 isEditing: status === 'edit',
                 loading,
                 layer,
-                error: !!(error && error.availableStyles),
+                error,
                 userRole,
                 canEdit,
                 styleService
@@ -145,21 +154,32 @@ const StyleEditorPlugin = compose(
             onInit: initStyleService,
             onUpdateParams: updateSettingsParams
         },
-        (stateProps, dispatchProps, ownProps) => ({
-            ...ownProps,
-            ...stateProps,
-            ...dispatchProps,
-            styleService: ownProps.styleService
+        (stateProps, dispatchProps, ownProps) => {
+            // detect if the static service has been updated with new information in the global state
+            // eg: classification methods are requested asynchronously
+            const isStaticServiceUpdated = ownProps.styleService?.baseUrl === stateProps.styleService?.baseUrl
+                && stateProps.styleService?.isStatic;
+            const newStyleService = ownProps.styleService && !isStaticServiceUpdated
                 ? { ...ownProps.styleService, isStatic: true }
-                : { ...stateProps.styleService }
-        })
+                : { ...stateProps.styleService };
+            return {
+                ...ownProps,
+                ...stateProps,
+                ...dispatchProps,
+                styleService: newStyleService
+            };
+        }
     ),
     emptyState(
-        ({ error }) => error,
-        {
+        ({ error }) => !!(error?.availableStyles || error?.global || error?.parsingCapabilities),
+        ({ error }) => ({
             glyph: 'exclamation-mark',
-            title: <HTML msgId="styleeditor.missingAvailableStyles"/>,
-            description: <HTML msgId="styleeditor.missingAvailableStylesMessage"/>,
+            title: <HTML msgId="styleeditor.errorTitle"/>,
+            description: <HTML msgId={
+                error?.availableStyles && "styleeditor.missingAvailableStylesMessage" ||
+                error?.parsingCapabilities && "styleeditor.parsingCapabilitiesError" ||
+                error?.global && "styleeditor.globalError"
+            }/>,
             style: {
                 display: 'flex',
                 width: '100%',
@@ -170,7 +190,7 @@ const StyleEditorPlugin = compose(
                 margin: 'auto',
                 width: 300
             }
-        }
+        })
     ),
     loadingState(
         ({loading}) => loading === 'global',
@@ -194,7 +214,7 @@ const StyleEditorPlugin = compose(
     )
 )(StyleEditorPanel);
 
-module.exports = {
+export default {
     StyleEditorPlugin: assign(StyleEditorPlugin, {
         TOC: {
             priority: 1,
@@ -208,7 +228,7 @@ module.exports = {
         }
     }),
     reducers: {
-        styleeditor: require('../reducers/styleeditor')
+        styleeditor: require('../reducers/styleeditor').default
     },
-    epics: require('../epics/styleeditor')
+    epics: require('../epics/styleeditor').default
 };

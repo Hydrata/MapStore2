@@ -5,11 +5,12 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const expect = require('expect');
-const xml2js = require('xml2js');
-const WMTSUtils = require('../WMTSUtils');
-const restCapabilities = require('raw-loader!../../test-resources/wmts/GetCapabilities-rest.xml');
-const kvpCapabilities = require('raw-loader!../../test-resources/wmts/GetCapabilities-1.0.0.xml');
+import expect from 'expect';
+
+import xml2js from 'xml2js';
+import * as WMTSUtils from '../WMTSUtils';
+import restCapabilities from 'raw-loader!../../test-resources/wmts/GetCapabilities-rest.xml';
+import kvpCapabilities from 'raw-loader!../../test-resources/wmts/GetCapabilities-1.0.0.xml';
 
 describe('Test the WMTSUtils', () => {
     it('get matrix ids with object', () => {
@@ -52,5 +53,31 @@ describe('Test the WMTSUtils', () => {
             expect(tileURLs[0]).toBe("https://maps1.sampleServer.org/basemap/geolandbasemap/{Style}/{TileMatrixSet}/{TileMatrix}/{TileRow}/{TileCol}.png");
             done();
         });
+    });
+    describe('getDefaultStyleIdentifier', () => {
+        it('tests fetching the style when it is missing', () => {
+            let style = WMTSUtils.getDefaultStyleIdentifier({});
+            expect(style).toBeFalsy();
+            style = WMTSUtils.getDefaultStyleIdentifier();
+            expect(style).toBeFalsy();
+        });
+        it('tests fetching the style from a layer record', () => {
+            const layer = {
+                Style: {
+                    "$": {
+                        "isDefault": "true"
+                    },
+                    "ows:Title": "generic Legend",
+                    "ows:Abstract": "abstract",
+                    "ows:Keywords": {
+                        "ows:Keyword": "default"
+                    },
+                    "ows:Identifier": "normal"
+                }
+            };
+            const style = WMTSUtils.getDefaultStyleIdentifier(layer);
+            expect(style).toBe('normal');
+        });
+
     });
 });

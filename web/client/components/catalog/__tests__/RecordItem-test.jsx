@@ -5,14 +5,15 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const React = require('react');
-const ReactDOM = require('react-dom');
-const RecordItem = require('../RecordItem.jsx').default;
-const expect = require('expect');
-const assign = require('object-assign');
-const ReactTestUtils = require('react-dom/test-utils');
 
-const TestUtils = require('react-dom/test-utils');
+import expect from 'expect';
+import assign from 'object-assign';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import TestUtils from 'react-dom/test-utils';
+
+import RecordItem from '../RecordItem.jsx';
+
 const SAMPLE_IMAGE = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
 
 const sampleRecord = {
@@ -292,9 +293,11 @@ describe('This test for RecordItem', () => {
 
             }
         };
+        const service = { format: "image/jpeg", title: "GeoServer WMS", type: "wms", url: 'fakeURL'};
         let actionsSpy = expect.spyOn(actions, "onLayerAdd");
         const item = ReactDOM.render(<RecordItem
             record={sampleRecord}
+            service={service}
             onLayerAdd={actions.onLayerAdd}
             catalogURL="fakeURL"
             catalogType="wms"
@@ -311,6 +314,8 @@ describe('This test for RecordItem', () => {
         expect(actionsSpy.calls.length).toBe(1);
         expect(actionsSpy.calls[0].arguments.length).toBe(2);
         expect(actionsSpy.calls[0].arguments[0].catalogURL).toNotExist();
+        expect(actionsSpy.calls[0].arguments[0].format).toBeTruthy();
+        expect(actionsSpy.calls[0].arguments[0].format).toBe(service.format);
         expect(actionsSpy.calls[0].arguments[1].zoomToLayer).toBeTruthy();
     });
     it('check wms default format', () => {
@@ -796,7 +801,7 @@ describe('This test for RecordItem', () => {
         expect(itemDom).toExist();
         let expand = itemDom.getElementsByClassName('glyphicon-chevron-left');
         expect(expand.length).toBe(1);
-        ReactTestUtils.Simulate.click(expand[0]);
+        TestUtils.Simulate.click(expand[0]);
         let desc = itemDom.getElementsByClassName('mapstore-side-card-desc');
         expect(desc.length).toBe(1);
         expect(desc[0].innerText.indexOf("sample title and sample abstract") !== -1).toBe(true);
@@ -820,7 +825,7 @@ describe('This test for RecordItem', () => {
         expect(itemDom).toExist();
         let expand = itemDom.getElementsByClassName('glyphicon-chevron-left');
         expect(expand.length).toBe(1);
-        ReactTestUtils.Simulate.click(expand[0]);
+        TestUtils.Simulate.click(expand[0]);
         let desc = itemDom.getElementsByClassName('mapstore-side-card-desc');
         expect(desc.length).toBe(1);
         expect(desc[0].innerText.indexOf("sample title and description catalog.notAvailable") !== -1).toBe(true);
@@ -856,5 +861,33 @@ describe('This test for RecordItem', () => {
         expect(descDiv).toExist();
         expect(descDiv.hasChildNodes()).toBe(true);
         expect(descDiv.firstElementChild.tagName).toBe('SPAN');
+    });
+    it('check formats are added to layer props (WMS)', () => {
+        const defaultFormat = 'image/jpeg';
+        const formatOptions = ["image/png", "image/png8"];
+        const infoFormatOptions = ["text/html", "text/plain"];
+        let actions = {
+            onLayerAdd: () => {}
+        };
+        let actionsSpy = expect.spyOn(actions, "onLayerAdd");
+        const item = ReactDOM.render(<RecordItem
+            defaultFormat={defaultFormat}
+            formatOptions={formatOptions}
+            infoFormatOptions={infoFormatOptions}
+            record={sampleRecord}
+            onLayerAdd={actions.onLayerAdd}/>, document.getElementById("container"));
+        expect(item).toExist();
+
+        const itemDom = ReactDOM.findDOMNode(item);
+        expect(itemDom).toExist();
+        let button = TestUtils.findRenderedDOMComponentWithTag(
+            item, 'button'
+        );
+        expect(button).toExist();
+        button.click();
+        expect(actionsSpy.calls.length).toBe(1);
+        expect(actionsSpy.calls[0].arguments[0].format).toBe(defaultFormat);
+        expect(actionsSpy.calls[0].arguments[0].imageFormats).toEqual(formatOptions);
+        expect(actionsSpy.calls[0].arguments[0].infoFormats).toBe(infoFormatOptions);
     });
 });

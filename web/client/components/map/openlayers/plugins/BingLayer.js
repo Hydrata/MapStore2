@@ -26,10 +26,13 @@ Layers.registerType('bing', {
         var key = options.apiKey;
         var maxNativeZoom = options.maxNativeZoom || 19;
         const layer = new TileLayer({
+            msId: options.id,
             preload: Infinity,
             opacity: options.opacity !== undefined ? options.opacity : 1,
             zIndex: options.zIndex,
             visible: options.visibility,
+            minResolution: options.minResolution,
+            maxResolution: options.maxResolution,
             source: new BingMaps({
                 key: key,
                 imagerySet: options.name,
@@ -38,6 +41,14 @@ Layers.registerType('bing', {
         });
         setTimeout(checkLoaded.bind(null, layer, options), 1000);
         return layer;
+    },
+    update: (layer, newOptions, oldOptions) => {
+        if (oldOptions.minResolution !== newOptions.minResolution) {
+            layer.setMinResolution(newOptions.minResolution === undefined ? 0 : newOptions.minResolution);
+        }
+        if (oldOptions.maxResolution !== newOptions.maxResolution) {
+            layer.setMaxResolution(newOptions.maxResolution === undefined ? Infinity : newOptions.maxResolution);
+        }
     },
     isValid: (layer) => {
         if (layer.getSource && layer.getSource().getState() === 'error') {

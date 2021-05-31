@@ -5,23 +5,21 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const React = require('react');
-const Message = require('../../../../components/I18N/Message');
-const Layers = require('../../../../utils/leaflet/Layers');
-const CoordinatesUtils = require('../../../../utils/CoordinatesUtils');
-const { optionsToVendorParams } = require('../../../../utils/VendorParamsUtils');
+import React from 'react';
+import Message from '../../../../components/I18N/Message';
+import Layers from '../../../../utils/leaflet/Layers';
+import { optionsToVendorParams } from '../../../../utils/VendorParamsUtils';
+import WMSUtils from '../../../../utils/leaflet/WMSUtils';
+import L from 'leaflet';
+import objectAssign from 'object-assign';
+import {isArray, isNil} from 'lodash';
+import {addAuthenticationToSLD, addAuthenticationParameter} from '../../../../utils/SecurityUtils';
+import { loadTile, getElevation } from '../../../../utils/ElevationUtils';
+import { creditsToAttribution } from '../../../../utils/LayersUtils';
 
-const WMSUtils = require('../../../../utils/leaflet/WMSUtils');
-const L = require('leaflet');
-const objectAssign = require('object-assign');
-const {isArray, isNil} = require('lodash');
-const SecurityUtils = require('../../../../utils/SecurityUtils');
-const ElevationUtils = require('../../../../utils/ElevationUtils');
-const { creditsToAttribution } = require('../../../../utils/LayersUtils');
+import { isVectorFormat } from '../../../../utils/VectorTileUtils';
 
-const { isVectorFormat } = require('../../../../utils/VectorTileUtils');
-
-require('leaflet.nontiledlayer');
+import 'leaflet.nontiledlayer';
 
 L.NonTiledLayer.WMSCustom = L.NonTiledLayer.WMS.extend({
     initialize: function(url, options) { // (String, Object)
@@ -112,21 +110,23 @@ L.tileLayer.multipleUrlWMS = function(urls, options) {
 
 
 L.TileLayer.ElevationWMS = L.TileLayer.MultipleUrlWMS.extend({
-    initialize: function(urls, options, nodata) {
+    initialize: function(urls, options, nodata, littleendian) {
         this._tiles = {};
         this._nodata = nodata;
+        this._littleendian = littleendian;
         L.TileLayer.MultipleUrlWMS.prototype.initialize.apply(this, arguments);
     },
     _addTile: function(coords) {
         const tileUrl = this.getTileUrl(coords);
-        ElevationUtils.loadTile(tileUrl, coords, this._tileCoordsToKey(coords));
+        loadTile(tileUrl, coords, this._tileCoordsToKey(coords));
     },
 
     getElevation: function(latLng, containerPoint) {
         try {
             const tilePoint = this._getTileFromCoords(latLng);
-            const elevation = ElevationUtils.getElevation(this._tileCoordsToKey(tilePoint),
-                this._getTileRelativePixel(tilePoint, containerPoint), this.getTileSize().x, this._nodata);
+            const elevation = getElevation(this._tileCoordsToKey(tilePoint),
+                this._getTileRelativePixel(tilePoint, containerPoint), this.getTileSize().x,
+                this._nodata, this._littleendian);
             if (elevation.available) {
                 return elevation.value;
             }
@@ -148,8 +148,8 @@ L.TileLayer.ElevationWMS = L.TileLayer.MultipleUrlWMS.extend({
     _abortLoading: function() {}
 });
 
-L.tileLayer.elevationWMS = function(urls, options, nodata) {
-    return new L.TileLayer.ElevationWMS(urls, options, nodata);
+L.tileLayer.elevationWMS = function(urls, options, nodata, littleendian) {
+    return new L.TileLayer.ElevationWMS(urls, options, nodata, littleendian);
 };
 
 const removeNulls = (obj = {}) => {
@@ -174,8 +174,6 @@ function wmsToLeafletOptions(options) {
         opacity: opacity,
         zIndex: options.zIndex,
         version: options.version || "1.3.0",
-        SRS: CoordinatesUtils.normalizeSRS(options.srs || 'EPSG:3857', options.allowedSRS),
-        CRS: CoordinatesUtils.normalizeSRS(options.srs || 'EPSG:3857', options.allowedSRS),
         tileSize: options.tileSize || 256,
         maxZoom: options.maxZoom || 23,
         maxNativeZoom: options.maxNativeZoom || 18
@@ -183,7 +181,7 @@ function wmsToLeafletOptions(options) {
         (options._v_ ? {_v_: options._v_} : {}),
         (params || {})
     ));
-    return SecurityUtils.addAuthenticationToSLD(result, options);
+    return addAuthenticationToSLD(result, options);
 }
 
 function getWMSURLs( urls ) {
@@ -194,9 +192,9 @@ Layers.registerType('wms', {
     create: (options) => {
         const urls = getWMSURLs(isArray(options.url) ? options.url : [options.url]);
         const queryParameters = removeNulls(wmsToLeafletOptions(options) || {});
-        urls.forEach(url => SecurityUtils.addAuthenticationParameter(url, queryParameters, options.securityToken));
+        urls.forEach(url => addAuthenticationParameter(url, queryParameters, options.securityToken));
         if (options.useForElevation) {
-            return L.tileLayer.elevationWMS(urls, queryParameters, options.nodata || -9999);
+            return L.tileLayer.elevationWMS(urls, queryParameters, options.nodata || -9999, options.littleendian || false);
         }
         if (options.singleTile) {
             return L.nonTiledLayer.wmsCustom(urls[0], queryParameters);
@@ -204,11 +202,11 @@ Layers.registerType('wms', {
         return L.tileLayer.multipleUrlWMS(urls, queryParameters);
     },
     update: function(layer, newOptions, oldOptions) {
-        if (oldOptions.singleTile !== newOptions.singleTile || oldOptions.securityToken !== newOptions.securityToken && newOptions.visibility) {
+        if (oldOptions.singleTile !== newOptions.singleTile || oldOptions.tileSize !== newOptions.tileSize || oldOptions.securityToken !== newOptions.securityToken && newOptions.visibility) {
             let newLayer;
             const urls = getWMSURLs(isArray(newOptions.url) ? newOptions.url : [newOptions.url]);
             const queryParameters = wmsToLeafletOptions(newOptions) || {};
-            urls.forEach(url => SecurityUtils.addAuthenticationParameter(url, queryParameters, newOptions.securityToken));
+            urls.forEach(url => addAuthenticationParameter(url, queryParameters, newOptions.securityToken));
             if (newOptions.singleTile) {
                 // return the nonTiledLayer
                 newLayer = L.nonTiledLayer.wmsCustom(urls[0], queryParameters);
@@ -219,9 +217,9 @@ Layers.registerType('wms', {
         }
         // find the options that make a parameter change
         let oldqueryParameters = objectAssign({}, WMSUtils.filterWMSParamOptions(wmsToLeafletOptions(oldOptions)),
-            SecurityUtils.addAuthenticationToSLD(oldOptions.params || {}, oldOptions));
+            addAuthenticationToSLD(oldOptions.params || {}, oldOptions));
         let newQueryParameters = objectAssign({}, WMSUtils.filterWMSParamOptions(wmsToLeafletOptions(newOptions)),
-            SecurityUtils.addAuthenticationToSLD(newOptions.params || {}, newOptions));
+            addAuthenticationToSLD(newOptions.params || {}, newOptions));
         let newParameters = Object.keys(newQueryParameters).filter((key) => {return newQueryParameters[key] !== oldqueryParameters[key]; });
         let removeParams = Object.keys(oldqueryParameters).filter((key) => { return oldqueryParameters[key] !== newQueryParameters[key]; });
         let newParams = {};
@@ -233,7 +231,7 @@ Layers.registerType('wms', {
                 return objectAssign({}, accumulator, {[currentValue]: newQueryParameters[currentValue] });
             }, newParams);
             // set new options as parameters, merged with params
-            layer.setParams(removeNulls(objectAssign(newParams, newParams.params, SecurityUtils.addAuthenticationToSLD(newOptions.params || {}, newOptions))));
+            layer.setParams(removeNulls(objectAssign(newParams, newParams.params, addAuthenticationToSLD(newOptions.params || {}, newOptions))));
         }/* else if (!isEqual(newOptions.params, oldOptions.params)) {
             layer.setParams(newOptions.params);
         }*/

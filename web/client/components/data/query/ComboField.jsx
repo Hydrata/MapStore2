@@ -1,4 +1,3 @@
-const PropTypes = require('prop-types');
 /**
  * Copyright 2016, GeoSolutions Sas.
  * All rights reserved.
@@ -6,20 +5,19 @@ const PropTypes = require('prop-types');
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const React = require('react');
-const assign = require('object-assign');
-const LocaleUtils = require('../../../utils/LocaleUtils');
+import React from 'react';
 
-const {Tooltip} = require('react-bootstrap');
-
-const OverlayTrigger = require('../../misc/OverlayTrigger');
-
-const {DropdownList, Multiselect} = require('react-widgets');
-
-const Message = require('../../../components/I18N/Message');
+import assign from 'object-assign';
+import { getMessageById } from '../../../utils/LocaleUtils';
+import PropTypes from 'prop-types';
+import { Tooltip } from 'react-bootstrap';
+import OverlayTrigger from '../../misc/OverlayTrigger';
+import { DropdownList, Multiselect } from 'react-widgets';
+import Message from '../../../components/I18N/Message';
 
 class ComboField extends React.Component {
     static propTypes = {
+        dropUp: PropTypes.bool,
         busy: PropTypes.bool,
         style: PropTypes.object,
         valueField: PropTypes.string,
@@ -100,6 +98,7 @@ class ComboField extends React.Component {
 
         const list = this.props.valueField !== null && this.props.textField !== null ?
             (<ListComponent
+                dropUp={this.props.dropUp}
                 {...this.props.options}
                 busy={this.props.busy}
                 disabled={this.props.disabled}
@@ -111,7 +110,7 @@ class ComboField extends React.Component {
                 caseSensitive={false}
                 minLength={3}
                 placeholder={this.props.placeholder}
-                messages={{open: LocaleUtils.getMessageById(this.context.messages, "queryform.comboField.drop_down")}}
+                messages={{open: getMessageById(this.context.messages, "queryform.comboField.drop_down")}}
                 filter={this.props.comboFilter}
                 style={style}
                 groupBy={this.props.groupBy}
@@ -121,6 +120,7 @@ class ComboField extends React.Component {
                 onSearch={this.props.onSearch}/>)
             :
             (<ListComponent
+                dropUp={this.props.dropUp}
                 {...this.props.options}
                 busy={this.props.busy}
                 disabled={this.props.disabled}
@@ -130,7 +130,7 @@ class ComboField extends React.Component {
                 caseSensitive={false}
                 minLength={3}
                 placeholder={this.props.placeholder}
-                messages={{open: LocaleUtils.getMessageById(this.context.messages, "queryform.comboField.drop_down")}}
+                messages={{open: getMessageById(this.context.messages, "queryform.comboField.drop_down")}}
                 filter={this.props.comboFilter}
                 style={style}
                 groupBy={this.props.groupBy}
@@ -156,4 +156,4 @@ class ComboField extends React.Component {
     }
 }
 
-module.exports = ComboField;
+export default ComboField;

@@ -6,25 +6,22 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const React = require('react');
+import React from 'react';
 
-const Message = require('../../I18N/Message');
-
-const SwitchPanel = require('../../misc/switch/SwitchPanel');
-const {Row, Col} = require('react-bootstrap');
-const Select = require('react-select').default;
-
-
-const GeometricOperationSelector = require('./GeometricOperationSelector');
-const GroupField = require('./GroupField');
-const {isSameUrl} = require('../../../utils/URLUtils');
-
+import Message from '../../I18N/Message';
+import SwitchPanel from '../../misc/switch/SwitchPanel';
+import { Row, Col } from 'react-bootstrap';
+import Select from 'react-select';
+import GeometricOperationSelector from './GeometricOperationSelector';
+import GroupField from './GroupField';
+import { isSameUrl } from '../../../utils/URLUtils';
+import InfoPopover from '../../widgets/widget/InfoPopover';
 
 const isSameOGCServiceRoot = (origSearchUrl, {search, url} = {}) => isSameUrl(origSearchUrl, url) || isSameUrl(origSearchUrl, (search && search.url));
 // bbox make not sense with cross layer filter
 const getAllowedSpatialOperations = (spatialOperations) => (spatialOperations || []).filter( ({id} = {}) => id !== "BBOX");
 
-module.exports = ({
+export default ({
     crossLayerExpanded = true,
     spatialOperations,
     expandCrossLayerFilterPanel = () => {},
@@ -42,7 +39,8 @@ module.exports = ({
     setQueryCollectionParameter = () => {},
     addCrossLayerFilterField = () => {},
     updateCrossLayerFilterField = () => {},
-    removeCrossLayerFilterField = () => {}
+    removeCrossLayerFilterField = () => {},
+    toggleMenu = () => {}
 } = {}) => {
     const {typeName, geometryName, filterFields, groupFields = [{
         id: 1,
@@ -50,6 +48,15 @@ module.exports = ({
         index: 0
     }]} = queryCollection;
 
+    const unMatchingLayerOptions = layers
+        .filter( l => !isSameOGCServiceRoot(searchUrl, l));
+
+    const renderUnMatchingLayersInfo = () => {
+        if (layers.length && unMatchingLayerOptions.length) {
+            return (<InfoPopover bsStyle="link" text={<Message msgId="queryform.crossLayerFilter.errors.layersExcluded" />}/>);
+        }
+        return null;
+    };
     return (<SwitchPanel
         loading={loadingCapabilities}
         expanded={crossLayerExpanded && !loadingCapabilities && !errorObj}
@@ -66,7 +73,11 @@ module.exports = ({
         title={<Message msgId="queryform.crossLayerFilter.title" />} >
         <Row className="inline-form filter-field-fixed-row">
             <Col xs={6}>
-                <div><Message msgId="queryform.crossLayerFilter.targetLayer"/></div>
+                <div>
+                    <Message msgId="queryform.crossLayerFilter.targetLayer"/>&nbsp;
+                    { renderUnMatchingLayersInfo() }
+                </div>
+
             </Col>
             <Col xs={6}>
                 <Select
@@ -105,7 +116,8 @@ module.exports = ({
             ? (<Row className="filter-field-fixed-row">
                 <Col xs={12}>
                     <GroupField
-                        autocompleteEnabled={false /* TODO make it work with stream enhancer */}
+                        dropUp
+                        autocompleteEnabled
                         withContainer={false}
                         attributes={attributes}
                         groupLevels={-1}
@@ -114,7 +126,8 @@ module.exports = ({
                             onUpdateLogicCombo: updateLogicCombo,
                             onAddFilterField: addCrossLayerFilterField,
                             onUpdateFilterField: updateCrossLayerFilterField,
-                            onRemoveFilterField: removeCrossLayerFilterField
+                            onRemoveFilterField: removeCrossLayerFilterField,
+                            toggleMenu: toggleMenu
                         }}
                         groupFields={groupFields} filterField/>
                 </Col>

@@ -8,22 +8,21 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {connect} from 'react-redux';
-import {createSelector} from 'reselect';
-import { compose, defaultProps, withProps, withPropsOnChange} from 'recompose';
+import { connect } from 'react-redux';
+import { createSelector } from 'reselect';
+import { compose, defaultProps, withProps, withPropsOnChange } from 'recompose';
 
 
 import { createPlugin } from '../utils/PluginsUtils';
 
-import {mapIdSelector} from '../selectors/map';
-import { getVisibleFloatingWidgets, dependenciesSelector, getFloatingWidgetsLayout, isTrayEnabled} from '../selectors/widgets';
-import { editWidget, updateWidgetProperty, deleteWidget, changeLayout, exportCSV, exportImage, toggleCollapse} from '../actions/widgets';
+import { mapIdSelector } from '../selectors/map';
+import { getVisibleFloatingWidgets, dependenciesSelector, getFloatingWidgetsLayout, isTrayEnabled, getMaximizedState } from '../selectors/widgets';
+import { editWidget, updateWidgetProperty, deleteWidget, changeLayout, exportCSV, exportImage, toggleCollapse, toggleMaximize } from '../actions/widgets';
 import editOptions from './widgets/editOptions';
 import autoDisableWidgets from './widgets/autoDisableWidgets';
 
 const RIGHT_MARGIN = 70;
-import {heightProvider} from '../components/layout/enhancers/gridLayout';
-import ContainerDimensions from 'react-container-dimensions';
+import { widthProvider, heightProvider } from '../components/layout/enhancers/gridLayout';
 
 import WidgetsViewBase from '../components/widgets/view/WidgetsView';
 
@@ -34,11 +33,13 @@ compose(
             mapIdSelector,
             getVisibleFloatingWidgets,
             getFloatingWidgetsLayout,
+            getMaximizedState,
             dependenciesSelector,
-            (id, widgets, layouts, dependencies) => ({
+            (id, widgets, layouts, maximized, dependencies) => ({
                 id,
                 widgets,
                 layouts,
+                maximized,
                 dependencies
             })
         ), {
@@ -46,6 +47,7 @@ compose(
             updateWidgetProperty,
             exportCSV,
             toggleCollapse,
+            toggleMaximize,
             exportImage,
             deleteWidget,
             onLayoutChange: changeLayout
@@ -54,25 +56,48 @@ compose(
     // functionalities concerning auto-resize, layout and style.
     compose(
         heightProvider({ debounceTime: 20, closest: true, querySelector: '.fill' }),
-        C => props => <ContainerDimensions>{({ width } = {}) => <C width={width} {...props} />}</ContainerDimensions>,
-        withProps(({width, height} = {}) => {
+        widthProvider({ overrideWidthProvider: false }),
+        withProps(({width, height, maximized} = {}) => {
             const divHeight = height - 120;
             const nRows = 4;
             const rowHeight = Math.floor(divHeight / nRows - 20);
+
+            const maximizedStyle = maximized?.widget ? {
+                width: '100%',
+                height: '100%',
+                marginTop: 0,
+                bottom: 'auto',
+                top: 0,
+                left: 0,
+                zIndex: 1330
+            } : {};
+            const maximizedProps = maximized?.widget ? {
+                width,
+                useDefaultWidthProvider: false,
+                rowHeight: height - 50,
+                breakpoints: { xxs: 0 },
+                cols: { xxs: 1 }
+            } : {};
+            const viewWidth = width && width > 800 ? width - (500 + RIGHT_MARGIN) : width - RIGHT_MARGIN;
+            const widthOptions = width ? {width: viewWidth - 1} : {};
             return ({
                 rowHeight,
                 className: "on-map",
                 breakpoints: { md: 480, xxs: 0 },
                 cols: { md: 6, xxs: 1 },
+                ...widthOptions,
+                useDefaultWidthProvider: false,
                 style: {
                     left: (width && width > 800) ? "500px" : "0",
                     marginTop: 52,
                     bottom: 65,
                     height: Math.floor((height - 100) / (rowHeight + 10)) * (rowHeight + 10),
-                    width: width && width > 800 ? `calc(100% - ${500 + RIGHT_MARGIN}px)` : `calc(100% - ${RIGHT_MARGIN}px)`,
+                    width: viewWidth + 'px',
                     position: 'absolute',
-                    zIndex: 50
-                }
+                    zIndex: 50,
+                    ...maximizedStyle
+                },
+                ...maximizedProps
             });
         })
     ),
@@ -85,7 +110,8 @@ compose(
                 showPin: "user.role===ADMIN", // users can lock widgets to disable editing, move and collapse
                 seeHidden: "user.role===ADMIN", // users that can see the hidden widgets (hidden with hide tool, visible only to the users that has showHide = true)
                 showHide: false, // show the hide tool in menu
-                showCollapse: true
+                showCollapse: true,
+                showMaximize: true
             }
         }),
         // allow to customize toolsOptions object, with rules. see accessRuleParser
@@ -116,12 +142,10 @@ compose(
 
 class Widgets extends React.Component {
     static propTypes = {
-        enabled: PropTypes.bool,
-        shortenChartLabelThreshold: PropTypes.number
+        enabled: PropTypes.bool
     };
     static defaultProps = {
-        enabled: true,
-        shortenChartLabelThreshold: 1000
+        enabled: true
     };
     render() {
         return this.props.enabled ? <WidgetsView {...this.props /* pass options to the plugin */ } /> : null;
@@ -154,7 +178,7 @@ export default createPlugin("WidgetsPlugin", {
         }
     },
     reducers: {
-        widgets: require('../reducers/widgets')
+        widgets: require('../reducers/widgets').default
     },
-    epics: require('../epics/widgets')
+    epics: require('../epics/widgets').default
 });

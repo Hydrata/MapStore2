@@ -5,34 +5,39 @@
 * This source code is licensed under the BSD-style license found in the
 * LICENSE file in the root directory of this source tree.
 */
-const React = require('react');
-const PropTypes = require('prop-types');
-const assign = require('object-assign');
-const {connect} = require('react-redux');
-const { compose } = require('recompose');
-const ConfigUtils = require('../utils/ConfigUtils');
-const Message = require("../components/I18N/Message");
 
-const maptypeEpics = require('../epics/maptype');
-const mapsEpics = require('../epics/maps');
-const {mapTypeSelector} = require('../selectors/maptype');
-const {userRoleSelector} = require('../selectors/security');
-const {versionSelector} = require('../selectors/version');
-const { totalCountSelector } = require('../selectors/maps');
-const { isFeaturedMapsEnabled } = require('../selectors/featuredmaps');
-const emptyState = require('../components/misc/enhancers/emptyState');
-const {createSelector} = require('reselect');
+import React from 'react';
+import PropTypes from 'prop-types';
+import assign from 'object-assign';
+import {connect} from 'react-redux';
+import { compose } from 'recompose';
+import ConfigUtils from '../utils/ConfigUtils';
+import Message from "../components/I18N/Message";
 
-const MapsGrid = require('./maps/MapsGrid');
-const MetadataModal = require('./maps/MetadataModal');
-const EmptyMaps = require('./maps/EmptyMaps').default;
+import mapsEpics from '../epics/maps';
+import {userRoleSelector} from '../selectors/security';
+import {versionSelector} from '../selectors/version';
+import { totalCountSelector } from '../selectors/maps';
+import { mapTypeSelector } from '../selectors/maptype';
+import { isFeaturedMapsEnabled } from '../selectors/featuredmaps';
+import emptyState from '../components/misc/enhancers/emptyState';
+import {createSelector} from 'reselect';
 
-const {loadMaps, setShowMapDetails} = require('../actions/maps');
+import MapsGrid from './maps/MapsGrid';
+import PaginationToolbarBase from '../components/misc/PaginationToolbar';
+
+import EmptyMaps from './maps/EmptyMaps';
+
+import {loadMaps} from '../actions/maps';
+
+import mapsReducer from '../reducers/maps';
+import maptypeReducer from '../reducers/maptype';
 
 const mapsCountSelector = createSelector(
     totalCountSelector,
     count => ({ count })
 );
+
 
 const PaginationToolbar = connect((state) => {
     if (!state.maps ) {
@@ -59,21 +64,14 @@ const PaginationToolbar = connect((state) => {
             dispatchProps.onSelect(ConfigUtils.getDefaults().geoStoreUrl, stateProps.searchText, {start, limit});
         }
     };
-})(require('../components/misc/PaginationToolbar'));
+})(PaginationToolbarBase);
 
-/**
- * Plugin for Maps resources
- * @name Maps
- * @memberof plugins
- * @prop {boolean} cfg.showCreateButton default true, use to render create a new one button
- */
 class Maps extends React.Component {
     static propTypes = {
         mapType: PropTypes.string,
         title: PropTypes.any,
         onGoToMap: PropTypes.func,
         loadMaps: PropTypes.func,
-        setShowMapDetails: PropTypes.func,
         showMapDetails: PropTypes.bool,
         maps: PropTypes.array,
         searchText: PropTypes.string,
@@ -92,7 +90,6 @@ class Maps extends React.Component {
         mapType: "leaflet",
         onGoToMap: () => {},
         loadMaps: () => {},
-        setShowMapDetails: () => {},
         fluid: false,
         title: <h3><Message msgId="manager.maps_title" /></h3>,
         mapsOptions: {start: 0, limit: 12},
@@ -109,7 +106,7 @@ class Maps extends React.Component {
 
     render() {
         return (<MapsGrid
-            maps={this.props.maps}
+            resources={this.props.maps}
             fluid={this.props.fluid}
             title={this.props.title}
             colProps={this.props.colProps}
@@ -124,7 +121,6 @@ class Maps extends React.Component {
             shareApi={this.props.showAPIShare}
             version={this.props.version}
             bottom={<PaginationToolbar />}
-            metadataModal={MetadataModal}
         />);
     }
 }
@@ -147,7 +143,7 @@ const mapsPluginSelector = createSelector([
 
 const MapsPlugin = compose(
     connect(mapsPluginSelector, {
-        loadMaps, setShowMapDetails
+        loadMaps
     }),
     emptyState(
         ({maps = [], loading}) => !loading && maps.length === 0,
@@ -159,7 +155,16 @@ const MapsPlugin = compose(
     )
 )(Maps);
 
-module.exports = {
+/**
+ * Plugin for maps resources browsing.
+ * Can be rendered inside {@link #plugins.ContentTabs|ContentTabs} plugin
+ * and adds an entry to the {@link #plugins.NavMenu|NavMenu}
+ * @name Maps
+ * @memberof plugins
+ * @class
+ * @prop {boolean} cfg.showCreateButton default true. Flag to show/hide the button "create a new one" when there is no dashboard yet.
+ */
+export default {
     MapsPlugin: assign(MapsPlugin, {
         NavMenu: {
             position: 2,
@@ -178,12 +183,10 @@ module.exports = {
         }
     }),
     epics: {
-        ...maptypeEpics,
         ...mapsEpics
     },
     reducers: {
-        maps: require('../reducers/maps'),
-        maptype: require('../reducers/maptype'),
-        currentMap: require('../reducers/currentMap')
+        maps: mapsReducer,
+        maptype: maptypeReducer
     }
 };

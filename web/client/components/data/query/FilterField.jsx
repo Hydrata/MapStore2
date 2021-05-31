@@ -1,4 +1,3 @@
-const PropTypes = require('prop-types');
 /**
  * Copyright 2016, GeoSolutions Sas.
  * All rights reserved.
@@ -6,15 +5,16 @@ const PropTypes = require('prop-types');
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const React = require('react');
-const {Row, Col} = require('react-bootstrap');
+import React from 'react';
 
-const ComboField = require('./ComboField');
-const assign = require('object-assign');
-const LocaleUtils = require('../../../utils/LocaleUtils');
+import PropTypes from 'prop-types';
+import ComboField from './ComboField';
+import assign from 'object-assign';
+import { getMessageById } from '../../../utils/LocaleUtils';
 
 class FilterField extends React.Component {
     static propTypes = {
+        dropUp: PropTypes.bool,
         attributes: PropTypes.array,
         filterField: PropTypes.object,
         operatorOptions: PropTypes.array,
@@ -43,6 +43,7 @@ class FilterField extends React.Component {
     renderOperatorField = () => {
         return (
             <ComboField
+                dropUp={this.props.dropUp}
                 fieldOptions= {this.props.operatorOptions}
                 fieldName="operator"
                 fieldRowId={this.props.filterField.rowId}
@@ -75,25 +76,24 @@ class FilterField extends React.Component {
         let selectedAttribute = this.props.attributes.filter((attribute) => attribute.attribute === this.props.filterField.attribute)[0];
 
         return (
-            <div className="container-fluid">
-                <Row className="filter-field-row">
-                    <Col xs={4}>
-                        <ComboField
-                            valueField={'id'}
-                            textField={'name'}
-                            fieldOptions={this.props.attributes.map((attribute) => { return {id: attribute.attribute, name: attribute.label}; })}
-                            placeholder={LocaleUtils.getMessageById(this.context.messages, "queryform.attributefilter.combo_placeholder")}
-                            fieldValue={this.props.filterField.attribute}
-                            attType={selectedAttribute && selectedAttribute.type}
-                            fieldName="attribute"
-                            fieldRowId={this.props.filterField.rowId}
-                            onUpdateField={this.updateFieldElement}
-                            comboFilter={"contains"}/>
-                    </Col>
-                    <Col xs={this.props.deleteButton ? 2 : 3}>{selectedAttribute ? this.renderOperatorField() : null}</Col>
-                    <Col xs={5}>{selectedAttribute && this.props.filterField.operator ? this.renderValueField(selectedAttribute) : null}</Col>
-                    {this.props.deleteButton ? <Col xs={1}>{this.props.deleteButton}</Col> : null}
-                </Row>
+            <div className="filter-field-row">
+                <div className="filter-field-attribute">
+                    <ComboField
+                        dropUp={this.props.dropUp}
+                        valueField={'id'}
+                        textField={'name'}
+                        fieldOptions={this.props.attributes.map((attribute) => { return {id: attribute.attribute, name: attribute.label}; })}
+                        placeholder={getMessageById(this.context.messages, "queryform.attributefilter.combo_placeholder")}
+                        fieldValue={this.props.filterField.attribute}
+                        attType={selectedAttribute && selectedAttribute.type}
+                        fieldName="attribute"
+                        fieldRowId={this.props.filterField.rowId}
+                        onUpdateField={this.updateFieldElement}
+                        comboFilter={"contains"}/>
+                </div>
+                <div className="filter-field-operator">{selectedAttribute ? this.renderOperatorField() : null}</div>
+                <div className="filter-field-value">{selectedAttribute && this.props.filterField.operator ? this.renderValueField(selectedAttribute) : null}</div>
+                {this.props.deleteButton ? <div className="filter-field-tools">{this.props.deleteButton}</div> : null}
             </div>
         );
     }
@@ -123,4 +123,4 @@ class FilterField extends React.Component {
     };
 }
 
-module.exports = FilterField;
+export default FilterField;

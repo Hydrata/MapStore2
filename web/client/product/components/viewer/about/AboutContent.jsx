@@ -5,10 +5,11 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-var React = require('react');
-var I18N = require('../../../../components/I18N/I18N');
-var gsLogo = require('../../../assets/img/geosolutions-brand.png');
-var msLogo = require('../../../assets/img/mapstore-logo-0.20.png');
+import React from 'react';
+
+import I18N from '../../../../components/I18N/I18N';
+import gsLogo from '../../../assets/img/geosolutions-brand.png';
+import msLogo from '../../../assets/img/mapstore-logo-0.20.png';
 
 class About extends React.Component {
     render() {
@@ -38,7 +39,7 @@ class About extends React.Component {
                 <p><I18N.Message msgId="about_p5-0"/> <a href="https://github.com/geosolutions-it/MapStore2/blob/master/CONTRIBUTING.md"><I18N.Message msgId="about_a0"/></a> <I18N.Message msgId="about_p5-1"/></p>
                 <h3><I18N.Message msgId="about_h21"/></h3>
                 <p><I18N.Message msgId="about_p6"/></p>
-                <a href="http://www.geo-solutions.it/">
+                <a href="https://www.geosolutionsgroup.com/">
                     <img
                         src={gsLogo}
                         style={{
@@ -52,4 +53,4 @@ class About extends React.Component {
     }
 }
 
-module.exports = About;
+export default About;

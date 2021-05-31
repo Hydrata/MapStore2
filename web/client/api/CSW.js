@@ -5,13 +5,15 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const axios = require('../libs/ajax');
 
-const _ = require('lodash');
+import urlUtil from 'url';
 
-const urlUtil = require('url');
-const ConfigUtils = require('../utils/ConfigUtils');
-const assign = require('object-assign');
+import { head, last } from 'lodash';
+import assign from 'object-assign';
+
+import axios from '../libs/ajax';
+import { cleanDuplicatedQuestionMarks } from '../utils/ConfigUtils';
+import { extractCrsFromURN, makeBboxFromOWS, makeNumericEPSG } from '../utils/CoordinatesUtils';
 
 const parseUrl = (url) => {
     const parsed = urlUtil.parse(url, true);
@@ -21,6 +23,71 @@ const parseUrl = (url) => {
             version: "2.0.2"
         }, parsed.query, {request: undefined})
     }));
+};
+
+export const constructXMLBody = (startPosition, maxRecords, searchText) => {
+    if (!searchText) {
+        return `<csw:GetRecords xmlns:csw="http://www.opengis.net/cat/csw/2.0.2"
+        xmlns:ogc="http://www.opengis.net/ogc"
+        xmlns:gml="http://www.opengis.net/gml"
+        xmlns:dc="http://purl.org/dc/elements/1.1/"
+        xmlns:dct="http://purl.org/dc/terms/"
+        xmlns:gmd="http://www.isotc211.org/2005/gmd"
+        xmlns:gco="http://www.isotc211.org/2005/gco"
+        xmlns:gmi="http://www.isotc211.org/2005/gmi"
+        xmlns:ows="http://www.opengis.net/ows" service="CSW" version="2.0.2" resultType="results" startPosition="${startPosition}" maxRecords="${maxRecords}">
+        <csw:Query typeNames="csw:Record">
+            <csw:ElementSetName>full</csw:ElementSetName>
+            <csw:Constraint version="1.1.0">
+        <ogc:Filter>
+            <ogc:Or>
+            <ogc:PropertyIsEqualTo>
+                <ogc:PropertyName>dc:type</ogc:PropertyName>
+                <ogc:Literal>dataset</ogc:Literal>
+            </ogc:PropertyIsEqualTo>
+            <ogc:PropertyIsEqualTo>
+                <ogc:PropertyName>dc:type</ogc:PropertyName>
+                <ogc:Literal>http://purl.org/dc/dcmitype/Dataset</ogc:Literal>
+            </ogc:PropertyIsEqualTo>
+           </ogc:Or>
+        </ogc:Filter>
+            </csw:Constraint>
+        </csw:Query>
+    </csw:GetRecords>`;
+    }
+    return `<csw:GetRecords xmlns:csw="http://www.opengis.net/cat/csw/2.0.2"
+    xmlns:ogc="http://www.opengis.net/ogc"
+    xmlns:gml="http://www.opengis.net/gml"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:dct="http://purl.org/dc/terms/"
+    xmlns:gmd="http://www.isotc211.org/2005/gmd"
+    xmlns:gco="http://www.isotc211.org/2005/gco"
+    xmlns:gmi="http://www.isotc211.org/2005/gmi"
+    xmlns:ows="http://www.opengis.net/ows" service="CSW" version="2.0.2" resultType="results" startPosition="${startPosition}" maxRecords="${maxRecords}">
+    <csw:Query typeNames="csw:Record">
+        <csw:ElementSetName>full</csw:ElementSetName>
+        <csw:Constraint version="1.1.0">
+            <ogc:Filter>
+            <ogc:And>
+                <ogc:PropertyIsLike wildCard="%" singleChar="_" escapeChar="\\">
+                    <ogc:PropertyName>csw:AnyText</ogc:PropertyName>
+                    <ogc:Literal>%${searchText}%</ogc:Literal>
+                </ogc:PropertyIsLike>
+                <ogc:Or>
+                <ogc:PropertyIsEqualTo>
+                    <ogc:PropertyName>dc:type</ogc:PropertyName>
+                    <ogc:Literal>dataset</ogc:Literal>
+                </ogc:PropertyIsEqualTo>
+                <ogc:PropertyIsEqualTo>
+                    <ogc:PropertyName>dc:type</ogc:PropertyName>
+                    <ogc:Literal>http://purl.org/dc/dcmitype/Dataset</ogc:Literal>
+                </ogc:PropertyIsEqualTo>
+               </ogc:Or>
+            </ogc:And>
+            </ogc:Filter>
+        </csw:Constraint>
+    </csw:Query>
+</csw:GetRecords>`;
 };
 
 /**
@@ -51,7 +118,7 @@ var Api = {
                                         * So we place references as they are.
                                         */
                                         if (elName === "references" && dcel.value) {
-                                            let urlString = dcel.value.content && ConfigUtils.cleanDuplicatedQuestionMarks(dcel.value.content[0]) || dcel.value.content || dcel.value;
+                                            let urlString = dcel.value.content && cleanDuplicatedQuestionMarks(dcel.value.content[0]) || dcel.value.content || dcel.value;
                                             finalEl = {
                                                 value: urlString,
                                                 scheme: dcel.value.scheme
@@ -84,11 +151,14 @@ var Api = {
     getRecords: function(url, startPosition, maxRecords, filter) {
         return new Promise((resolve) => {
             require.ensure(['../utils/ogc/CSW', '../utils/ogc/Filter'], () => {
-                const {CSW, marshaller, unmarshaller} = require('../utils/ogc/CSW');
+                const {CSW, marshaller, unmarshaller } = require('../utils/ogc/CSW');
                 let body = marshaller.marshalString({
                     name: "csw:GetRecords",
-                    value: CSW.getRecords(startPosition, maxRecords, filter)
+                    value: CSW.getRecords(startPosition, maxRecords, typeof filter !== "string" && filter)
                 });
+                if (!filter || typeof filter === "string") {
+                    body = constructXMLBody(startPosition, maxRecords, filter);
+                }
                 resolve(axios.post(parseUrl(url), body, { headers: {
                     'Content-Type': 'application/xml'
                 }}).then(
@@ -118,28 +188,38 @@ var Api = {
                                             let crs;
                                             let el;
                                             if (Array.isArray(rawRec.boundingBox)) {
-                                                el = _.head(rawRec.boundingBox);
+                                                el = head(rawRec.boundingBox);
                                             } else {
                                                 el = rawRec.boundingBox;
                                             }
                                             if (el && el.value) {
+                                                const crsValue = el.value?.crs ?? '';
+                                                const urn = crsValue.match(/[\w-]*:[\w-]*:[\w-]*:[\w-]*:[\w-]*:[^:]*:(([\w-]+\s[\w-]+)|[\w-]*)/)?.[0];
+                                                const epsg = makeNumericEPSG(crsValue.match(/EPSG:[0-9]+/)?.[0]);
+
                                                 let lc = el.value.lowerCorner;
                                                 let uc = el.value.upperCorner;
-                                                bbox = [lc[1], lc[0], uc[1], uc[0]];
-                                                // TODO parse the extent's crs
-                                                let crsCode = el.value && el.value.crs && _.last(el.value.crs.split(":"));
-                                                if (crsCode === "WGS 1984" || crsCode === "WGS84") {
-                                                    crs = "EPSG:4326";
-                                                } else if (crsCode) {
-                                                    // TODO check is valid EPSG code
-                                                    crs = "EPSG:" + crsCode;
+
+                                                const extractedCrs = epsg || (extractCrsFromURN(urn) || last(crsValue.split(':')));
+
+                                                if (!extractedCrs) {
+                                                    crs = 'EPSG:4326';
+                                                } else if (extractedCrs.slice(0, 5) === 'EPSG:') {
+                                                    crs = makeNumericEPSG(extractedCrs);
                                                 } else {
-                                                    crs = "EPSG:4326";
+                                                    crs = makeNumericEPSG(`EPSG:${extractedCrs}`);
                                                 }
+
+                                                // Usually switched, GeoServer sometimes doesn't. See https://docs.geoserver.org/latest/en/user/services/wfs/axis_order.html#axis-ordering
+                                                if (crs === 'EPSG:4326' && extractedCrs !== 'CRS84' && extractedCrs !== 'OGC:CRS84') {
+                                                    lc = [lc[1], lc[0]];
+                                                    uc = [uc[1], uc[0]];
+                                                }
+                                                bbox = makeBboxFromOWS(lc, uc);
                                             }
                                             obj.boundingBox = {
                                                 extent: bbox,
-                                                crs: crs
+                                                crs: 'EPSG:4326'
                                             };
                                         }
                                         let dcElement = rawRec.dcElement;
@@ -156,7 +236,7 @@ var Api = {
                                                 * So we place references as they are.
                                                 */
                                                 if (elName === "references" && dcel.value) {
-                                                    let urlString = dcel.value.content && ConfigUtils.cleanDuplicatedQuestionMarks(dcel.value.content[0]) || dcel.value.content || dcel.value;
+                                                    let urlString = dcel.value.content && cleanDuplicatedQuestionMarks(dcel.value.content[0]) || dcel.value.content || dcel.value;
                                                     finalEl = {
                                                         value: urlString,
                                                         scheme: dcel.value.scheme
@@ -192,17 +272,7 @@ var Api = {
     },
     textSearch: function(url, startPosition, maxRecords, text) {
         return new Promise((resolve) => {
-            require.ensure(['../utils/ogc/CSW', '../utils/ogc/Filter'], () => {
-                const {Filter} = require('../utils/ogc/Filter');
-                // creates a request like this:
-                // <ogc:PropertyName>apiso:AnyText</ogc:PropertyName><ogc:Literal>%a%</ogc:Literal></ogc:PropertyIsLike>
-                let filter = null;
-                if (text) {
-                    let ops = Filter.propertyIsLike("csw:AnyText", "%" + text + "%");
-                    filter = Filter.filter(ops);
-                }
-                resolve(Api.getRecords(url, startPosition, maxRecords, filter));
-            });
+            resolve(Api.getRecords(url, startPosition, maxRecords, text));
         });
     },
     workspaceSearch: function(url, startPosition, maxRecords, text, workspace) {
@@ -220,4 +290,4 @@ var Api = {
     reset: () => {}
 };
 
-module.exports = Api;
+export default Api;

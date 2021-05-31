@@ -6,47 +6,90 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const expect = require('expect');
-const {isEmpty, isEqual} = require('lodash');
-const {
-    SELECT_FEATURES, selectFeatures,
-    changePage, CHANGE_PAGE,
-    sort, SORT_BY,
-    setSelectionOptions, SET_SELECTION_OPTIONS,
-    MODES, TOGGLE_MODE, toggleEditMode, toggleViewMode,
-    featureModified, FEATURES_MODIFIED,
-    createNewFeatures, CREATE_NEW_FEATURE,
-    saveChanges, SAVE_CHANGES,
-    saveSuccess, SAVE_SUCCESS,
-    deleteFeatures, DELETE_SELECTED_FEATURES,
-    startEditingFeature, START_EDITING_FEATURE,
-    featureSaving, SAVING,
-    saveError, SAVE_ERROR,
-    clearChanges, CLEAR_CHANGES,
-    geometryChanged, GEOMETRY_CHANGED,
-    startDrawingFeature, START_DRAWING_FEATURE,
-    deleteGeometry, DELETE_GEOMETRY,
-    deleteGeometryFeature, DELETE_GEOMETRY_FEATURE,
-    clearChangeConfirmed, CLEAR_CHANGES_CONFIRMED,
-    deleteFeaturesConfirm, DELETE_SELECTED_FEATURES_CONFIRM,
-    openFeatureGrid, OPEN_FEATURE_GRID,
-    closeFeatureGrid, CLOSE_FEATURE_GRID,
-    closeFeatureGridConfirm, CLOSE_FEATURE_GRID_CONFIRM,
-    closeFeatureGridConfirmed, FEATURE_GRID_CLOSE_CONFIRMED,
-    updateFilter, UPDATE_FILTER,
-    zoomAll, ZOOM_ALL,
-    openAdvancedSearch, OPEN_ADVANCED_SEARCH,
-    initPlugin, INIT_PLUGIN,
-    sizeChange, SIZE_CHANGE,
-    START_SYNC_WMS, startSyncWMS,
-    storeAdvancedSearchFilter, STORE_ADVANCED_SEARCH_FILTER,
-    setUp, SET_UP,
-    setTimeSync, SET_TIME_SYNC,
-    fatureGridQueryResult, GRID_QUERY_RESULT,
-    moreFeatures, LOAD_MORE_FEATURES,
-    hideSyncPopover, HIDE_SYNC_POPOVER,
-    toggleShowAgain, TOGGLE_SHOW_AGAIN_FLAG
-} = require('../featuregrid');
+import expect from 'expect';
+
+import { isEmpty, isEqual } from 'lodash';
+
+import {
+    launchUpdateFilterFunc,
+    LAUNCH_UPDATE_FILTER_FUNC,
+    SELECT_FEATURES,
+    selectFeatures,
+    changePage,
+    CHANGE_PAGE,
+    sort,
+    SORT_BY,
+    setSelectionOptions,
+    SET_SELECTION_OPTIONS,
+    MODES,
+    TOGGLE_MODE,
+    toggleEditMode,
+    toggleViewMode,
+    featureModified,
+    FEATURES_MODIFIED,
+    createNewFeatures,
+    CREATE_NEW_FEATURE,
+    saveChanges,
+    SAVE_CHANGES,
+    saveSuccess,
+    SAVE_SUCCESS,
+    deleteFeatures,
+    DELETE_SELECTED_FEATURES,
+    startEditingFeature,
+    START_EDITING_FEATURE,
+    featureSaving,
+    SAVING,
+    saveError,
+    SAVE_ERROR,
+    clearChanges,
+    CLEAR_CHANGES,
+    geometryChanged,
+    GEOMETRY_CHANGED,
+    startDrawingFeature,
+    START_DRAWING_FEATURE,
+    deleteGeometry,
+    DELETE_GEOMETRY,
+    deleteGeometryFeature,
+    DELETE_GEOMETRY_FEATURE,
+    clearChangeConfirmed,
+    CLEAR_CHANGES_CONFIRMED,
+    deleteFeaturesConfirm,
+    DELETE_SELECTED_FEATURES_CONFIRM,
+    openFeatureGrid,
+    OPEN_FEATURE_GRID,
+    closeFeatureGrid,
+    CLOSE_FEATURE_GRID,
+    closeFeatureGridConfirm,
+    CLOSE_FEATURE_GRID_CONFIRM,
+    closeFeatureGridConfirmed,
+    FEATURE_GRID_CLOSE_CONFIRMED,
+    updateFilter,
+    UPDATE_FILTER,
+    zoomAll,
+    ZOOM_ALL,
+    openAdvancedSearch,
+    OPEN_ADVANCED_SEARCH,
+    initPlugin,
+    INIT_PLUGIN,
+    sizeChange,
+    SIZE_CHANGE,
+    START_SYNC_WMS,
+    startSyncWMS,
+    storeAdvancedSearchFilter,
+    STORE_ADVANCED_SEARCH_FILTER,
+    setUp,
+    SET_UP,
+    setTimeSync,
+    SET_TIME_SYNC,
+    featureGridQueryResult,
+    GRID_QUERY_RESULT,
+    moreFeatures,
+    LOAD_MORE_FEATURES,
+    hideSyncPopover,
+    HIDE_SYNC_POPOVER,
+    toggleShowAgain,
+    TOGGLE_SHOW_AGAIN_FLAG
+} from '../featuregrid';
 
 const idFeature = "2135";
 const feature = {
@@ -70,6 +113,12 @@ describe('Test correctness of featurgrid actions', () => {
         expect(retval.features).toExist();
         expect(retval.features.length).toBe(features.length);
         expect(retval.type).toBe(DELETE_GEOMETRY_FEATURE);
+    });
+    it('Test deleteGeometryFeature action creator', () => {
+        const retval = launchUpdateFilterFunc({});
+        expect(retval).toBeTruthy();
+        expect(retval.updateFilterAction).toBeTruthy();
+        expect(retval.type).toBe(LAUNCH_UPDATE_FILTER_FUNC);
     });
     it('Test deleteGeometry action creator', () => {
         const retval = deleteGeometry();
@@ -281,9 +330,9 @@ describe('Test correctness of featurgrid actions', () => {
         expect(retval.type).toBe(STORE_ADVANCED_SEARCH_FILTER);
         expect(retval.filterObj).toBe(filterObj);
     });
-    it('Test fatureGridQueryResult', () => {
+    it('Test featureGridQueryResult', () => {
         const pages = [];
-        const retval = fatureGridQueryResult(features, pages);
+        const retval = featureGridQueryResult(features, pages);
         expect(retval).toExist();
         expect(retval.type).toBe(GRID_QUERY_RESULT);
         expect(retval.features).toBe(features);

@@ -7,7 +7,6 @@
 }
 
 .mapstore-toc-head {
-    overflow: hidden;
 
     &.toc-head-sections {
         height: 0;
@@ -76,6 +75,10 @@
 
         .btn-group {
             margin: (@square-btn-size - @square-btn-medium-size)/2 0 0 0;
+
+            .btn-group {
+                margin-top: 0px;
+            }
         }
     }
 
@@ -781,20 +784,6 @@
         overflow-y: visible;
         z-index: 10;
     }
-    .thema-classes-editor {
-        margin-left: 15px;
-        margin-right: 15px;
-    }
-    .thema-classes-editor.loading:after {
-        content:"";
-        top:0;
-        left:0;
-        bottom:0;
-        right:0;
-        position: absolute;
-        background:rgba(255,255,255,0.8);
-        z-index:999;
-    }
     .mapstore-switch-panel .col-xs-12 {
         padding-left: 0;
         padding-right: 0;
@@ -827,4 +816,35 @@
 .adjust-display {
     position: absolute;
     width: calc(100% - 5px);
+}
+
+// display form toc settings
+.ms-display-form {
+    .react-numeric-input b {
+        z-index: 0;
+    }
+}
+.ms-visibility-limits-form {
+    label {
+        font-weight: normal;
+        padding: 4px 0;
+    }
+    .ms-visibility-limits-form-title label {
+        font-weight: bold;
+    }
+    .btn-group > * {
+        display: flex;
+        align-items: center;
+    }
+    .alert {
+        margin: 0;
+        margin-top: 8px;
+    }
+}
+
+.ms-format-container {
+    display: flex;
+    .format-select {
+       width: 100%;
+    }
 }

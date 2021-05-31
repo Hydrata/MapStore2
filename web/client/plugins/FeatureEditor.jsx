@@ -9,14 +9,14 @@ import React from 'react';
 import {connect} from 'react-redux';
 import {createSelector, createStructuredSelector} from 'reselect';
 import {bindActionCreators} from 'redux';
-import { get, pick } from 'lodash';
+import { get, pick, isEqual } from 'lodash';
 import {compose, lifecycle} from 'recompose';
 import ReactDock from 'react-dock';
 
 import { createPlugin } from '../utils/PluginsUtils';
 
 import * as epics from '../epics/featuregrid';
-import * as featuregrid from '../reducers/featuregrid';
+import featuregrid from '../reducers/featuregrid';
 
 import Grid from '../components/data/featuregrid/FeatureGrid';
 import {paginationInfo, describeSelector, wfsURLSelector, typeNameSelector} from '../selectors/query';
@@ -81,8 +81,9 @@ const Dock = connect(createSelector(
   * @prop {boolean} cfg.showFilteredObject default false. Displays spatial filter selection area when true
   * @prop {boolean} cfg.showTimeSync default false. Shows the button to enable time sync
   * @prop {boolean} cfg.timeSync default false. If true, the timeSync is active by default.
+  * @prop {number} cfg.maxZoom the maximum zoom level for the "zoom to feature" functionality
   * @classdesc
-  * FeatureEditor Plugin Provides functionalities to browse/edit data via WFS. The grid can be configured to use paging or
+  * FeatureEditor Plugin, also called *FeatureGrid*, provides functionalities to browse/edit data via WFS. The grid can be configured to use paging or
   * <br/>virtual scroll mechanisms. By default virtual scroll is enabled. When on virtual scroll mode, the maxStoredPages param
   * <br/>sets the size of loaded pages cache, while vsOverscan and scrollDebounce params determine the behavior of grid scrolling
   * <br/>and of row loading.
@@ -115,6 +116,7 @@ const Dock = connect(createSelector(
   * {
   *   "name": "FeatureEditor",
   *   "cfg": {
+  *     "maxZoom": 21,
   *     "customEditorsOptions": {
   *       "rules": [{
   *         "regex": {
@@ -150,6 +152,7 @@ const FeatureDock = (props = {
     dialogs: EMPTY_OBJ,
     select: EMPTY_ARR
 }) => {
+    const maxZoom  = props?.pluginCfg?.maxZoom;
     const dockProps = {
         dimMode: "none",
         defaultSize: 0.35,
@@ -207,6 +210,7 @@ const FeatureDock = (props = {
                         vsOverScan={props.vsOverScan}
                         scrollDebounce={props.scrollDebounce}
                         size={props.size}
+                        actionOpts={{maxZoom}}
                     />
                 </BorderLayout> }
 
@@ -216,6 +220,7 @@ const FeatureDock = (props = {
 };
 const selector = createSelector(
     state => get(state, "featuregrid.open"),
+    state => get(state, "featuregrid.customEditorsOptions"),
     state => get(state, "queryform.autocompleteEnabled"),
     state => wfsURLSelector(state),
     state => typeNameSelector(state),
@@ -228,13 +233,14 @@ const selector = createSelector(
     changesSelector,
     newFeaturesSelector,
     hasChangesSelector,
-    state => get(state, 'featuregrid.focusOnEdit') || [],
+    state => get(state, 'featuregrid.focusOnEdit', false),
     state => get(state, 'featuregrid.enableColumnFilters'),
     createStructuredSelector(paginationInfo),
     state => get(state, 'featuregrid.pages'),
     state => get(state, 'featuregrid.pagination.size'),
-    (open, autocompleteEnabled, url, typeName, features = EMPTY_ARR, describe, attributes, tools, select, mode, changes, newFeatures = EMPTY_ARR, hasChanges, focusOnEdit, enableColumnFilters, pagination, pages, size) => ({
+    (open, customEditorsOptions, autocompleteEnabled, url, typeName, features = EMPTY_ARR, describe, attributes, tools, select, mode, changes, newFeatures = EMPTY_ARR, hasChanges, focusOnEdit, enableColumnFilters, pagination, pages, size) => ({
         open,
+        customEditorsOptions,
         autocompleteEnabled,
         url,
         typeName,
@@ -255,9 +261,28 @@ const selector = createSelector(
     })
 );
 const EditorPlugin = compose(
+    connect(() => ({}),
+        (dispatch) => ({
+            onMount: bindActionCreators(setUp, dispatch)
+        })),
+    lifecycle({
+        componentDidMount() {
+            // only the passed properties will be picked
+            this.props.onMount(pick(this.props, ['showFilteredObject', 'showTimeSync', 'timeSync', 'customEditorsOptions']));
+        },
+        // TODO: fix this in contexts
+        // due to multiple renders of plugins in contexts (one with default props, then with context props)
+        // the options have to be updated when change.
+        componentDidUpdate(oldProps) {
+            const newOptions = pick(this.props, ['showFilteredObject', 'showTimeSync', 'timeSync', 'customEditorsOptions']);
+            const oldOptions = pick(oldProps, ['showFilteredObject', 'showTimeSync', 'timeSync', 'customEditorsOptions']);
+            if (!isEqual(newOptions, oldOptions) ) {
+                this.props.onMount(newOptions);
+            }
+        }
+    }),
     connect(selector,
         (dispatch) => ({
-            onMount: bindActionCreators(setUp, dispatch),
             gridEvents: bindActionCreators(gridEvents, dispatch),
             pageEvents: bindActionCreators(pageEvents, dispatch),
             initPlugin: bindActionCreators((options) => initPlugin(options), dispatch),
@@ -268,13 +293,7 @@ const EditorPlugin = compose(
             })),
             onSizeChange: (...params) => dispatch(sizeChange(...params))
         })
-    ),
-    lifecycle({
-        componentDidMount() {
-            // only the passed properties will be picked
-            this.props.onMount(pick(this.props, ['showFilteredObject', 'showTimeSync', 'timeSync']));
-        }
-    })
+    )
 )(FeatureDock);
 
 export default createPlugin('FeatureEditor', {

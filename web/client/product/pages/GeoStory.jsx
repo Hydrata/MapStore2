@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2018, GeoSolutions Sas.
  * All rights reserved.
  *
@@ -15,16 +15,28 @@ const urlQuery = url.parse(window.location.href, true).query;
 import Page from '../../containers/Page';
 import {
     loadGeostory,
-    setEditing
+    setEditing,
+    updateUrlOnScroll
 } from '../../actions/geostory';
 import { geostoryIdSelector } from '../../selectors/geostory';
 import { isLoggedIn } from '../../selectors/security';
 import BorderLayout from '../../components/layout/BorderLayout';
 
+/**
+  * @name GeoStory
+  * @memberof pages
+  * @class
+  * @classdesc
+  * This is the main container page for GeoStory.
+  * It handles all the routing and initial loading functionalities dedicated to GeoStory contents and
+  * it is a container for the GeoStory plugins.
+  *
+  */
 class GeoStoryPage extends React.Component {
     static propTypes = {
         mode: PropTypes.string,
         match: PropTypes.object,
+        name: PropTypes.string,
         loadResource: PropTypes.func,
         reset: PropTypes.func,
         plugins: PropTypes.object,
@@ -35,21 +47,24 @@ class GeoStoryPage extends React.Component {
         previousId: PropTypes.oneOfType([
             PropTypes.number,
             PropTypes.string
-        ])
+        ]),
+        updateUrlOnScroll: PropTypes.func
     };
 
     static defaultProps = {
         name: "geostory",
         mode: 'desktop',
         reset: () => { },
-        setEditing: () => {}
+        setEditing: () => {},
+        updateUrlOnScroll: () => {}
     };
 
-    componentWillMount() {
+    UNSAFE_componentWillMount() {
         const id = get(this.props, "match.params.gid");
         const previousId = this.props.previousId && this.props.previousId + '';
         this.props.reset();
         this.setInitialMode(previousId !== id);
+        this.props.updateUrlOnScroll(true);
         this.props.loadResource(id);
     }
     componentDidUpdate(oldProps) {
@@ -69,7 +84,7 @@ class GeoStoryPage extends React.Component {
     }
     render() {
         return (<Page
-            id="geostory"
+            id={this.props.name}
             component={BorderLayout}
             includeCommon={false}
             plugins={this.props.plugins}
@@ -99,6 +114,7 @@ export default connect((state) => ({
 }),
 {
     loadResource: loadGeostory,
-    setEditing
+    setEditing,
+    updateUrlOnScroll
     // reset: resetGeostory
 })(GeoStoryPage);

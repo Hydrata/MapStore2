@@ -5,24 +5,27 @@
 * This source code is licensed under the BSD-style license found in the
 * LICENSE file in the root directory of this source tree.
 */
-const React = require('react');
-const PropTypes = require('prop-types');
-const assign = require('object-assign');
-const {connect} = require('react-redux');
-const Message = require("../components/I18N/Message");
-const emptyState = require('../components/misc/enhancers/emptyState');
 
-const { setGeostoriesAvailable } = require('../actions/geostories');
-const {mapTypeSelector} = require('../selectors/maptype');
-const { userRoleSelector } = require('../selectors/security');
-const { isFeaturedMapsEnabled } = require('../selectors/featuredmaps');
-const { totalCountSelector } = require('../selectors/geostories');
-const {createSelector} = require('reselect');
-const { compose } = require('recompose');
+import assign from 'object-assign';
+import PropTypes from 'prop-types';
+import React from 'react';
+import { connect } from 'react-redux';
+import { compose } from 'recompose';
+import { createSelector } from 'reselect';
 
-const GeostoryGrid = require('./geostories/GeostoriesGrid');
-const PaginationToolbar = require('./geostories/PaginationToolbar');
-const EmptyGeostoriesView = require('./geostories/EmptyGeostoriesView');
+import { setGeostoriesAvailable } from '../actions/geostories';
+import Message from '../components/I18N/Message';
+import emptyState from '../components/misc/enhancers/emptyState';
+import epics from '../epics/geostories';
+import geostories from '../reducers/geostories';
+import { isFeaturedMapsEnabled } from '../selectors/featuredmaps';
+import { totalCountSelector } from '../selectors/geostories';
+import { mapTypeSelector } from '../selectors/maptype';
+import { userRoleSelector } from '../selectors/security';
+import EmptyGeostoriesView from './geostories/EmptyGeostoriesView';
+import GeostoryGrid from './geostories/GeostoriesGrid';
+import PaginationToolbar from './geostories/PaginationToolbar';
+import {GEOSTORY_DEFAULT_SHARE_OPTIONS} from "../utils/ShareUtils";
 
 const geostoriesCountSelector = createSelector(
     totalCountSelector,
@@ -30,10 +33,13 @@ const geostoriesCountSelector = createSelector(
 );
 
 /**
- * Plugin for Geostories resources
+ * Plugin for browsing GeoStory resources. Can render in {@link #plugins.ContentTabs|ContentTabs}
+ * and adds an entry to the {@link #plugins.NavMenu|NavMenu}
  * @name Geostories
+ * @class
  * @memberof plugins
  * @prop {boolean} cfg.showCreateButton default true, use to render create a new one button
+ * @prop {boolean} cfg.shareOptions configuration applied to share panel
  */
 class Geostories extends React.Component {
     static propTypes = {
@@ -45,7 +51,8 @@ class Geostories extends React.Component {
         searchText: PropTypes.string,
         mapsOptions: PropTypes.object,
         colProps: PropTypes.object,
-        fluid: PropTypes.bool
+        fluid: PropTypes.bool,
+        shareOptions: PropTypes.object
     };
 
     static contextTypes = {
@@ -66,7 +73,8 @@ class Geostories extends React.Component {
             md: 4,
             className: 'ms-map-card-col'
         },
-        maps: []
+        maps: [],
+        shareOptions: GEOSTORY_DEFAULT_SHARE_OPTIONS
     };
 
     componentDidMount() {
@@ -81,6 +89,7 @@ class Geostories extends React.Component {
             colProps={this.props.colProps}
             viewerUrl={(geostory) => {this.context.router.history.push(`geostory/${geostory.id}`); }}
             getShareUrl={(geostory) => `geostory/${geostory.id}`}
+            shareOptions={this.props.shareOptions}
             bottom={<PaginationToolbar />}
         />);
     }
@@ -113,7 +122,7 @@ const GeoStoriesPlugin = compose(
     )
 )(Geostories);
 
-module.exports = {
+export default {
     GeoStoriesPlugin: assign(GeoStoriesPlugin, {
         NavMenu: {
             position: 3,
@@ -131,8 +140,8 @@ module.exports = {
             priority: 1
         }
     }),
-    epics: require('../epics/geostories'),
+    epics,
     reducers: {
-        geostories: require('../reducers/geostories')
+        geostories
     }
 };

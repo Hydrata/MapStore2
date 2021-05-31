@@ -5,9 +5,9 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const expect = require('expect');
+import expect from 'expect';
 
-const {
+import {
     isDashboardAvailable,
     isDashboardEditing,
     showConnectionsSelector,
@@ -16,8 +16,14 @@ const {
     dashboardResource,
     isDashboardLoading,
     getDashboardSaveErrors,
-    buttonCanEdit
-} = require('../dashboard');
+    buttonCanEdit,
+    dashboardServicesSelector,
+    selectedDashboardServiceSelector,
+    dashboardCatalogModeSelector,
+    dashboardIsNewServiceSelector,
+    dashboardSaveServiceSelector
+} from '../dashboard';
+
 describe('dashboard selectors', () => {
     it('test isDashboardAvailable selector', () => {
         const state = {dashboard: {editor: {available: true}}};
@@ -87,4 +93,27 @@ describe('dashboard selectors', () => {
             }
         })).toBe(false);
     });
+
+    it("test dashboardServicesSelector", () => {
+        const services = {test: {name: 'test'}};
+        expect(dashboardServicesSelector({dashboard: {services}})).toBe(services);
+    });
+
+    it("test selectedDashboardServiceSelector", () => {
+        const selectedService = {name: 'test'};
+        expect(selectedDashboardServiceSelector({dashboard: {selectedService}})).toBe(selectedService);
+    });
+
+    it("test dashboardCatalogModeSelector", () => {
+        expect(dashboardCatalogModeSelector({dashboard: {mode: "edit"}})).toBe("edit");
+    });
+
+    it("test dashboardIsNewServiceSelector", () => {
+        expect(dashboardIsNewServiceSelector({dashboard: {isNew: true}})).toBe(true);
+    });
+
+    it("test dashboardSaveServiceSelector", () => {
+        expect(dashboardSaveServiceSelector({dashboard: {saveServiceLoading: true}})).toBe(true);
+    });
+
 });

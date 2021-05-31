@@ -6,18 +6,47 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-var { LAYER_LOADING, LAYER_LOAD, LAYER_ERROR, CHANGE_LAYER_PARAMS, CHANGE_LAYER_PROPERTIES, CHANGE_GROUP_PROPERTIES,
-    TOGGLE_NODE, SORT_NODE, REMOVE_NODE, UPDATE_NODE, MOVE_NODE, ADD_LAYER, REMOVE_LAYER, ADD_GROUP,
-    SHOW_SETTINGS, HIDE_SETTINGS, UPDATE_SETTINGS, REFRESH_LAYERS, LAYERS_REFRESH_ERROR, LAYERS_REFRESHED, CLEAR_LAYERS, SELECT_NODE, FILTER_LAYERS, SHOW_LAYER_METADATA, HIDE_LAYER_METADATA
-} = require('../actions/layers');
+import {
+    LAYER_LOADING,
+    LAYER_LOAD,
+    LAYER_ERROR,
+    CHANGE_LAYER_PARAMS,
+    CHANGE_LAYER_PROPERTIES,
+    CHANGE_GROUP_PROPERTIES,
+    TOGGLE_NODE,
+    SORT_NODE,
+    REMOVE_NODE,
+    UPDATE_NODE,
+    MOVE_NODE,
+    ADD_LAYER,
+    REMOVE_LAYER,
+    ADD_GROUP,
+    SHOW_SETTINGS,
+    HIDE_SETTINGS,
+    UPDATE_SETTINGS,
+    REFRESH_LAYERS,
+    LAYERS_REFRESH_ERROR,
+    LAYERS_REFRESHED,
+    CLEAR_LAYERS,
+    SELECT_NODE,
+    FILTER_LAYERS,
+    SHOW_LAYER_METADATA,
+    HIDE_LAYER_METADATA
+} from '../actions/layers';
 
-const {TOGGLE_CONTROL} = require('../actions/controls');
-
-var assign = require('object-assign');
-const uuidv1 = require('uuid/v1');
-var {isObject, isArray, head, isString, includes, castArray} = require('lodash');
-
-const LayersUtils = require('../utils/LayersUtils');
+import { TOGGLE_CONTROL } from '../actions/controls';
+import assign from 'object-assign';
+import uuidv1 from 'uuid/v1';
+import { isObject, isArray, head, isString, includes, castArray } from 'lodash';
+import {
+    getNode,
+    getLayersByGroup,
+    deepChange,
+    sortLayers,
+    removeEmptyGroups,
+    getLayerId,
+    getGroupNodes
+} from '../utils/LayersUtils';
 
 /**
 Removes a group even if it is nested
@@ -36,24 +65,24 @@ const moveNode = (groups, node, groupId, newLayers, foreground = true) => {
     // Remove node from old group
     let newGroups = deepRemove(groups, node);
     // Check if group to move to exists
-    let group = LayersUtils.getNode(newGroups, groupId);
+    let group = getNode(newGroups, groupId);
     if (!group) {
         // Create missing group
-        group = head(LayersUtils.getLayersByGroup([LayersUtils.getNode(newLayers, node)]));
+        group = head(getLayersByGroup([getNode(newLayers, node)]));
         // check for parent group if exist
         const parentGroup = groupId.split('.').reduce((tree, gName, idx) => {
             const gId = groupId.split(".", idx + 1).join('.');
-            const parent = LayersUtils.getNode(newGroups, gId);
+            const parent = getNode(newGroups, gId);
             return parent ? tree.concat(parent) : tree;
         }, []).pop();
         if (parentGroup) {
-            group = LayersUtils.getNode([group], parentGroup.id).nodes[0];
-            newGroups = LayersUtils.deepChange(newGroups, parentGroup.id, 'nodes', foreground ? [group].concat(parentGroup.nodes) : parentGroup.nodes.concat(group));
+            group = getNode([group], parentGroup.id).nodes[0];
+            newGroups = deepChange(newGroups, parentGroup.id, 'nodes', foreground ? [group].concat(parentGroup.nodes) : parentGroup.nodes.concat(group));
         } else {
             newGroups = [group].concat(newGroups);
         }
     } else {
-        newGroups = LayersUtils.deepChange(newGroups, group.id, 'nodes', foreground ? [node].concat(group.nodes.slice(0)) : group.nodes.concat(node));
+        newGroups = deepChange(newGroups, group.id, 'nodes', foreground ? [node].concat(group.nodes.slice(0)) : group.nodes.concat(node));
     }
     return newGroups;
 };
@@ -182,18 +211,18 @@ function layers(state = { flat: [] }, action) {
     case TOGGLE_NODE: {
         let nodeSelector = action.nodeType === 'layers' ? 'flat' : 'groups';
         let nodes = state[nodeSelector] || [];
-        const newNodes = LayersUtils.deepChange(nodes, action.node, 'expanded', action.status);
+        const newNodes = deepChange(nodes, action.node, 'expanded', action.status);
         return assign({}, state, {[nodeSelector]: newNodes});
     }
     case SORT_NODE: {
-        let node = LayersUtils.getNode(state.groups || [], action.node);
+        let node = getNode(state.groups || [], action.node);
         let nodes = node && node.nodes || action.node === 'root' && state.groups || null;
         if (nodes) {
             let reorderedNodes = action.order.map((idx) => {
                 return nodes[idx];
             });
             const newNodes = action.node === 'root' ? reorderedNodes :
-                LayersUtils.deepChange(state.groups, action.node, 'nodes', reorderedNodes);
+                deepChange(state.groups, action.node, 'nodes', reorderedNodes);
             let newLayers = action.sortLayers ? action.sortLayers(newNodes, state.flat) : state.flat;
             return assign({}, state, {groups: newNodes, flat: newLayers});
         }
@@ -204,7 +233,7 @@ function layers(state = { flat: [] }, action) {
         if (selector === 'group') {
             const groups = state.groups ? [].concat(state.groups) : [];
             // updating correctly options in a (deep) subgroup
-            let newGroups = LayersUtils.deepChange(groups, action.node, action.options);
+            let newGroups = deepChange(groups, action.node, action.options);
             return assign({}, state, {groups: newGroups});
         }
 
@@ -230,7 +259,7 @@ function layers(state = { flat: [] }, action) {
             const groupId = (action.options.group || 'Default');
             const newGroups = moveNode(state.groups, action.node, groupId, newLayers);
 
-            let orderedNewLayers = LayersUtils.sortLayers ? LayersUtils.sortLayers(newGroups, newLayers) : newLayers;
+            let orderedNewLayers = sortLayers ? sortLayers(newGroups, newLayers) : newLayers;
             return assign({}, state, {
                 flat: orderedNewLayers,
                 groups: newGroups
@@ -239,8 +268,8 @@ function layers(state = { flat: [] }, action) {
         return assign({}, state, {flat: newLayers});
     }
     case MOVE_NODE: {
-        const node = LayersUtils.getNode(state.groups || [], action.node);
-        const layerNode = LayersUtils.getNode(state.flat, action.node);
+        const node = getNode(state.groups || [], action.node);
+        const layerNode = getNode(state.flat, action.node);
         if (node && action.index >= 0 && node.id !== 'root' && node.id !== 'Default' && !(!!layerNode && action.groupId === 'root')) {
             const groupId = action.groupId || 'Default';
             const curGroupId = layerNode ? (layerNode.group || 'Default') : (() => {
@@ -249,7 +278,7 @@ function layers(state = { flat: [] }, action) {
             })();
 
             if (groupId === curGroupId) {
-                const curGroupNode = curGroupId === 'root' ? {nodes: state.groups} : LayersUtils.getNode(state.groups, curGroupId);
+                const curGroupNode = curGroupId === 'root' ? {nodes: state.groups} : getNode(state.groups, curGroupId);
                 let nodes = (curGroupNode && curGroupNode.nodes || []).slice();
                 const nodeIndex = nodes.findIndex(x => (x.id || x) === (node.id || node));
 
@@ -263,16 +292,16 @@ function layers(state = { flat: [] }, action) {
                         nodes[pos + delta] = tmp;
                     }
 
-                    const newGroups = curGroupId === 'root' ? nodes : LayersUtils.deepChange(state.groups, action.groupId, 'nodes', nodes);
+                    const newGroups = curGroupId === 'root' ? nodes : deepChange(state.groups, action.groupId, 'nodes', nodes);
 
                     return assign({}, state, {
-                        flat: LayersUtils.sortLayers(newGroups, state.flat),
+                        flat: sortLayers(newGroups, state.flat),
                         groups: newGroups
                     });
                 }
             } else {
                 const groupsWithRemovedNode = deepRemove(state.groups, node.id || node);
-                const dstGroup = groupId === 'root' ? {nodes: groupsWithRemovedNode} : LayersUtils.getNode(groupsWithRemovedNode, action.groupId);
+                const dstGroup = groupId === 'root' ? {nodes: groupsWithRemovedNode} : getNode(groupsWithRemovedNode, action.groupId);
                 if (dstGroup) {
                     const newLayers = state.flat.map(layer => assign({}, layer));
                     const newNode = updateGroupIds(node, groupId === 'root' ? '' : groupId, newLayers);
@@ -280,10 +309,10 @@ function layers(state = { flat: [] }, action) {
                     newDestNodes.splice(action.index, 0, newNode);
                     const newGroups = groupId === 'root' ?
                         newDestNodes :
-                        LayersUtils.deepChange(groupsWithRemovedNode.slice(), dstGroup.id, 'nodes', newDestNodes);
+                        deepChange(groupsWithRemovedNode.slice(), dstGroup.id, 'nodes', newDestNodes);
 
                     return assign({}, state, {
-                        flat: LayersUtils.sortLayers(newGroups, newLayers),
+                        flat: sortLayers(newGroups, newLayers),
                         groups: newGroups
                     });
                 }
@@ -303,7 +332,7 @@ function layers(state = { flat: [] }, action) {
         }
         if (action.nodeType === 'layers') {
             const newGroups = action.removeEmpty ?
-                LayersUtils.removeEmptyGroups(deepRemove(state.groups, action.node)) :
+                removeEmptyGroups(deepRemove(state.groups, action.node)) :
                 deepRemove(state.groups, action.node);
             const newLayers = state.flat.filter((layer) => layer.id !== action.node);
             return assign({}, state, {
@@ -316,13 +345,13 @@ function layers(state = { flat: [] }, action) {
     case ADD_LAYER: {
         let newLayers = (state.flat || []).concat();
         let newGroups = (state.groups || []).concat();
-        const newLayer = (action.layer.id) ? action.layer : assign({}, action.layer, {id: LayersUtils.getLayerId(action.layer, newLayers)});
+        const newLayer = (action.layer.id) ? action.layer : assign({}, action.layer, {id: getLayerId(action.layer, newLayers)});
         newLayers.push(newLayer);
         const groupId = newLayer.group || 'Default';
         if (groupId !== "background") {
             newGroups = moveNode(newGroups, newLayer.id, groupId, newLayers, action.foreground);
         }
-        let orderedNewLayers = LayersUtils.sortLayers ? LayersUtils.sortLayers(newGroups, newLayers) : newLayers;
+        let orderedNewLayers = sortLayers ? sortLayers(newGroups, newLayers) : newLayers;
         return assign({}, state, {
             flat: orderedNewLayers,
             groups: newGroups
@@ -358,7 +387,10 @@ function layers(state = { flat: [] }, action) {
             options: action.options
         });
         return assign({}, state, {
-            settings: settings
+            settings: settings,
+            editLayerName: false,
+            layerNameIsBeingChecked: false,
+            layerNameChangeError: false
         });
     }
     case HIDE_SETTINGS: {
@@ -369,9 +401,13 @@ function layers(state = { flat: [] }, action) {
             options: {}
         });
         return assign({}, state, {
-            settings: settings
+            settings: settings,
+            editLayerName: false,
+            layerNameIsBeingChecked: false,
+            layerNameChangeError: false
         });
     }
+
     case UPDATE_SETTINGS: {
         const options = assign({},
             state.settings && state.settings.options,
@@ -394,8 +430,8 @@ function layers(state = { flat: [] }, action) {
 
         if (action.id && action.nodeType === 'group') {
             const groups = [].concat(state.groups);
-            const group = LayersUtils.getNode(groups, action.id);
-            const nodes = LayersUtils.getGroupNodes(group);
+            const group = getNode(groups, action.id);
+            const nodes = getGroupNodes(group);
 
             if (action.ctrlKey && group) {
                 if (selected.filter(s => s === action.id).length === 0) {
@@ -475,4 +511,4 @@ function layers(state = { flat: [] }, action) {
     }
 }
 
-module.exports = layers;
+export default layers;

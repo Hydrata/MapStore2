@@ -5,10 +5,11 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const expect = require('expect');
-const assign = require('object-assign');
-const LayersUtils = require('../LayersUtils');
-const {extractTileMatrixSetFromLayers} = LayersUtils;
+import expect from 'expect';
+
+import assign from 'object-assign';
+import * as LayersUtils from '../LayersUtils';
+const { extractTileMatrixSetFromLayers, splitMapAndLayers} = LayersUtils;
 const typeV1 = "empty";
 const emptyBackground = {
     type: typeV1
@@ -71,13 +72,42 @@ describe('LayersUtils', () => {
     });
 
     it('splits layers and groups groups additional data (expanded and title)', () => {
-        const groups = [{id: 'custom.nested001', expanded: true}, {id: 'custom.nested001.nested002', expanded: false}, {id: 'Default', expanded: false}, {id: 'custom', expanded: true, title: {'default': 'Default', 'en-US': 'new'}}];
-        const layers = [{id: 'layer001', group: 'Default'}, {id: 'layer002', group: 'Default'}, {id: 'layer003', group: 'custom.nested001'}, {id: 'layer004', group: 'custom.nested001.nested002'}];
+        const groups = [
+            {id: 'custom.nested001', expanded: true},
+            {id: 'custom.nested001.nested002', expanded: false},
+            {id: 'Default', expanded: false},
+            {id: 'custom', expanded: true, title: {'default': 'Default', 'en-US': 'new'}},
+            {id: 'test', expanded: true, title: "Test-group", description: "description", tooltipOptions: "both", tooltipPlacement: 'right'}
+        ];
+        const layers = [
+            {id: 'layer001', group: 'Default'},
+            {id: 'layer002', group: 'Default'},
+            {id: 'layer003', group: 'custom.nested001'},
+            {id: 'layer004', group: 'custom.nested001.nested002'},
+            {id: 'layer005', group: 'test'}
+        ];
 
         const state = LayersUtils.splitMapAndLayers({groups, layers});
 
         expect(state.layers.groups).toEqual([
-            {expanded: true, id: 'custom', name: 'custom', title: {'default': 'Default', 'en-US': 'new'},
+            {
+                expanded: true,
+                id: 'test',
+                name: 'test',
+                title: 'Test-group',
+                description: 'description',
+                tooltipOptions: 'both',
+                tooltipPlacement: 'right',
+                nodes: ['layer005']
+            },
+            {
+                expanded: true,
+                id: 'custom',
+                name: 'custom',
+                title: {'default': 'Default', 'en-US': 'new'},
+                description: undefined,
+                tooltipOptions: undefined,
+                tooltipPlacement: undefined,
                 nodes: [
                     {expanded: true, id: 'custom.nested001', name: 'nested001', title: 'nested001',
                         nodes: [
@@ -1105,5 +1135,113 @@ describe('LayersUtils', () => {
 
         expect(LayersUtils.getCapabilitiesUrl(layer)).toEqual(EXPECTED_CAPABILITIES_URL);
 
+    });
+
+    it('test getNestedGroupTitle', () => {
+
+        const groups = [
+            {id: 'default', title: 'Default', nodes: [{id: 'layer001', title: 'titleLayer001'}, {id: 'layer002', title: 'titleLayer002'}]}
+        ];
+        const id = 'layer001';
+        const groupTitle = LayersUtils.getNestedGroupTitle(id, groups);
+
+        expect(groupTitle).toExist();
+        expect(groupTitle).toEqual('titleLayer001');
+
+    });
+
+    it('test isInsideResolutionsLimits', () => {
+        expect(LayersUtils.isInsideResolutionsLimits({
+            maxResolution: 1000,
+            minResolution: 100
+        })).toBe(true);
+        expect(LayersUtils.isInsideResolutionsLimits({
+            maxResolution: 1000,
+            minResolution: 100
+        }, 500)).toBe(true);
+        expect(LayersUtils.isInsideResolutionsLimits({
+            maxResolution: 1000,
+            minResolution: 100,
+            disableResolutionLimits: true
+        }, 2000)).toBe(true);
+        expect(LayersUtils.isInsideResolutionsLimits({
+            maxResolution: 1000,
+            minResolution: 100
+        }, 99)).toBe(false);
+        expect(LayersUtils.isInsideResolutionsLimits({
+            maxResolution: 1000,
+            minResolution: 100
+        }, 1000)).toBe(false);
+    });
+    describe('splitMapAndLayers', () => {
+        const localizedGroupMap = {
+            "map": {
+                "center": {
+                    "x": 17.360751857301523,
+                    "y": 40.51921950782912,
+                    "crs": "EPSG:4326"
+                },
+                "maxExtent": [
+                    -20037508.34,
+                    -20037508.34,
+                    20037508.34,
+                    20037508.34
+                ],
+                "projection": "EPSG:900913",
+                "units": "m",
+                "zoom": 6,
+                "mapOptions": {},
+                "backgrounds": [],
+                "bookmark_search_config": {},
+                "mapId": null,
+                "size": null,
+                "version": 2
+            },
+            "layers": [
+                {
+                    "id": "test:Linea_costa__5",
+                    "format": "image/png",
+                    "search": {
+                        "url": "https://test/geoserver/wfs",
+                        "type": "wfs"
+                    },
+                    "name": "test:Linea_costa",
+                    "opacity": 1,
+                    "description": "",
+                    "title": {
+                        "default": "Linea_costa",
+                        "it-IT": "test",
+                        "en-US": "test",
+                        "fr-FR": "test",
+                        "de-DE": "test",
+                        "es-ES": "test"
+                    },
+                    "type": "wms",
+                    "url": "https://test/geoserver/wms",
+
+
+                    "useForElevation": false,
+                    "hidden": false,
+                    "params": {}
+                }
+            ],
+            "groups": [
+                {
+                    "id": "Default",
+                    "title": {
+                        "default": "Default",
+                        "it-IT": "test ",
+                        "en-US": "test"
+                    },
+                    "expanded": true
+                }
+            ]
+        };
+        it('localized titles for default group', () => {
+            const {map, layers} = splitMapAndLayers(localizedGroupMap);
+            expect(map).toBeTruthy();
+            expect(layers).toBeTruthy();
+            expect(layers.groups[0].title).toEqual(localizedGroupMap.groups[0].title);
+        });
     });
 });

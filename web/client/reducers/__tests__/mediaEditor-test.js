@@ -10,7 +10,7 @@ import expect from 'expect';
 import mediaEditor, {DEFAULT_STATE} from '../mediaEditor';
 import { LOCATION_CHANGE } from 'connected-react-router';
 
-const {
+import {
     chooseMedia,
     hide,
     loadMediaSuccess,
@@ -20,8 +20,10 @@ const {
     setMediaService,
     setMediaType,
     show,
-    updateItem
-} = require('../../actions/mediaEditor');
+    updateItem,
+    loadingSelectedMedia,
+    loadingMediaList
+} from '../../actions/mediaEditor';
 
 describe('Test the mediaEditor reducer', () => {
 
@@ -74,6 +76,11 @@ describe('Test the mediaEditor reducer', () => {
         const id = "id";
         let state = mediaEditor({}, selectItem(id));
         expect(state.selected).toEqual(id);
+    });
+    it('SELECT_ITEM with empty the same id', () => {
+        const id = "id";
+        let state = mediaEditor({selected: id}, selectItem(id));
+        expect(state.selected).toEqual('');
     });
     it('SET_MEDIA_SERVICE', () => {
         const value = "id";
@@ -139,6 +146,45 @@ describe('Test the mediaEditor reducer', () => {
         state = mediaEditor(state, {type: LOCATION_CHANGE});
         expect(state).toEqual(DEFAULT_STATE);
     });
+    it('should keep the current custom settings on LOCATION_CHANGE', () => {
+        const mediaEditorSettings = {
+            sourceId: 'geostory',
+            mediaTypes: {
+                image: {
+                    defaultSource: 'geostory',
+                    sources: ['geostory']
+                },
+                video: {
+                    defaultSource: 'geostory',
+                    sources: ['geostory']
+                },
+                map: {
+                    defaultSource: 'geostory',
+                    sources: ['geostory']
+                }
+            },
+            sources: {
+                geostory: {
+                    name: 'Current story',
+                    type: 'geostory'
+                }
+            }
+        };
+        let state = mediaEditor(undefined, show('owner', mediaEditorSettings));
+        expect(state.settings.mediaTypes).toEqual(mediaEditorSettings.mediaTypes);
+        expect(state.settings.sources).toEqual(mediaEditorSettings.sources);
+        state = mediaEditor(state, {type: LOCATION_CHANGE});
+
+        const { settings: defaultStateSettings, ...defaultState } = DEFAULT_STATE;
+        const { settings: newStateSettings, ...newState } = state;
+
+        expect(newStateSettings.mediaTypes).toEqual(mediaEditorSettings.mediaTypes);
+        expect(newStateSettings.sources).toEqual(mediaEditorSettings.sources);
+
+        expect(defaultState).toEqual(newState);
+        expect(defaultStateSettings.mediaType).toEqual(newStateSettings.mediaType);
+        expect(defaultStateSettings.sourceId).toEqual(newStateSettings.sourceId);
+    });
     it('UPDATE_ITEM with mode replace', () => {
         const map = {
             id: "resId",
@@ -164,5 +210,18 @@ describe('Test the mediaEditor reducer', () => {
             }
         }, updateItem(map, "replace"));
         expect(state.data.map.geostoreMap.resultData.resources[0]).toBe(map);
+    });
+    it('LOADING_SELECTED_MEDIA', () => {
+        const loading = true;
+        const state = mediaEditor({}, loadingSelectedMedia(loading));
+        expect(state).toEqual({
+            loadingSelected: true
+        });
+    });
+    it('LOADING_MEDIA_LIST', () => {
+        const state = mediaEditor({}, loadingMediaList());
+        expect(state).toEqual({
+            loadingList: true
+        });
     });
 });

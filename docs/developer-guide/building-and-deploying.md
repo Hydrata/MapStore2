@@ -11,19 +11,17 @@ To create the final war, you have several options:
 
 * full build, including submodules and frontend (e.g. GeoStore)
 
- `./build.sh [version_identifier]`
+ `./build.sh [version_identifier] [profiles]`
 
- Where version_identifier is an optional identifier of the generated war that will be shown in the settings panel of the application.
+ Where `version_identifier` is an optional identifier of the generated war that will be shown in the settings panel of the application and profiles is an optional list of comma delimited building profiles (e.g. `printing`, `ldap`)
 
 * fast build (will use the last compiled version of submodules and compiled frontend)
 
-`mvn clean install -Dmapstore2.version=[version_identifier]`
+`mvn clean install -Dmapstore2.version=[version_identifier] [profiles]`
 
 * release build (produces also the binary)
 
 `mvn clean install -Dmapstore2.version=[version_identifier] -Prelease`
-
-Where `[version_identifier]` is the version you want to export (e.g. 2020.01.00). This version name will appear in "Settings --> version information" and used to create handle bundles version (i.e. caching).
 
 ## Building the documentation
 
@@ -58,7 +56,7 @@ The generated folders can be removed with:
 
 `npm run cleandoc`
 
-## Undestanding frontend building tools
+## Understanding frontend building tools
 
 Frontend building is delegated to [NPM](https://www.npmjs.com/) and so leverages the NodeJS ecosystem.
 
@@ -71,57 +69,29 @@ In particular:
 * **[webpack](http://webpack.github.io/)**: as the bundling tool, for development (see [webpack.config.js](https://github.com/geosolutions-it/MapStore2/blob/master/webpack.config.js)), deploy (see [prod-webpack.config.js](https://github.com/geosolutions-it/MapStore2/blob/master/prod-webpack.config.js)) and test (see [test.webpack.js](https://github.com/geosolutions-it/MapStore2/blob/master/tests.webpack.js))
 * **[karma](http://karma-runner.github.io/)** is used as the test suite runner, with several plugins to allow for custom reporting, browser running and so on; the test suite running is configured through different configuration files, for **[single running](https://github.com/geosolutions-it/MapStore2/blob/master/karma.conf.single-run.js)**  or **[continuous testing](https://github.com/geosolutions-it/MapStore2/blob/master/karma.conf.continuous-test.js)**
 * **[istanbul](https://gotwarlost.github.io/istanbul/)/[coveralls](https://www.npmjs.com/package/coveralls)** are used for code coverage reporting
-* **[eslint](https://eslint.org)** is used to enforce coding styles guidelines, the tool is configured using a **[.eslintrc](https://github.com/geosolutions-it/MapStore2/blob/master/.eslintrc)** file
 
 ## Index of main npm scripts
 
-* download dependencies and init developer environment
-
-`npm install`
-
-* start development instance
-
-`npm start`
-
-* start development instance with examples
-
-`npm run examples`
-
-* run test suite once
-
-`npm test`
-
-* run continuous test suite running
-
-`npm run continuoustest`
-
-* run single build / bundling
-
-`npm run compile`
-
-* run ESLint checks
-
-`npm run lint`
-
-* run tests from Maven
-
-`npm run mvntest`
-
-* build for travis
-
-`npm run travis`
+| Command                  | Description                                                  |
+|--------------------------|--------------------------------------------------------------|
+| `npm install`            | download dependencies and init developer environment         |
+| `npm start`              | start development instance                                   |
+| `npm run examples`       | start development instance with examples                     |
+| `npm run compile`        | run single build / bundling                                  |
+| `npm test`               | run test suite once                                          |
+| `npm run continuoustest` | run continuous test suite running (useful during developing) |
+| `npm run lint`           | run ESLint checks                                            |
+| `npm run mvntest`        | run tests from Maven                                         |
+| `npm run travis`         | run the test build used for travis                           |
 
 ## Including the printing engine in your build
 
-The [MapStore printing engine](https://github.com/geosolutions-it/mapfish-print/wiki) is not included in official builds by default.
+The [printing module](printing-module.md) is not included in official builds by default.
 
-To build your own version of MapStore with the printing module included, you can enable the
-**printing** profile:
+To build your own version of MapStore with the this module, you can use the **printing** profile running the build script:
 
-`./build.sh [version_identifier] -Pprinting`
+```sh
+./build.sh [version_identifier] printing
+```
 
-It is also possible to build only the printing extension as a zip (to be unzipped on your deployed MapStore). To do that:
-
-`mvn clean install -Pprintingbundle`
-
-The zip bundle will be in printing/target/mapstore-printing.zip.
+For more information or troubleshooting about the printing module you can see the [dedicated section](printing-module.md)

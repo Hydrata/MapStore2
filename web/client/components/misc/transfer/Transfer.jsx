@@ -8,9 +8,10 @@
 
 import React from 'react';
 import PropTypes from 'prop-types';
-import {Button, ButtonGroup} from 'react-bootstrap';
+import {ButtonGroup} from 'react-bootstrap';
 
-import LocaleUtils from '../../../utils/LocaleUtils';
+import Button from '../Button';
+import {getMessageById} from '../../../utils/LocaleUtils';
 import Message from '../../I18N/Message';
 import Filter from '../Filter';
 import Toolbar from '../../misc/toolbar/Toolbar';
@@ -42,12 +43,13 @@ const renderMoveButtons = (moveButtons) => (
 
 const localizeItem = (messages, { title, description, children, ...other}) => ({
     ...other,
-    title: title && LocaleUtils.getMessageById(messages, title),
-    description: description && LocaleUtils.getMessageById(messages, description),
+    title: title && getMessageById(messages, title),
+    description: description && getMessageById(messages, description),
     children: children && children.map(i => localizeItem(messages, i))
 });
 
 const renderColumn = (
+    localizeItems,
     messages,
     side,
     {
@@ -77,11 +79,11 @@ const renderColumn = (
             </div>
             <Filter
                 filterText={filterText}
-                filterPlaceholder={LocaleUtils.getMessageById(messages, filterPlaceholder)}
+                filterPlaceholder={getMessageById(messages, filterPlaceholder)}
                 onFilter={onFilter}/>
         </div>
         <CardList
-            items={sortStrategy(filter(filterText, items.map(item => localizeItem(messages, item))))}
+            items={sortStrategy(filter(filterText, items.map(item => localizeItems ? localizeItem(messages, item) : item)))}
             emptyStateProps={localizeItem(messages,
                 items.length > 0 && filterText.length > 0 ? emptyStateSearchProps : emptyStateProps)}
             side={side}
@@ -108,6 +110,7 @@ const renderColumn = (
 *  - *emptyStateSearchProps*: empty state props when filter text is present
 *  - *onFilter*: callback that is called when filter text changes
  * @prop {object} rightColumn object that describes a transfer column on the right. For object props see *leftColumn*
+ * @prop {boolean} [localizeItems=false] if true, it localizes items "title" and "description" fields, recursively i
  * @prop {boolean} [allowCtrlMultiSelect=false] when true, allows multiple items selected when ctrl key is pressed
  * @prop {array} selectedItems array of selected items
  * @prop {string} selectedSide column that is currently selected. Can be 'left' or 'right'
@@ -120,6 +123,7 @@ const renderColumn = (
  * @returns {object} react element
  */
 const Transfer = ({
+    localizeItems = false,
     leftColumn = {},
     rightColumn = {},
     allowCtrlMultiSelect = false,
@@ -165,9 +169,9 @@ const Transfer = ({
     }]
 }, context) => (
     <div className={`ms2-transfer${className ? ' ' + className : ''}`}>
-        {renderColumn(context.messages, 'left', leftColumn, allowCtrlMultiSelect, selectedItems, selectedSide, onSelect, sortStrategy, filter)}
+        {renderColumn(localizeItems, context.messages, 'left', leftColumn, allowCtrlMultiSelect, selectedItems, selectedSide, onSelect, sortStrategy, filter)}
         {renderMoveButtons(moveButtons)}
-        {renderColumn(context.messages, 'right', rightColumn, allowCtrlMultiSelect, selectedItems, selectedSide, onSelect, sortStrategy, filter)}
+        {renderColumn(localizeItems, context.messages, 'right', rightColumn, allowCtrlMultiSelect, selectedItems, selectedSide, onSelect, sortStrategy, filter)}
     </div>
 );
 Transfer.contextTypes = {messages: PropTypes.object};

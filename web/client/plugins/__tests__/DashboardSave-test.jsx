@@ -5,17 +5,17 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
+
 import expect from 'expect';
 import React from 'react';
 import ReactDOM from 'react-dom';
-
-import {DashboardSave, DashboardSaveAs} from '../DashboardSave';
-import { getPluginForTest } from './pluginsTestUtils';
-import { createStateMocker } from '../../reducers/__tests__/reducersTestUtils';
-
-import dashboard from '../../reducers/dashboard';
+import TestUtils from 'react-dom/test-utils';
 
 import { triggerSave, triggerSaveAs } from '../../actions/dashboard';
+import { createStateMocker } from '../../reducers/__tests__/reducersTestUtils';
+import dashboard from '../../reducers/dashboard';
+import {DashboardSave, DashboardSaveAs} from '../DashboardSave';
+import { getPluginForTest } from './pluginsTestUtils';
 
 describe('DashboardSave Plugins (DashboardSave, DashboardSaveAs)', () => {
     const stateMocker = createStateMocker({ dashboard });
@@ -79,6 +79,17 @@ describe('DashboardSave Plugins (DashboardSave, DashboardSaveAs)', () => {
             const { Plugin } = getPluginForTest(DashboardSaveAs, stateMocker(DUMMY_ACTION, triggerSaveAs(true)));
             ReactDOM.render(<Plugin />, document.getElementById("container"));
             expect(document.getElementsByClassName('modal-fixed').length).toBe(1);
+        });
+        it('title is editable', () => {
+            const { Plugin } = getPluginForTest(DashboardSaveAs, stateMocker(DUMMY_ACTION, triggerSaveAs(true)));
+            ReactDOM.render(<Plugin />, document.getElementById("container"));
+            const modal = document.getElementsByClassName('modal-fixed')[0];
+            expect(modal).toExist();
+            const inputEl = modal.getElementsByTagName('input')[1];
+            expect(inputEl).toExist();
+            inputEl.value = 'f';
+            TestUtils.Simulate.change(inputEl);
+            expect(inputEl.value).toBe('f');
         });
     });
 });

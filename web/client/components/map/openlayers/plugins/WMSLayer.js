@@ -13,16 +13,16 @@ import isEqual from 'lodash/isEqual';
 import union from 'lodash/union';
 import isArray from 'lodash/isArray';
 import assign from 'object-assign';
-
+import axios from '../../../../libs/ajax';
 import CoordinatesUtils from '../../../../utils/CoordinatesUtils';
-import ProxyUtils from '../../../../utils/ProxyUtils';
+import {needProxy, getProxyUrl} from '../../../../utils/ProxyUtils';
 
 import {optionsToVendorParams} from '../../../../utils/VendorParamsUtils';
-import SecurityUtils from '../../../../utils/SecurityUtils';
+import {addAuthenticationToSLD, addAuthenticationParameter} from '../../../../utils/SecurityUtils';
 import { creditsToAttribution } from '../../../../utils/LayersUtils';
 
 import MapUtils from '../../../../utils/MapUtils';
-import ElevationUtils from '../../../../utils/ElevationUtils';
+import  {loadTile, getElevation as getElevationFunc} from '../../../../utils/ElevationUtils';
 
 import ImageLayer from 'ol/layer/Image';
 import ImageWMS from 'ol/source/ImageWMS';
@@ -38,6 +38,43 @@ import { isVectorFormat } from '../../../../utils/VectorTileUtils';
 import { OL_VECTOR_FORMATS, applyStyle } from '../../../../utils/openlayers/VectorTileUtils';
 import { generateEnvString } from '../../../../utils/LayerLocalizationUtils';
 
+
+const loadFunction = (options) => function(image, src) {
+    // fixes #3916, see https://gis.stackexchange.com/questions/175057/openlayers-3-wms-styling-using-sld-body-and-post-request
+    var img = image.getImage();
+
+    if (typeof window.btoa === 'function' && src.length >= (options.maxLengthUrl || Infinity)) {
+        // GET ALL THE PARAMETERS OUT OF THE SOURCE URL**
+        const [url, ...dataEntries] = src.split("&");
+
+        // SET THE PROPER HEADERS AND FINALLY SEND THE PARAMETERS
+        axios.post(url, "&" + dataEntries.join("&"), {
+            headers: {
+                "Content-type": "application/x-www-form-urlencoded;charset=utf-8"
+            },
+            responseType: 'arraybuffer'
+        }).then(response => {
+            if (response.status === 200) {
+                const uInt8Array = new Uint8Array(response.data);
+                let i = uInt8Array.length;
+                const binaryString = new Array(i);
+                while (i--) {
+                    binaryString[i] = String.fromCharCode(uInt8Array[i]);
+                }
+                const dataImg = binaryString.join('');
+                const type = response.headers['content-type'];
+                if (type.indexOf('image') === 0) {
+                    img.src = 'data:' + type + ';base64,' + window.btoa(dataImg);
+                }
+            }
+        }).catch(e => {
+            console.error(e);
+        });
+
+    } else {
+        img.src = src;
+    }
+};
 /**
     @param {object} options of the layer
     @return the Openlayers options from the layers ones and/or default.
@@ -63,7 +100,7 @@ function wmsToOpenlayersOptions(options) {
             options.env && options.env.length &&
             options.group !== 'background' ? {ENV: generateEnvString(options.env) } : {})
     ));
-    return SecurityUtils.addAuthenticationToSLD(result, options);
+    return addAuthenticationToSLD(result, options);
 }
 
 function getWMSURLs( urls ) {
@@ -73,8 +110,8 @@ function getWMSURLs( urls ) {
 // Works with geosolutions proxy
 function proxyTileLoadFunction(imageTile, src) {
     var newSrc = src;
-    if (ProxyUtils.needProxy(src)) {
-        let proxyUrl = ProxyUtils.getProxyUrl();
+    if (needProxy(src)) {
+        let proxyUrl = getProxyUrl();
         newSrc = proxyUrl + encodeURIComponent(src);
     }
     imageTile.getImage().src = newSrc;
@@ -86,13 +123,13 @@ function tileCoordsToKey(coords) {
 
 function elevationLoadFunction(forceProxy, imageTile, src) {
     let newSrc = src;
-    if (forceProxy && ProxyUtils.needProxy(src)) {
-        let proxyUrl = ProxyUtils.getProxyUrl();
+    if (forceProxy && needProxy(src)) {
+        let proxyUrl = getProxyUrl();
         newSrc = proxyUrl + encodeURIComponent(src);
     }
     const coords = imageTile.getTileCoord();
     imageTile.getImage().src = "";
-    ElevationUtils.loadTile(newSrc, coords, tileCoordsToKey(coords));
+    loadTile(newSrc, coords, tileCoordsToKey(coords));
 }
 
 function addTileLoadFunction(sourceOptions, options) {
@@ -125,7 +162,7 @@ function getElevation(pos) {
     try {
         const tilePoint = getTileFromCoords(this, pos);
         const tileSize = this.getSource().getTileGrid().getTileSize();
-        const elevation = ElevationUtils.getElevation(tileCoordsToKey(tilePoint), getTileRelativePixel(this, pos, tilePoint), tileSize, this.get('nodata'));
+        const elevation = getElevationFunc(tileCoordsToKey(tilePoint), getTileRelativePixel(this, pos, tilePoint), tileSize, this.get('nodata'), this.get('littleEndian'));
         if (elevation.available) {
             return elevation.value;
         }
@@ -136,24 +173,29 @@ function getElevation(pos) {
 }
 const toOLAttributions = credits => credits && creditsToAttribution(credits) || undefined;
 
+
 const createLayer = (options, map) => {
     const urls = getWMSURLs(isArray(options.url) ? options.url : [options.url]);
     const queryParameters = wmsToOpenlayersOptions(options) || {};
-    urls.forEach(url => SecurityUtils.addAuthenticationParameter(url, queryParameters, options.securityToken));
+    urls.forEach(url => addAuthenticationParameter(url, queryParameters, options.securityToken));
 
     const vectorFormat = isVectorFormat(options.format);
 
     if (options.singleTile && !vectorFormat) {
         return new ImageLayer({
+            msId: options.id,
             opacity: options.opacity !== undefined ? options.opacity : 1,
             visible: options.visibility !== false,
             zIndex: options.zIndex,
+            minResolution: options.minResolution,
+            maxResolution: options.maxResolution,
             source: new ImageWMS({
                 url: urls[0],
                 crossOrigin: options.crossOrigin,
                 attributions: toOLAttributions(options.credits),
                 params: queryParameters,
-                ratio: options.ratio || 1
+                ratio: options.ratio || 1,
+                imageLoadFunction: loadFunction(options)
             })
         });
     }
@@ -166,16 +208,20 @@ const createLayer = (options, map) => {
         params: queryParameters,
         tileGrid: new TileGrid({
             extent: extent,
-            resolutions: MapUtils.getResolutions(),
+            resolutions: options.resolutions || MapUtils.getResolutions(),
             tileSize: options.tileSize ? options.tileSize : 256,
             origin: options.origin ? options.origin : [extent[0], extent[1]]
-        })
+        }),
+        tileLoadFunction: loadFunction(options)
     }, options);
     const wmsSource = new TileWMS({ ...sourceOptions });
     const layerConfig = {
+        msId: options.id,
         opacity: options.opacity !== undefined ? options.opacity : 1,
         visible: options.visibility !== false,
-        zIndex: options.zIndex
+        zIndex: options.zIndex,
+        minResolution: options.minResolution,
+        maxResolution: options.maxResolution
     };
     let layer;
     if (vectorFormat) {
@@ -190,6 +236,7 @@ const createLayer = (options, map) => {
             })
         });
     } else {
+
         layer = new TileLayer({
             ...layerConfig,
             source: wmsSource
@@ -204,6 +251,7 @@ const createLayer = (options, map) => {
     }
     if (options.useForElevation) {
         layer.set('nodata', options.nodata);
+        layer.set('littleEndian', options.littleendian ?? false);
         layer.set('getElevation', getElevation.bind(layer));
     }
     return layer;
@@ -218,6 +266,7 @@ const mustCreateNewLayer = (oldOptions, newOptions) => {
         || isVectorFormat(oldOptions.format) !== isVectorFormat(newOptions.format)
         || isVectorFormat(oldOptions.format) && isVectorFormat(newOptions.format) && oldOptions.format !== newOptions.format
         || oldOptions.localizedLayerStyles !== newOptions.localizedLayerStyles
+        || oldOptions.tileSize !== newOptions.tileSize
     );
 };
 
@@ -246,7 +295,7 @@ Layers.registerType('wms', {
             } else {
                 const tileGrid = new TileGrid({
                     extent: extent,
-                    resolutions: MapUtils.getResolutions(),
+                    resolutions: newOptions.resolutions || MapUtils.getResolutions(),
                     tileSize: newOptions.tileSize ? newOptions.tileSize : 256,
                     origin: newOptions.origin ? newOptions.origin : [extent[0], extent[1]]
                 });
@@ -292,20 +341,24 @@ Layers.registerType('wms', {
             needsRefresh = needsRefresh || changed;
         }
 
+        if (oldOptions.minResolution !== newOptions.minResolution) {
+            layer.setMinResolution(newOptions.minResolution === undefined ? 0 : newOptions.minResolution);
+        }
+        if (oldOptions.maxResolution !== newOptions.maxResolution) {
+            layer.setMaxResolution(newOptions.maxResolution === undefined ? Infinity : newOptions.maxResolution);
+        }
         if (needsRefresh) {
             // forces tile cache drop
             // this prevents old cached tiles at lower zoom levels to be
-            // rendered during new params load, but causes a blink glitch.
-            // TODO: find out a way to refresh only once to clear lower zoom level cache.
-            if (wmsSource.refresh) {
-                wmsSource.refresh();
-            }
+            // rendered during new params load
+            wmsSource?.tileCache?.pruneExceptNewestZ?.();
             if (vectorSource) {
                 vectorSource.clear();
                 vectorSource.refresh();
             }
+
             if (changed) {
-                const params = assign(newParams, SecurityUtils.addAuthenticationToSLD(optionsToVendorParams(newOptions) || {}, newOptions));
+                const params = assign(newParams, addAuthenticationToSLD(optionsToVendorParams(newOptions) || {}, newOptions));
 
                 wmsSource.updateParams(assign(params, Object.keys(oldParams || {}).reduce((previous, key) => {
                     return !isNil(params[key]) ? previous : assign(previous, {

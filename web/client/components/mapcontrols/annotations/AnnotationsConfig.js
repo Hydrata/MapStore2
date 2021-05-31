@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const MarkerUtils = require('../../../utils/MarkerUtils');
+import MarkerUtils from '../../../utils/MarkerUtils';
 
 const defaultIcon = MarkerUtils.markers.extra.icons[0];
 const defaultMarkers = MarkerUtils.markers.extra.getGrid();
@@ -46,7 +46,7 @@ const glyphPrefix = 'fa';
  * @memberof components.mapControls.annotations
  * @class AnnotationsConfig
  */
-module.exports = {
+export default {
     /**
      * Available annotation fields.
      * A list of object specifying:
@@ -54,8 +54,8 @@ module.exports = {
      *  - type: type of value for the field (text or html)
      *  - validator: (optional) rule for validation
      *  - validationError: (optional) id for the translations file containing the validation error message
-     *  - showLabel: wether to show or not the label of the field in the viewer / editor
-     *  - editable: wether the field can be edited or not in editing mode
+     *  - showLabel: whether to show or not the label of the field in the viewer / editor
+     *  - editable: whether the field can be edited or not in editing mode
      */
     fields: [
         {

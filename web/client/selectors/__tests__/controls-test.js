@@ -6,8 +6,9 @@
 * LICENSE file in the root directory of this source tree.
 */
 
-const expect = require('expect');
-const {
+import expect from 'expect';
+
+import {
     queryPanelSelector,
     wfsDownloadAvailable,
     wfsDownloadSelector,
@@ -17,15 +18,16 @@ const {
     originalSettingsSelector,
     activeTabSettingsSelector,
     drawerEnabledControlSelector,
-    showCoordinateEditorSelector
-} = require("../controls");
+    showCoordinateEditorSelector,
+    shareSelector
+} from '../controls';
 
 const state = {
     controls: {
         queryPanel: {
             enabled: true
         },
-        wfsdownload: {
+        layerdownload: {
             available: true,
             enabled: true
         },
@@ -113,6 +115,11 @@ describe('Test controls selectors', () => {
     });
     it('test showCoordinateEditorSelector', () => {
         const retVal = showCoordinateEditorSelector({controls: {measure: {showCoordinateEditor: true}}});
+        expect(retVal).toExist();
+        expect(retVal).toBe(true);
+    });
+    it('test shareSelector', () => {
+        const retVal = shareSelector({controls: {share: {enabled: true}}});
         expect(retVal).toExist();
         expect(retVal).toBe(true);
     });

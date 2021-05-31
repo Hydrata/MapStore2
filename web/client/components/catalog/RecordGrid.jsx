@@ -5,11 +5,11 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const React = require('react');
-const PropTypes = require('prop-types');
-const {Grid, Row, Col} = require('react-bootstrap');
+import React from 'react';
 
-const RecordItem = require('./RecordItem').default;
+import PropTypes from 'prop-types';
+import { Grid, Row, Col } from 'react-bootstrap';
+import RecordItem from './RecordItem';
 
 class RecordGrid extends React.Component {
     static propTypes = {
@@ -41,6 +41,7 @@ class RecordGrid extends React.Component {
         service: PropTypes.object,
         defaultFormat: PropTypes.string,
         formatOptions: PropTypes.array,
+        infoFormatOptions: PropTypes.array,
         layerBaseConfig: PropTypes.object
     };
 
@@ -87,6 +88,7 @@ class RecordGrid extends React.Component {
                     currentLocale={this.props.currentLocale}
                     defaultFormat={this.props.defaultFormat}
                     formatOptions={this.props.formatOptions}
+                    infoFormatOptions={this.props.infoFormatOptions}
                     layerBaseConfig={this.props.layerBaseConfig}
                 />
             </Col>
@@ -109,4 +111,4 @@ class RecordGrid extends React.Component {
     }
 }
 
-module.exports = RecordGrid;
+export default RecordGrid;

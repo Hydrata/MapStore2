@@ -6,9 +6,10 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const {lifecycle, withHandlers, compose} = require('recompose');
-const {set} = require('../../../../utils/ImmutableUtils');
-const {isEqual, isNil, isNaN} = require('lodash');
+import { isNaN, isNil } from 'lodash';
+import { compose, lifecycle, withHandlers } from 'recompose';
+
+import { set } from '../../../../utils/ImmutableUtils';
 
 /**
  * Enhancer to enable set index only if Component has header
@@ -18,7 +19,7 @@ const {isEqual, isNil, isNaN} = require('lodash');
  * @memberof enhancers.identifyHandlers
  * @class
  */
-const identifyHandlers = withHandlers({
+export const identifyHandlers = withHandlers({
     needsRefresh: () => (props, newProps) => {
         if (newProps.enabled && newProps.point && newProps.point.pixel) {
             if (!props.point || !props.point.pixel ||
@@ -62,15 +63,17 @@ const identifyHandlers = withHandlers({
  * @memberof components.data.identify.enhancers.identify
  * @name identifyLifecycle
  */
-const identifyLifecycle = compose(
+export const identifyLifecycle = compose(
     identifyHandlers,
     lifecycle({
         componentDidMount() {
             const {
                 enabled,
+                showInMapPopup,
                 changeMousePointer = () => {},
                 disableCenterToMarker,
-                onEnableCenterToMarker = () => {}
+                onEnableCenterToMarker = () => {},
+                setShowInMapPopup = () => {}
             } = this.props;
 
             if (enabled) {
@@ -80,6 +83,7 @@ const identifyLifecycle = compose(
             if (!disableCenterToMarker) {
                 onEnableCenterToMarker();
             }
+            setShowInMapPopup(showInMapPopup);
         },
         componentWillUnmount() {
             const {
@@ -96,9 +100,7 @@ const identifyLifecycle = compose(
                 hideMarker = () => {},
                 purgeResults = () => {},
                 changeMousePointer = () => {},
-                setIndex,
-                enabled,
-                responses
+                enabled
             } = this.props;
             if (newProps.enabled && !enabled) {
                 changeMousePointer('pointer');
@@ -107,14 +109,13 @@ const identifyLifecycle = compose(
                 hideMarker();
                 purgeResults();
             }
-            // reset current page on new requests set
-            if (setIndex && !isEqual(newProps.responses, responses)) {
-                setIndex(0);
+            if (this.props.showInMapPopup !== newProps.showInMapPopup) {
+                newProps.setShowInMapPopup?.(newProps.showInMapPopup);
             }
         }
     })
 );
 
-module.exports = {
+export default {
     identifyLifecycle
 };

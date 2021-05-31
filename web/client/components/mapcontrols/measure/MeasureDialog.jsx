@@ -6,14 +6,15 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const PropTypes = require('prop-types');
-const React = require('react');
-const {isEqual} = require('lodash');
-const MeasureComponent = require('./MeasureComponent');
-const DockablePanel = require('../../misc/panels/DockablePanel');
-const Message = require('../../I18N/Message');
-const Dialog = require('../../misc/Dialog');
-const {Glyphicon} = require('react-bootstrap');
+import PropTypes from 'prop-types';
+
+import React from 'react';
+import { isEqual } from 'lodash';
+import MeasureComponent from './MeasureComponent';
+import DockablePanel from '../../misc/panels/DockablePanel';
+import Message from '../../I18N/Message';
+import Dialog from '../../misc/Dialog';
+import { Glyphicon } from 'react-bootstrap';
 
 class MeasureDialog extends React.Component {
     static propTypes = {
@@ -50,11 +51,8 @@ class MeasureDialog extends React.Component {
         this.props.onClose(false);
     };
 
-    UNSAFE_componentWillMount() {
-        /* this is used to set up defaults instead of putting them in the initial state,
-         * beacuse in measurement state is updated when controls are updates
-        */
-        const {showCoordinateEditor, ...otherDefaultOptions} = this.props.defaultOptions;
+    initDefaultOptions = (defaultOptions) =>{
+        const {showCoordinateEditor, ...otherDefaultOptions} = defaultOptions;
         this.props.onMount(showCoordinateEditor || this.props.showCoordinateEditor);
         this.props.toggleMeasure({
             geomType: otherDefaultOptions.geomType || "LineString"
@@ -62,9 +60,16 @@ class MeasureDialog extends React.Component {
         this.props.onInit(otherDefaultOptions);
     }
 
+    UNSAFE_componentWillMount() {
+        /* this is used to set up defaults instead of putting them in the initial state,
+         * beacuse in measurement state is updated when controls are updates
+        */
+        this.initDefaultOptions(this.props.defaultOptions);
+    }
+
     componentDidUpdate(prevProps) {
         if (!isEqual(prevProps.defaultOptions, this.props.defaultOptions)) {
-            this.props.onInit(this.props.defaultOptions);
+            this.initDefaultOptions(this.props.defaultOptions);
         }
     }
 
@@ -97,4 +102,4 @@ class MeasureDialog extends React.Component {
     }
 }
 
-module.exports = MeasureDialog;
+export default MeasureDialog;

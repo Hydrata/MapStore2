@@ -5,29 +5,29 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-var React = require('react');
-var ReactDOM = require('react-dom');
-const { castArray } = require('lodash');
-var CesiumLayer = require('../Layer.jsx');
-var expect = require('expect');
-var Cesium = require('../../../../libs/cesium');
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { castArray } from 'lodash';
+import CesiumLayer from '../Layer';
+import expect from 'expect';
+import Cesium from '../../../../libs/cesium';
 
-const assign = require('object-assign');
+import assign from 'object-assign';
 
-require('../../../../utils/cesium/Layers');
-require('../plugins/OSMLayer');
-require('../plugins/TileProviderLayer');
-require('../plugins/WMSLayer');
-require('../plugins/WMTSLayer');
-require('../plugins/BingLayer');
-require('../plugins/GraticuleLayer');
-require('../plugins/OverlayLayer');
-require('../plugins/MarkerLayer');
+import '../../../../utils/cesium/Layers';
+import '../plugins/OSMLayer';
+import '../plugins/TileProviderLayer';
+import '../plugins/WMSLayer';
+import '../plugins/WMTSLayer';
+import '../plugins/BingLayer';
+import '../plugins/GraticuleLayer';
+import '../plugins/OverlayLayer';
+import '../plugins/MarkerLayer';
 
-const SecurityUtils = require('../../../../utils/SecurityUtils');
-const ConfigUtils = require('../../../../utils/ConfigUtils');
+import {setStore} from '../../../../utils/SecurityUtils';
+import ConfigUtils from '../../../../utils/ConfigUtils';
 
-window.CESIUM_BASE_URL = "web/client/libs/Cesium/Build/Cesium";
+window.CESIUM_BASE_URL = "node_modules/cesium/Build/Cesium";
 
 describe('Cesium layer', () => {
     let map;
@@ -672,7 +672,7 @@ describe('Cesium layer', () => {
             }
         ]);
 
-        SecurityUtils.setStore({
+        setStore({
             getState: () => ({
                 security: {
                     token: "########-####-####-####-###########"
@@ -739,7 +739,7 @@ describe('Cesium layer', () => {
             }
         ]);
 
-        SecurityUtils.setStore({
+        setStore({
             getState: () => ({
                 security: {
                     token: "########-####-####-####-###########"
@@ -950,5 +950,117 @@ describe('Cesium layer', () => {
 
         expect(layer).toExist();
         expect(layer.layer._format).toBe(JPEG);
+    });
+
+    it('should remove layer if zoom resolution is less than minResolution', () => {
+        const minResolution = 1222; // ~ zoom 7 Web Mercator
+        // create layers
+        let layer = ReactDOM.render(
+            <CesiumLayer
+                type="osm"
+                options={{
+                    visibility: true,
+                    minResolution
+                }}
+                position={0}
+                map={map}
+                zoom={0}
+            />, document.getElementById("container"));
+
+        expect(layer).toBeTruthy();
+        expect(map.imageryLayers.length).toBe(1);
+
+        layer = ReactDOM.render(
+            <CesiumLayer
+                type="osm"
+                options={{
+                    visibility: true,
+                    minResolution
+                }}
+                position={0}
+                map={map}
+                zoom={11}
+            />, document.getElementById("container"));
+
+        expect(layer).toBeTruthy();
+        // layer removed
+        expect(map.imageryLayers.length).toBe(0);
+
+    });
+
+    it('should remove layer if zoom resolution is greater than maxResolution', () => {
+        const maxResolution = 1222; // ~ zoom 7 Web Mercator
+        // create layers
+        let layer = ReactDOM.render(
+            <CesiumLayer
+                type="osm"
+                options={{
+                    visibility: true,
+                    maxResolution
+                }}
+                position={0}
+                map={map}
+                zoom={11}
+            />, document.getElementById("container"));
+
+        expect(layer).toBeTruthy();
+        expect(map.imageryLayers.length).toBe(1);
+
+        layer = ReactDOM.render(
+            <CesiumLayer
+                type="osm"
+                options={{
+                    visibility: true,
+                    maxResolution
+                }}
+                position={0}
+                map={map}
+                zoom={0}
+            />, document.getElementById("container"));
+
+        expect(layer).toBeTruthy();
+        // layer removed
+        expect(map.imageryLayers.length).toBe(0);
+
+    });
+
+    it('should disable range limits with disableResolutionLimits options set to true', () => {
+        const minResolution = 1222; // ~ zoom 7 Web Mercator
+        const maxResolution = 39135; // ~ zoom 2 Web Mercator
+        // create layers
+        let layer = ReactDOM.render(
+            <CesiumLayer
+                type="osm"
+                options={{
+                    visibility: true,
+                    minResolution,
+                    maxResolution
+                }}
+                position={0}
+                map={map}
+                zoom={0}
+            />, document.getElementById("container"));
+
+        expect(layer).toBeTruthy();
+        // layer removed because is outside of limits
+        expect(map.imageryLayers.length).toBe(0);
+
+        layer = ReactDOM.render(
+            <CesiumLayer
+                type="osm"
+                options={{
+                    visibility: true,
+                    minResolution,
+                    maxResolution,
+                    disableResolutionLimits: true
+                }}
+                position={0}
+                map={map}
+                zoom={0}
+            />, document.getElementById("container"));
+
+        expect(layer).toBeTruthy();
+        expect(map.imageryLayers.length).toBe(1);
+
     });
 });

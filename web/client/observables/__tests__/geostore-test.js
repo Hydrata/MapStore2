@@ -5,10 +5,10 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const expect = require('expect');
+import expect from 'expect';
 
-const geoStoreMock = require('./geoStoreMock').default;
-const {createResource, deleteResource, getResourceIdByName} = require('../geostore');
+import geoStoreMock from './geoStoreMock';
+import { createResource, deleteResource, getResourceIdByName, updateResource } from '../geostore';
 const testAndResolve = (test = () => {}, value) => (...args) => {
     test(...args);
     return Promise.resolve(value);
@@ -131,6 +131,113 @@ describe('geostore observables for resources management', () => {
                     done(e);
 
                 });
+        });
+
+        it('updateResource linked resource is not created if no thumbnail attribute for resource and data is NODATA', done => {
+            const testResource = {
+                id: 10,
+                data: {},
+                category: "TEST",
+                metadata: {
+                    name: "RES2"
+                },
+                linkedResources: {
+                    thumbnail: {
+                        tail: '/raw?decode=datauri',
+                        data: "NODATA"
+                    }
+                }
+            };
+            const DummyAPI = {
+                getResourceAttributes: () => Promise.resolve([{
+                    name: 'details',
+                    type: 'STRING',
+                    value: 'rest/geostore/data/134'
+                }]),
+                putResourceMetadataAndAttributes: () => Promise.resolve(10),
+                putResource: () => Promise.resolve(10),
+                createResource: ({name}) => name.search(/10-thumbnail/) !== -1 ? done(new Error('createResource for thumbnail is called!')) : Promise.resolve(11),
+                updateResourceAttribute: () => Promise.resolve(11)
+            };
+            updateResource(testResource, DummyAPI).subscribe(
+                () => done(),
+                e => done(e)
+            );
+        });
+
+        it('updateResource linked resource is created if data is valid', done => {
+            const testResource = {
+                id: 10,
+                data: {},
+                category: "TEST",
+                metadata: {
+                    name: "RES2"
+                },
+                linkedResources: {
+                    thumbnail: {
+                        tail: '/raw?decode=datauri',
+                        data: "data"
+                    }
+                }
+            };
+
+            let createResourceThumbnail = false;
+
+            const DummyAPI = {
+                getResourceAttributes: () => Promise.resolve([{
+                    name: 'details',
+                    type: 'STRING',
+                    value: 'rest/geostore/data/134'
+                }]),
+                putResourceMetadataAndAttributes: () => Promise.resolve(10),
+                putResource: () => Promise.resolve(10),
+                createResource: ({name}) => {
+                    if (name.search(/10-thumbnail/) !== -1) {
+                        createResourceThumbnail = true;
+                    }
+                    return Promise.resolve(11);
+                },
+                updateResourceAttribute: () => Promise.resolve(11)
+            };
+            updateResource(testResource, DummyAPI).subscribe(
+                () => {
+                    try {
+                        expect(createResourceThumbnail).toBe(true);
+                        done();
+                    } catch (e) {
+                        done(e);
+                    }
+                },
+                e => done(e)
+            );
+        });
+        it('updateResource linked resource is updated', done => {
+            const testResource = {
+                id: 10,
+                data: {},
+                category: "TEST",
+                metadata: {
+                    name: "RES2"
+                },
+                linkedResources: {
+                    details: { category: "DETAILS", data: "<p>Test</p>"}
+                }
+            };
+
+            const DummyAPI = {
+                getResourceAttributes: () => Promise.resolve([{
+                    name: 'details',
+                    type: 'STRING',
+                    value: 'rest/geostore/data/134'
+                }]),
+                putResourceMetadataAndAttributes: () => Promise.resolve(10),
+                putResource: () => Promise.resolve(10),
+                updateResourceAttribute: () => Promise.resolve(11)
+            };
+            updateResource(testResource, DummyAPI).subscribe(
+                () => done(),
+                e => done(e)
+            );
         });
     });
 });

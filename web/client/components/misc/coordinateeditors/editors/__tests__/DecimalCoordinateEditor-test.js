@@ -6,11 +6,12 @@
  * LICENSE file in the root directory of this source tree.
 */
 
-const React = require('react');
-const ReactDOM = require('react-dom');
-const ReactTestUtils = require('react-dom/test-utils');
-const expect = require('expect');
-const DecimalCoordinateEditor = require('../DecimalCoordinateEditor');
+import expect from 'expect';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import ReactTestUtils from 'react-dom/test-utils';
+
+import DecimalCoordinateEditor from '../DecimalCoordinateEditor';
 
 describe('DecimalCoordinateEditor enhancer', () => {
     beforeEach((done) => {
@@ -27,6 +28,13 @@ describe('DecimalCoordinateEditor enhancer', () => {
         const container = document.getElementById('container');
         const elements = container.querySelectorAll('input');
         expect(elements.length).toBe(1);
+    });
+    it('DecimalCoordinateEditor rendering from annotation viewer with defaults', () => {
+        ReactDOM.render(<DecimalCoordinateEditor canEdit={false}/>, document.getElementById("container"));
+        const container = document.getElementById('container');
+        const elements = container.querySelectorAll('input');
+        expect(elements.length).toBe(1);
+        expect(elements[0].disabled).toBe(false);
     });
     it('Test DecimalCoordinateEditor onKeyDown with keyCode 69 "e" ', () => {
         ReactDOM.render( <DecimalCoordinateEditor value={19} />, document.getElementById("container"));

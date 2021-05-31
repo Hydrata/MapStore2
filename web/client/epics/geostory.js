@@ -9,21 +9,21 @@
 
 import { Observable } from 'rxjs';
 import head from 'lodash/head';
-
 import isNaN from 'lodash/isNaN';
 import isString from 'lodash/isString';
 import isNil from 'lodash/isNil';
 import lastIndexOf from 'lodash/lastIndexOf';
+import words from 'lodash/words';
+import get from 'lodash/get';
+import isArray from 'lodash/isArray';
+import isEmpty from 'lodash/isEmpty';
+
 import { push, LOCATION_CHANGE } from 'connected-react-router';
 import uuid from 'uuid/v1';
 
 import axios from '../libs/ajax';
 
-const {
-    createResource,
-    updateResource,
-    getResource
-} = require('../api/persistence');
+import { createResource, updateResource, getResource } from '../api/persistence';
 
 import {
     ADD,
@@ -56,7 +56,10 @@ import {
     EDIT_WEBPAGE,
     EDIT_RESOURCE,
     UPDATE_CURRENT_PAGE,
-    UPDATE_SETTING
+    UPDATE_SETTING,
+    SET_CURRENT_STORY,
+    geostoryScrolling,
+    GEOSTORY_SCROLLING
 } from '../actions/geostory';
 import { setControlProperty } from '../actions/controls';
 
@@ -75,11 +78,34 @@ import { LOGIN_SUCCESS, LOGOUT } from '../actions/security';
 
 
 import { isLoggedIn, isAdminUserSelector } from '../selectors/security';
-import { resourceIdSelectorCreator, createPathSelector, currentStorySelector, resourcesSelector, getFocusedContentSelector, isSharedStory, resourceByIdSelectorCreator, modeSelector} from '../selectors/geostory';
+import {
+     resourceIdSelectorCreator,
+     createPathSelector,
+     currentStorySelector,
+     resourcesSelector,
+     getFocusedContentSelector,
+     isSharedStory,
+     resourceByIdSelectorCreator,
+     modeSelector,
+     updateUrlOnScrollSelector,
+     getMediaEditorSettings
+} from '../selectors/geostory';
 import { currentMediaTypeSelector, sourceIdSelector} from '../selectors/mediaEditor';
 
 import { wrapStartStop } from '../observables/epics';
-import { scrollToContent, ContentTypes, isMediaSection, Controls, getEffectivePath, getFlatPath, isWebPageSection, MediaTypes, Modes } from '../utils/GeoStoryUtils';
+import {
+    scrollToContent,
+    ContentTypes,
+    isMediaSection,
+    Controls,
+    getEffectivePath,
+    getFlatPath,
+    isWebPageSection,
+    MediaTypes,
+    Modes,
+    parseHashUrlScrollUpdate,
+    getGeostoryMode
+} from '../utils/GeoStoryUtils';
 
 import { SourceTypes } from './../utils/MediaEditorUtils';
 
@@ -101,10 +127,14 @@ const updateMediaSection = (store, path) => action$ =>
             let resourceId = resource.id;
             if (resourceAlreadyPresent) {
                 resourceId = resourceAlreadyPresent.id;
-            } else {
-            // if the resource is new, add it to the story resources list
-                resourceId = uuid();
-                actions = [...actions, addResource(resourceId, mediaType, resource)];
+            } else if (isEmpty(resource)) {
+                actions = [...actions, remove(`${path}`), hide()];
+            }  else {
+                // if the resource is new, add it to the story resources list
+                // if the media editor provides an id for the new resource we should use it
+                // to fit the requirement of a specific service
+                resourceId = resource.id || uuid();
+                actions = [...actions, addResource(resourceId, mediaType, resource.data ? resource.data : resource)];
             }
             let media = mediaType === MediaTypes.MAP ? {resourceId, type: mediaType, map: undefined} : {resourceId, type: mediaType};
             actions = [...actions, update(`${path}`, media, "merge" ), hide()];
@@ -128,8 +158,9 @@ export const openMediaEditorForNewMedia = (action$, store) =>
                         mediaPath = ".contents[0].contents[0]";
             }
             const path = `${arrayPath}[{"id":"${element.id}"}]${mediaPath}`;
+            const mediaEditorSetting = getMediaEditorSettings(store.getState());
             return Observable.of(
-                showMediaEditor('geostory') // open mediaEditor
+                showMediaEditor('geostory', mediaEditorSetting) // open mediaEditor
             )
                 .merge(
                     action$.let(updateMediaSection(store, path)),
@@ -145,14 +176,14 @@ const updateWebPageSection = path => action$ =>
     action$.ofType(SET_WEBPAGE_URL)
         .switchMap(({ src }) => {
             return Observable.of(
-                update(`${path}`, { src, editURL: false }, 'merge'),
+                update(`${path}`, { src, editURL: false }, 'merge')
             );
         });
 
-    /**
-     * Epic that handles opening webPageCreator and saves url of WebPage component
-     * @param {Observable} action$ stream of redux action
-     */
+/**
+ * Epic that handles opening webPageCreator and saves url of WebPage component
+ * @param {Observable} action$ stream of redux action
+ */
 export const openWebPageComponentCreator = action$ =>
     action$.ofType(ADD)
         .filter(({ element = {} }) => {
@@ -191,7 +222,7 @@ export const saveGeoStoryResource = action$ => action$
                 setControl(Controls.SHOW_SAVE, false),
                 !resource.id
                     ? push(`/geostory/${rid}`)
-                    : loadGeostory(rid),
+                    : loadGeostory(rid)
             ).merge(
                 Observable.of(show({
                     id: "STORY_SAVE_SUCCESS",
@@ -245,9 +276,10 @@ export const editMediaForBackgroundEpic = (action$, store) =>
             .filter((mediaType) => {
                 return resource && resource.type !== mediaType;
             })
-            .map(() => setMediaType(resource.type)).merge(
+            .map(() => setMediaType(resource.type))
+            .merge(
                 Observable.of(
-                    showMediaEditor(owner),
+                    showMediaEditor(owner, getMediaEditorSettings(store.getState())),
                     selectItem(selectedResource)
                 )
                           .merge(
@@ -271,7 +303,17 @@ export const loadGeostoryEpic = (action$, {getState = () => {}}) => action$
                 return axios.get(`configs/${id}.json`)
                     // not return anything else that data in this case
                     // to match with data/resource object structure of getResource
-                    .then(({data}) => ({ data, isStatic: true, canEdit: true }));
+                    .then(({data}) => {
+                        // generates random id for section
+                        const defaultSections = data.sections;
+                        const sectionsWithId = isArray(defaultSections)
+                            && defaultSections.map(section => ({ ...section, id: uuid()}));
+                        const newData = sectionsWithId.length ? {
+                            ...data,
+                            sections: sectionsWithId
+                        } : data;
+                        return ({ data: newData, isStatic: true, canEdit: true });
+                    });
             }
             return getResource(id);
         })
@@ -309,29 +351,31 @@ export const loadGeostoryEpic = (action$, {getState = () => {}}) => action$
                 loadingGeostory(true, "loading"),
                 loadingGeostory(false, "loading"),
                 e => {
-                    let message = "geostory.errors.loading.unknownError";
+                    const mode = getGeostoryMode();
+                    let message = mode + ".errors.loading.unknownError";
                     if (e.status === 403 ) {
-                        message = "geostory.errors.loading.pleaseLogin";
+                        message = mode + ".errors.loading.pleaseLogin";
                         if (isLoggedIn(getState()) || isSharedStory(getState())) {
                             // TODO only in view mode
-                            message = "geostory.errors.loading.geostoryNotAccessible";
+                            message = mode + ".errors.loading.geostoryNotAccessible";
                         }
                     } else if (e.status === 404) {
-                        message = "geostory.errors.loading.geostoryDoesNotExist";
+                        message = mode + ".errors.loading.geostoryDoesNotExist";
                     } else if (isNil(e.status)) {
                         // manage generic errors like json parse errors (syntax errors)
                         message = e.message;
                     }
                     return Observable.of(
                         error({
-                            title: "geostory.errors.loading.title",
+                            title: mode + ".errors.loading.title",
                             message
                         }),
                         setCurrentStory({}),
                         loadGeostoryError({...e, messageId: message})
                     );
                 }
-            ));
+            ))
+            .startWith(setCurrentStory({}));
     });
 /**
  * Triggers reload of last loaded story when user login-logout
@@ -461,6 +505,81 @@ export const handlePendingGeoStoryChanges = action$ =>
                     )
             )
     );
+
+const semaphore = (sem$, start = true, condition = (c) => c) => (stream$) =>
+    stream$
+        .withLatestFrom(sem$.startWith(start))
+        .filter(([, s]) => condition(s))
+        .map(([e]) => e);
+
+/**
+ * Handle the url updates on currentPage change
+ * @param {Observable} action$ stream of actions
+ * @param {object} store redux store
+ */
+export const urlUpdateOnScroll = (action$, {getState}) =>
+    action$.ofType(UPDATE_CURRENT_PAGE)
+        .let(semaphore(
+            action$.ofType(GEOSTORY_SCROLLING)
+                .map(a => !a.value)
+        ))
+        .debounceTime(50) // little delay if too many UPDATE_CURRENT_PAGE actions come
+        .switchMap(({sectionId, columnId}) => {
+            if (
+                modeSelector(getState()) !== 'edit' && (!!columnId || !!sectionId)
+                && updateUrlOnScrollSelector(getState())
+            ) {
+                const storyId = get(getState(), 'geostory.resource.id');
+                const newUrl = parseHashUrlScrollUpdate(window.location.href, window?.location?.hash, storyId, sectionId, columnId);
+                if (newUrl) {
+                    history.pushState(null, '', newUrl);
+                }
+        }
+            return Observable.empty();
+        });
+
+/**
+ * When story is loaded, scrolls down to the element from the URL
+ * @param {Observable} action$ stream of actions
+ */
+export const scrollOnLoad = (action$) =>
+    action$.ofType(SET_CURRENT_STORY)
+        .switchMap(({delay = 500}) => {
+            const storyIds = window?.location?.hash?.split('/');
+            return Observable.of(storyIds)
+                .delay(delay)
+                .do(() => {
+                    if (window?.location?.hash?.includes('shared')) {
+                            scrollToContent(storyIds[7] || storyIds[5], {block: "start", behavior: "auto"});
+                        } else if (storyIds.length > 5) {
+                            scrollToContent(storyIds[6], {block: "start", behavior: "auto"});
+                        } else if (storyIds.length === 5) {
+                            scrollToContent(storyIds[4], {block: 'start', behavior: "auto"});
+                        }
+                    }
+                )
+                .ignoreElements()
+                .startWith(geostoryScrolling(true))
+                .concat(Observable.of(geostoryScrolling(false)).delay(delay));
+    });
+
+/**
+ * Loads geostory on POP history
+ * @param {Observable} action$ stream of actions
+ */
+export const loadStoryOnHistoryPop = (action$) =>
+    action$.ofType(LOCATION_CHANGE)
+        .switchMap(({payload}) => {
+            const hasGeostory = payload?.location?.pathname.includes('/geostory/');
+            if (hasGeostory && payload.action === 'POP') {
+                const separatedUrl = words(payload?.location?.pathname);
+                return separatedUrl.find(i=> i === 'shared')
+                    ? Observable.of(loadGeostory(separatedUrl[2])).delay(500)
+                    : Observable.of(loadGeostory(separatedUrl[1])).delay(500);
+            }
+            return Observable.empty();
+        });
+
 /**
  * Handle the scroll of section preview in the sidebar
  * @memberof epics.mediaEditor

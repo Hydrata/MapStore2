@@ -6,25 +6,44 @@
  * LICENSE file in the root directory of this source tree.
 */
 
-const PropTypes = require('prop-types');
-const React = require('react');
-const Toolbar = require('../../misc/toolbar/Toolbar');
-const Portal = require('../../misc/Portal');
-const GeometryEditor = require('./GeometryEditor');
-const BorderLayout = require('../../layout/BorderLayout');
-const Manager = require('../../style/vector/Manager');
-const Message = require('../../I18N/Message');
-const { FormControl, Grid, Row, Col } = require('react-bootstrap');
-const DropdownFeatureType = require('./DropdownFeatureType');
-const ReactQuill = require('react-quill');
-require('react-quill/dist/quill.snow.css');
-const { isFunction } = require('lodash');
+import 'react-quill/dist/quill.snow.css';
 
-const ConfirmDialog = require('../../misc/ConfirmDialog');
-const assign = require('object-assign');
-const PluginsUtils = require('../../../utils/PluginsUtils');
-const defaultConfig = require('./AnnotationsConfig');
-const bbox = require('@turf/bbox');
+import { head, isEmpty, isFunction, isUndefined } from 'lodash';
+import assign from 'object-assign';
+import PropTypes from 'prop-types';
+import React from 'react';
+import {
+    Checkbox,
+    Col,
+    ControlLabel,
+    FormControl,
+    FormGroup,
+    Glyphicon,
+    Grid,
+    Nav,
+    NavItem,
+    Row
+} from 'react-bootstrap';
+import ReactQuill from 'react-quill';
+
+import {
+    coordToArray,
+    getComponents,
+    getGeometryGlyphInfo,
+    getGeometryType,
+    validateCoords
+} from '../../../utils/AnnotationsUtils';
+import { MEASURE_TYPE } from '../../../utils/MeasurementUtils';
+import { handleExpression } from '../../../utils/PluginsUtils';
+import Message from '../../I18N/Message';
+import ConfirmDialog from '../../misc/ConfirmDialog';
+import Portal from '../../misc/Portal';
+import Toolbar from '../../misc/toolbar/Toolbar';
+import Manager from '../../style/vector/Manager';
+import defaultConfig from './AnnotationsConfig';
+import FeaturesList from './FeaturesList';
+import GeometryEditor from './GeometryEditor';
+import { getApi } from '../../../api/userPersistedStorage';
 
 /**
  * (Default) Viewer / Editor for Annotations.
@@ -61,7 +80,6 @@ const bbox = require('@turf/bbox');
  * @prop {function} onCancelRemove triggered when the user cancels removal
  * @prop {function} onCancelClose triggered when the user cancels closing
  * @prop {function} onConfirmClose triggered when the user confirms closing
-  * @prop {function} onChangePointType triggered when the user switches between the point stylers
  * @prop {function} onStartDrawing triggered before the user starts the drawing process
  * @prop {object} editedFields fields of the annotation
  * @prop {object} drawingText it contains info of the text annotation, 'drawing' if being added or 'show' used to show the modal to add the relative value
@@ -91,6 +109,8 @@ const bbox = require('@turf/bbox');
  * @prop {function} onResetCoordEditor triggered when the user goes back from the coordinate editor, it will open a dialog for unsaved changes
  * @prop {function} onZoom triggered when the user zooms to an annotation
  * @prop {function} onDownload triggered when the user exports
+ * @prop {function} onChangeGeometryTitle triggered when the user changes geometry title in coordinate editor panel
+ * @prop {function} onSelectFeature triggered when the user clicks on a geometry card
  * @prop {boolean} coordinateEditorEnabled triggered when the user zooms to an annotation
  * @prop {object} selected Feature containing the geometry and the properties used for the coordinated editor
  * @prop {object} aeronauticalOptions options for aeronautical format (seconds decimals and step)
@@ -102,9 +122,25 @@ const bbox = require('@turf/bbox');
  * @prop {string} pointType the type of the point, values are "marker" or "symbol"
  * @prop {object[]} lineDashOptions list of options for dashed lines
  * @prop {object[]} symbolList list of symbols
- * @prop {string} defaultShape default shape for symbol
  * @prop {string} symbolsPath path to the svg folder
+ * @prop {string} defaultShape default shape for symbol
+ * @prop {string} defaultShapeStrokeColor default symbol stroke color
+ * @prop {string} defaultShapeFillColor default symbol fill color
+ * @prop {string} defaultShapeSize default symbol shape size in px
+ * @prop {object} defaultStyles object with default symbol styles
  * @prop {number} textRotationStep rotation step of text styler
+ * @prop {function} onSetAnnotationMeasurement triggered on click of edit measurement button when annotation is of type 'Measure'
+ * @prop {function} onFilterMarker triggered when marker/glyph name is specified for filtering
+ * @prop {object[]} annotations list of annotations
+ * @prop {boolean} measurementAnnotationEdit flag for measurement specific annotation features
+ * @prop {boolean} geodesic enable to draw a geodesic geometry (supported only for Circle)
+ * @prop {function} onHideMeasureWarning triggered when warning is ignored with "Don't show again" flag
+ * @prop {boolean} showAgain flag for checkbox on the measure annotation popup warning
+ * @prop {boolean} showPopupWarning flag to show warning modal on navigating to measurement panel from annotation
+ * @prop {function} onToggleShowAgain triggered when interacting with the checkbox on measure annotation warning popup
+ * @prop {function} onInitPlugin triggered when annotation editor is mounted
+ * @prop {function} onGeometryHighlight triggered onMouseEnter and onMouseLeave of the geometry card
+ * @prop {function} onUnSelectFeature triggered on unselecting a geometry card
  *
  * In addition, as the Identify viewer interface mandates, every feature attribute is mapped as a component property (in addition to the feature object).
  */
@@ -139,6 +175,7 @@ class AnnotationsEditor extends React.Component {
         onConfirmRemove: PropTypes.func,
         onChangeRadius: PropTypes.func,
         onChangeText: PropTypes.func,
+        onChangeGeometryTitle: PropTypes.func,
         onCancelClose: PropTypes.func,
         onSetInvalidSelected: PropTypes.func,
         onDeleteGeometry: PropTypes.func,
@@ -147,7 +184,6 @@ class AnnotationsEditor extends React.Component {
         onResetCoordEditor: PropTypes.func,
         onHighlightPoint: PropTypes.func,
         onSetStyle: PropTypes.func,
-        onChangePointType: PropTypes.func,
         onStartDrawing: PropTypes.func,
         onZoom: PropTypes.func,
         editing: PropTypes.object,
@@ -173,12 +209,14 @@ class AnnotationsEditor extends React.Component {
         showUnsavedGeometryModal: PropTypes.bool,
         config: PropTypes.object,
         feature: PropTypes.object,
+        features: PropTypes.object,
         selected: PropTypes.object,
         mode: PropTypes.string,
         maxZoom: PropTypes.number,
         width: PropTypes.number,
         onDownload: PropTypes.func,
         onChangeFormat: PropTypes.func,
+        onSelectFeature: PropTypes.func,
         mapProjection: PropTypes.string,
         format: PropTypes.string,
         aeronauticalOptions: PropTypes.object,
@@ -191,7 +229,23 @@ class AnnotationsEditor extends React.Component {
         lineDashOptions: PropTypes.array,
         symbolList: PropTypes.array,
         defaultShape: PropTypes.string,
-        textRotationStep: PropTypes.number
+        defaultShapeSize: PropTypes.number,
+        defaultShapeFillColor: PropTypes.string,
+        defaultShapeStrokeColor: PropTypes.string,
+        defaultStyles: PropTypes.object,
+        textRotationStep: PropTypes.number,
+        onSetAnnotationMeasurement: PropTypes.func,
+        onFilterMarker: PropTypes.func,
+        annotations: PropTypes.array,
+        measurementAnnotationEdit: PropTypes.bool,
+        geodesic: PropTypes.bool,
+        onHideMeasureWarning: PropTypes.func,
+        showAgain: PropTypes.bool,
+        showPopupWarning: PropTypes.bool,
+        onToggleShowAgain: PropTypes.func,
+        onInitPlugin: PropTypes.func,
+        onGeometryHighlight: PropTypes.func,
+        onUnSelectFeature: PropTypes.func
     };
 
     static defaultProps = {
@@ -204,8 +258,13 @@ class AnnotationsEditor extends React.Component {
         coordinateEditorEnabled: false,
         feature: {},
         maxZoom: 18,
+        format: "decimal",
         pointType: "marker",
-        stylerType: "marker"
+        stylerType: "marker",
+        annotations: [],
+        measurementAnnotationEdit: false,
+        geodesic: true,
+        onInitPlugin: () => {}
     };
     /**
     @prop {object} removing object to remove, it is also a flag that means we are currently asking for removing an annotation / geometry. Toggles visibility of the confirm dialog
@@ -213,11 +272,17 @@ class AnnotationsEditor extends React.Component {
     state = {
         editedFields: {},
         removing: null,
-        textValue: ""
+        textValue: "",
+        tabValue: "coordinates",
+        showPopupWarning: false
     };
 
+    componentDidMount() {
+        this.props.onInitPlugin();
+    }
+
     getConfig = () => {
-        return assign({}, defaultConfig, this.props.config);
+        return {...defaultConfig, ...this.props.config, onFilterMarker: this.props.onFilterMarker};
     };
 
     getBodyItems = (editing) => {
@@ -227,21 +292,21 @@ class AnnotationsEditor extends React.Component {
                 const isError = editing && this.props.errors[field.name];
                 const additionalCls = isError ? 'field-error' : '';
                 return (
-                    <span key={field.name}><div key={field.name} className={"mapstore-annotations-info-viewer-item mapstore-annotations-info-viewer-" + field.name + ' ' + additionalCls}>
+                    <div key={field.name} className={"mapstore-annotations-info-viewer-item mapstore-annotations-info-viewer-" + field.name + ' ' + additionalCls}>
                         {field.showLabel ? <label><Message msgId={"annotations.field." + field.name} /></label> : null}
                         {isError ? this.renderErrorOn(field.name) : ''}
                         {this.renderProperty(field, this.props[field.name] || field.value, editing)}
                     </div>
-                    </span>
                 );
             });
     };
+
 
     getValidator = (validator) => {
         if (isFunction(validator)) {
             return validator;
         }
-        return PluginsUtils.handleExpression({}, {}, '{(function(value) {return ' + validator + ';})}');
+        return handleExpression({}, {}, '{(function(value) {return ' + validator + ';})}');
     };
 
     renderViewButtons = () => {
@@ -255,12 +320,10 @@ class AnnotationsEditor extends React.Component {
                                 glyph: 'arrow-left',
                                 tooltipId: "annotations.back",
                                 visible: this.props.showBack,
-                                onClick: () => { this.props.onCancel(); this.props.onCleanHighlight(); }
-                            }, {
-                                glyph: 'zoom-to',
-                                tooltipId: "annotations.zoomTo",
-                                visible: true,
-                                onClick: () => { this.zoom(); }
+                                onClick: () => {
+                                    this.props.onCancelEdit(this.props?.feature?.properties);
+                                    this.props.onCancel(); this.props.onCleanHighlight();
+                                }
                             }, {
                                 glyph: "pencil",
                                 tooltipId: "annotations.edit",
@@ -280,7 +343,7 @@ class AnnotationsEditor extends React.Component {
                                 glyph: 'download',
                                 tooltip: <Message msgId="annotations.downloadcurrenttooltip" />,
                                 visible: true,
-                                onClick: () => { this.props.onDownload(this.props.feature); }
+                                onClick: () => { this.props.onDownload(this.props.features); }
                             }
                             ]} />
                     </Col>
@@ -288,59 +351,6 @@ class AnnotationsEditor extends React.Component {
             </Grid>);
     };
 
-    renderEditingButtons = () => {
-        return (<Grid className="mapstore-annotations-info-viewer-buttons" fluid>
-            <Row className="text-center noTopMargin">
-                <Col xs={12}>
-                    <Toolbar
-                        btnDefaultProps={{ className: 'square-button-md', bsStyle: 'primary' }}
-                        buttons={[{
-                            glyph: 'arrow-left',
-                            tooltipId: "annotations.back",
-                            visible: true,
-                            onClick: () => {
-                                if (this.props.unsavedChanges) {
-                                    this.props.onToggleUnsavedChangesModal();
-                                } else {
-                                    this.cancelEdit();
-                                }
-                            }
-                        }, {
-                            glyph: "pencil-add",
-                            Element: DropdownFeatureType,
-                            tooltipId: "annotations.addMarker",
-                            visible: true,
-                            onClick: this.props.onAddGeometry,
-                            onAddText: this.props.onAddText,
-                            onSetStyle: this.props.onSetStyle,
-                            style: this.props.selected && this.props.selected.style || this.props.editing.style,
-                            onStartDrawing: this.props.onStartDrawing,
-                            disabled: !this.props.config.multiGeometry && this.props.editing && this.props.editing.features && this.props.editing.features.length,
-                            drawing: this.props.drawing,
-                            titles: {
-                                marker: <Message msgId="annotations.titles.marker" />,
-                                line: <Message msgId="annotations.titles.line" />,
-                                polygon: <Message msgId="annotations.titles.polygon" />,
-                                circle: <Message msgId="annotations.titles.circle" />,
-                                text: <Message msgId="annotations.titles.text" />
-                            },
-                            bsStyle: this.props.drawing ? "success" : "primary"
-                        }, {
-                            glyph: 'polygon-trash',
-                            tooltipId: "annotations.deleteGeometry",
-                            visible: this.props.editing && this.props.editing.features && this.props.editing.features.length,
-                            onClick: this.props.onDeleteGeometry
-                        }, {
-                            glyph: 'floppy-disk',
-                            tooltipId: "annotations.save",
-                            visible: true,
-                            onClick: this.save
-                        }
-                        ]} />
-                </Col>
-            </Row>
-        </Grid>);
-    };
     renderEditingCoordButtons = () => {
         return (<Grid className="mapstore-annotations-info-viewer-buttons" fluid>
             <Row className="text-center noTopMargin">
@@ -352,8 +362,10 @@ class AnnotationsEditor extends React.Component {
                                 glyph: 'arrow-left',
                                 tooltipId: "annotations.back",
                                 visible: true,
+                                disabled: this.props?.selected?.properties
+                                    && !this.props?.selected?.properties?.isValidFeature || false,
                                 onClick: () => {
-                                    if (this.props.styling) {
+                                    if (this.props.styling && this.isMeasureEditDisabled()) {
                                         if (this.props.unsavedStyle) {
                                             this.props.onToggleUnsavedStyleModal();
                                         } else {
@@ -361,37 +373,38 @@ class AnnotationsEditor extends React.Component {
                                         }
                                     } else if (this.props.unsavedGeometry) {
                                         this.props.onToggleUnsavedGeometryModal();
+                                    } else if (this.props.unsavedChanges) {
+                                        this.props.onToggleUnsavedChangesModal();
                                     } else {
                                         this.props.onResetCoordEditor();
+                                        this.props.onCancelEdit(this.props.editing?.properties);
+                                        // Reset geometry editor tab
+                                        this.setState({...this.state, tabValue: 'coordinates'});
                                     }
+
                                 }
                             }, {
                                 glyph: 'trash',
-                                tooltipId: "annotations.deleteFeature",
-                                visible: !this.props.styling,
-                                onClick: this.props.onToggleDeleteFtModal
-                            }, {
-                                glyph: 'dropper',
-                                tooltipId: "annotations.styleGeometry",
-                                visible: !this.props.styling && this.props.selected,
-                                onClick: this.props.onStyleGeometry
-                            }, {// only in styler
-                                glyph: 'ok',
-                                tooltipId: "annotations.applyStyle",
-                                visible: this.props.styling,
+                                tooltipId: "annotations.remove",
+                                disabled: !this.props.annotations.length,
+                                visible: !this.props.selected,
                                 onClick: () => {
-                                    this.props.onSaveStyle();
-                                    this.props.onSetUnsavedStyle(false);
+                                    this.setState({removing: this.props.id});
                                 }
-                            }, {// only in coord editor
+                            }, {
                                 glyph: 'floppy-disk',
-                                tooltipId: "annotations.save",
-                                visible: !this.props.styling,
+                                tooltipId: !isEmpty(this.props.selected) ? "annotations.saveGeometry" : "annotations.save",
                                 disabled: this.props.selected && this.props.selected.properties && !this.props.selected.properties.isValidFeature,
+                                onClick: () => this.save()
+                            },
+                            {
+                                glyph: 'download',
+                                tooltip: <Message msgId="annotations.downloadcurrenttooltip" />,
+                                disabled: Object.keys(this.validate()).length !== 0 || this.props.unsavedChanges,
+                                visible: !this.props.selected,
                                 onClick: () => {
-                                    if (this.props.selected) {
-                                        this.props.onAddNewFeature();
-                                    }
+                                    const {newFeature, ...features} = this.props.editing;
+                                    this.props.onDownload(features);
                                 }
                             }
                         ]} />
@@ -400,10 +413,13 @@ class AnnotationsEditor extends React.Component {
         </Grid>);
     };
 
-    renderButtons = (editing, coordinateEditorEnabled) => {
-        const toolbar = editing ?
-            coordinateEditorEnabled ? this.renderEditingCoordButtons() : this.renderEditingButtons()
-            : this.renderViewButtons();
+    renderButtons = (editing) => {
+        let toolbar;
+        if (editing) {
+            toolbar = this.renderEditingCoordButtons();
+        } else {
+            toolbar = this.renderViewButtons();
+        }
         return (<div className="mapstore-annotations-info-viewer-buttons">{toolbar}</div>);
     };
 
@@ -412,7 +428,8 @@ class AnnotationsEditor extends React.Component {
         if (editing) {
             switch (field.type) {
             case 'html':
-                return <ReactQuill value={fieldValue || ''} onChange={(val) => { this.change(field.name, val); if (!this.props.unsavedChanges) { this.props.onSetUnsavedChanges(true); } }} />;
+                return (<ReactQuill value={fieldValue || ''} onChange={(val) => { this.change(field.name, val); if (!this.props.unsavedChanges) { this.props.onSetUnsavedChanges(true); } }}
+                />);
             case 'component':
                 const Component = fieldValue;
                 return <prop editing value={<Component annotation={this.props.feature} />} onChange={(e) => { this.change(field.name, e.target.value); if (!this.props.unsavedChanges) { this.props.onSetUnsavedChanges(true); } }} />;
@@ -450,71 +467,42 @@ class AnnotationsEditor extends React.Component {
         });
     };
 
-    renderStylerBody = () => {
-        return (<Manager
-            onChangeStyle={(style) => {
-                this.props.onSetStyle(style);
-                this.props.onSetUnsavedStyle(true);
-                this.props.onSetUnsavedChanges(true);
-            }}
-            pointType={this.props.pointType}
-            onChangePointType={this.props.onChangePointType}
-            style={this.props.selected && this.props.selected.style || this.props.editing.style}
-            width={this.props.width}
-            symbolsPath={this.props.symbolsPath}
-            onSetErrorSymbol={this.props.onSetErrorSymbol}
-            symbolErrors={this.props.symbolErrors}
-            onUpdateSymbols={this.props.onUpdateSymbols}
-            symbolList={this.props.symbolList}
-            defaultShape={this.props.defaultShape}
-            lineDashOptions={this.props.lineDashOptions}
-            markersOptions={this.getConfig()}
-            textRotationStep={this.props.textRotationStep}
-        />);
-    };
-
-    renderStyler = () => {
-        return (<BorderLayout
-            className="mapstore-annotations-info-viewer-styler-container">
-            {this.renderStylerBody("marker" || this.props.stylerType)}
-        </BorderLayout>);
-    };
-
     renderBody = (editing) => {
         const items = this.getBodyItems(editing);
         if (items.length === 0) {
             return null;
         }
+
         return (<div className={"mapstore-annotations-info-viewer-items" + (this.props.styling ? " mapstore-annotations-info-viewer-styler" : "")}>
-            {this.props.styling ? this.renderStyler() : (
-                <Grid fluid>
-                    {!this.props.coordinateEditorEnabled && <Row>
-                        <Col xs={12}>
-                            {items}
-                        </Col>
-                    </Row>
-                    }
-                    {this.props.coordinateEditorEnabled && <Row>
-                        <Col xs={12}>
-                            <GeometryEditor
-                                options={this.props.config && this.props.config.geometryEditorOptions}
-                                drawing={this.props.drawing}
-                                aeronauticalOptions={this.props.aeronauticalOptions}
-                                selected={this.props.selected}
-                                featureType={this.props.featureType}
-                                format={this.props.format}
-                                mapProjection={this.props.mapProjection}
-                                onChange={this.props.onChangeSelected}
-                                onChangeRadius={this.props.onChangeRadius}
-                                onChangeFormat={this.props.onChangeFormat}
-                                onHighlightPoint={this.props.onHighlightPoint}
-                                onSetInvalidSelected={this.props.onSetInvalidSelected}
-                                onChangeText={this.props.onChangeText}
-                            />
-                        </Col>
-                    </Row>}
-                </Grid>
-            )}
+            <div>
+                {items}
+                {editing && <FeaturesList
+                    editing={this.props.editing}
+                    selected={this.props.selected}
+                    onAddGeometry={this.props.onAddGeometry}
+                    onSetStyle={this.props.onSetStyle}
+                    onStartDrawing={this.props.onStartDrawing}
+                    onAddText={this.props.onAddText}
+                    onDeleteGeometry={this.props.onDeleteGeometry}
+                    onZoom={this.props.onZoom}
+                    maxZoom={this.props.maxZoom}
+                    setTabValue={this.setTabValue}
+                    styling={this.props.styling}
+                    onStyleGeometry={this.props.onStyleGeometry}
+                    onSelectFeature={this.props.onSelectFeature}
+                    drawing={this.props.drawing}
+                    onUnselectFeature={this.props.onUnSelectFeature}
+                    onGeometryHighlight={this.props.onGeometryHighlight}
+                    isMeasureEditDisabled={this.isMeasureEditDisabled()}
+                    onSetAnnotationMeasurement={this.setAnnotationMeasurement}
+                    setPopupWarning={this.setPopupWarning}
+                    showPopupWarning={this.props.showPopupWarning}
+                    geodesic={this.props.geodesic}
+                    defaultPointType={this.getConfig().defaultPointType}
+                    defaultStyles={this.props.defaultStyles}
+                />
+                }
+            </div>
         </div>);
     };
 
@@ -529,7 +517,7 @@ class AnnotationsEditor extends React.Component {
                 show
                 modal
                 onClose={this.props.onCancelClose}
-                onConfirm={this.props.onConfirmClose}
+                onConfirm={()=> this.props.onConfirmClose(this.props.editing?.properties)}
                 confirmButtonBSStyle="default"
                 closeGlyph="1-close"
                 confirmButtonContent={<Message msgId="annotations.confirm" />}
@@ -541,7 +529,10 @@ class AnnotationsEditor extends React.Component {
                 show
                 modal
                 onClose={this.props.onToggleUnsavedChangesModal}
-                onConfirm={() => { this.props.onCancelEdit(); this.props.onToggleUnsavedChangesModal(); }}
+                onConfirm={() => {
+                    this.props.selected && this.props.onResetCoordEditor();
+                    this.props.onCancelEdit(this.props.editing?.properties); this.props.onToggleUnsavedChangesModal();
+                }}
                 confirmButtonBSStyle="default"
                 closeGlyph="1-close"
                 confirmButtonContent={<Message msgId="annotations.confirm" />}
@@ -566,7 +557,15 @@ class AnnotationsEditor extends React.Component {
                 show
                 modal
                 onClose={this.props.onToggleUnsavedStyleModal}
-                onConfirm={() => { this.props.onCancelStyle(); this.props.onToggleUnsavedStyleModal(); }}
+                onConfirm={() => {
+                    this.props.onCancelStyle();
+                    this.props.onToggleUnsavedStyleModal();
+                    if (this.isMeasureEditDisabled()) {
+                        this.setTabValue('coordinates');
+                    } else {
+                        this.setTabValue('style');
+                    }
+                }}
                 confirmButtonBSStyle="default"
                 closeGlyph="1-close"
                 confirmButtonContent={<Message msgId="annotations.confirm" />}
@@ -585,26 +584,52 @@ class AnnotationsEditor extends React.Component {
                 closeText={<Message msgId="annotations.cancel" />}>
                 <Message msgId="annotations.undoDeleteFeature" />
             </ConfirmDialog></Portal>);
-        } else if (this.state.removing) {
+        } else if (this.state.removing || this.props.removing) {
             return (<Portal><ConfirmDialog
                 show
                 modal
-                onClose={() => {
-                    this.setState({removing: null});
+                onClose={()=>{
+                    this.state.removing && this.setState({removing: null});
                     this.props.onCancelRemove();
                 }}
+                focusConfirm={this.props.removing}
                 onConfirm={() => {
-                    this.setState({removing: null});
-                    this.props.onConfirmRemove(this.state.removing);
+                    if (this.state.removing) {
+                        this.setState({removing: null});
+                        this.props.onConfirmRemove(this.state.removing, "features");
+                    } else {
+                        this.props.onConfirmRemove(this.props.removing, "geometry");
+                    }
                 }}
                 confirmButtonBSStyle="default"
                 closeGlyph="1-close"
                 confirmButtonContent={<Message msgId="annotations.confirm" />}
                 closeText={<Message msgId="annotations.cancel" />}>
                 {this.props.mode === 'editing' ? <Message msgId="annotations.removegeometry"/> :
-                    <Message msgId="annotations.removeannotation" msgParams={{title: this.props.feature && this.props.feature.properties && this.props.feature.properties.title}}/>}
+                    <Message msgId="annotations.removeannotation" msgParams={{title: this.props?.feature?.properties?.title}}/>}
+            </ConfirmDialog></Portal>);
+        } else if (this.state.showPopupWarning && this.props.showPopupWarning) {
+            return (<Portal><ConfirmDialog
+                show
+                modal
+                title={<Message msgId="annotations.warning" />}
+                onClose={this.hideWarning}
+                onConfirm={this.setAnnotationMeasurement}
+                confirmButtonBSStyle="default"
+                closeGlyph="1-close"
+                confirmButtonContent={<Message msgId="annotations.confirm" />}
+                closeText={<Message msgId="annotations.cancel" />}>
+                <span>
+                    <p><Message msgId="annotations.measureWarningText" /></p>
+                    <p>
+                        <Checkbox {...{checked: this.props.showAgain, onClick: this.props.onToggleShowAgain}}>
+                            <Message msgId="annotations.notShowAgain"/>
+                        </Checkbox>
+                    </p>
+                </span>
             </ConfirmDialog></Portal>);
         }
+
         return null;
     }
 
@@ -618,24 +643,128 @@ class AnnotationsEditor extends React.Component {
                 this.props.onCleanHighlight();
             }
         } : {};
+        const type = this.props.selected ? getGeometryType(this.props.selected) : "";
+        const {glyph = "", label = ""} = isEmpty(type) ? {} : getGeometryGlyphInfo(type);
         return (
-            <div className={"mapstore-annotations-info-viewer" + (this.props.mouseHoverEvents ? " hover-background" : "")} {...mouseHoverEvents}>
-                {this.renderButtons(editing, this.props.coordinateEditorEnabled)}
-                {this.renderError(editing)}
-                {this.renderModals()}
-                {this.renderBody(editing)}
+            <div style={{display: "flex"}} className={"mapstore-annotations-info-viewer" + (this.props.mouseHoverEvents ? " hover-background" : "")} {...mouseHoverEvents}>
+                <div style={{flex: 1}}>
+                    {this.renderButtons(editing)}
+                    {this.renderError(editing)}
+                    {this.renderModals()}
+                    {this.renderBody(editing)}
+                </div>
+                {!isEmpty(this.props.selected) &&
+                    <div className="mapstore-annotations-info-viewer-expanded">
+                        <div style={{padding: 8, display: 'flex', alignItems: 'center'}}>
+                            <Glyphicon glyph={glyph} style={{fontSize: 20, paddingRight: 8}}/>
+                            <div style={{flex: 1}}>
+                                <FormControl
+                                    value={this.props.selected?.properties?.geometryTitle || label || this.props.selected?.properties?.id}
+                                    name="text"
+                                    placeholder="Enter geometry title"
+                                    onChange={e => {
+                                        const valueText = e.target.value.trim();
+                                        this.props.onChangeGeometryTitle(valueText ? valueText : label);
+                                    }}
+                                    type="text"/>
+                            </div>
+                        </div>
+                        {this.props.selected?.properties?.isText && <div style={{padding: 8}}>
+                            <FormGroup>
+                                <FormGroup validationState={!this.props.selected?.properties.valueText ? "error" : null}>
+                                    <ControlLabel><Message msgId="annotations.editor.text"/></ControlLabel>
+                                    <FormControl
+                                        value={this.props.selected?.properties?.valueText || ''}
+                                        name="text"
+                                        placeholder="text value"
+                                        onChange={e => {
+                                            const valueText = e.target.value;
+                                            const components = this.props?.selected?.geometry?.coordinates?.length ?
+                                                getComponents(this.props.selected.geometry) : [];
+                                            if (this.validateText(components, valueText )) {
+                                                this.props.onChangeText(valueText, components.map(coordToArray));
+                                            } else if (valueText !== "") {
+                                                this.props.onChangeText(valueText, components.map(coordToArray));
+                                            } else {
+                                                this.props.onChangeText("", components.map(coordToArray));
+                                                this.props.onSetInvalidSelected("text", components.map(coordToArray));
+                                            }
+                                        }}
+                                        type="text"/>
+                                </FormGroup>
+                            </FormGroup>
+                        </div>}
+                        <Nav bsStyle="tabs" activeKey={this.state.tabValue} justified>
+                            {this.isMeasureEditDisabled() && <NavItem
+                                key="coordinates"
+                                eventKey="coordinates"
+                                onClick={() => {
+                                    this.setTabValue('coordinates');
+                                    this.props.onStyleGeometry(false);
+                                }}>
+                                <Message msgId={"annotations.tabCoordinates"}/>
+                            </NavItem>
+                            }
+                            <NavItem
+                                key="style"
+                                eventKey="style"
+                                onClick={() => {
+                                    this.setTabValue('style');
+                                    this.props.onStyleGeometry(true);
+                                }}>
+                                <Message msgId={"annotations.tabStyle"}/>
+                            </NavItem>
+                        </Nav>
+                        <div className={'tab-container'}>
+                            {this.state.tabValue === 'coordinates' &&
+                            <GeometryEditor
+                                options={this.props.config && this.props.config.geometryEditorOptions}
+                                drawing={this.props.drawing}
+                                aeronauticalOptions={this.props.aeronauticalOptions}
+                                selected={this.props.selected}
+                                featureType={this.props.featureType}
+                                format={this.props.format}
+                                mapProjection={this.props.mapProjection}
+                                onChange={this.props.onChangeSelected}
+                                onChangeRadius={this.props.onChangeRadius}
+                                onChangeFormat={this.props.onChangeFormat}
+                                onHighlightPoint={this.props.onHighlightPoint}
+                                onSetInvalidSelected={this.props.onSetInvalidSelected}
+                                onChangeText={this.props.onChangeText}
+                                renderer={"annotations"}
+                            />
+                            }
+                            {this.state.tabValue === 'style' &&
+                            <Manager
+                                onChangeStyle={(style) => {
+                                    this.props.onSetStyle(style);
+                                    this.props.onSetUnsavedStyle(true);
+                                    this.props.onSetUnsavedChanges(true);
+                                }}
+                                pointType={this.props.pointType}
+                                style={this.props.selected && this.props.selected.style || this.props.editing.style}
+                                width={this.props.width}
+                                symbolsPath={this.props.symbolsPath}
+                                onSetErrorSymbol={this.props.onSetErrorSymbol}
+                                symbolErrors={this.props.symbolErrors}
+                                onUpdateSymbols={this.props.onUpdateSymbols}
+                                symbolList={this.props.symbolList}
+                                defaultShape={this.props.defaultShape}
+                                defaultShapeSize={this.props.defaultShapeSize}
+                                defaultShapeFillColor={this.props.defaultShapeFillColor}
+                                defaultShapeStrokeColor={this.props.defaultShapeStrokeColor}
+                                defaultStyles={this.props.defaultStyles}
+                                lineDashOptions={this.props.lineDashOptions}
+                                markersOptions={this.getConfig()}
+                                textRotationStep={this.props.textRotationStep}
+                            />
+                            }
+                        </div>
+                    </div>
+                }
             </div>
         );
     }
-
-    zoom = () => {
-        const extent = bbox(this.props.feature);
-        this.props.onZoom(extent, 'EPSG:4326', this.props.maxZoom);
-    }
-
-    cancelEdit = () => {
-        this.props.onCancelEdit();
-    };
 
     change = (field, value) => {
         this.props.onChangeProperties(field, value);
@@ -687,15 +816,67 @@ class AnnotationsEditor extends React.Component {
 
     };
 
+    validateText = (components, valueText) => {
+        if (components && components.length) {
+            const cmp = head(components);
+            return !!valueText && validateCoords(cmp);
+        }
+        return false;
+    }
+
     save = () => {
-        const errors = this.validate();
-        if (Object.keys(errors).length === 0) {
-            this.props.onSave(this.props.id, assign({}, this.props.editedFields),
-                this.props.editing.features, this.props.editing.style, this.props.editing.newFeature || false, this.props.editing.properties);
+        if (!isEmpty(this.props.selected)) {
+            this.props.onAddNewFeature();
         } else {
-            this.props.onError(errors);
+            const errors = this.validate();
+            if (Object.keys(errors).length === 0) {
+                this.props.onError({});
+                this.props.onSave(this.props.id, assign({}, this.props.editedFields),
+                    this.props.editing.features, this.props.editing.style, this.props.editing.newFeature || false, {
+                        ...this.props.editing.properties,
+                        visibility: !isUndefined(this.props.editing.properties.visibility)
+                            ? this.props.editing.properties.visibility
+                            : this.props.editing.visibility
+                    }
+                );
+            } else {
+                this.props.onError(errors);
+            }
         }
     };
+
+    setTabValue = (tabValue) =>{
+        if (this.state.tabValue !== tabValue) {
+            this.setState({...this.state, tabValue});
+        }
+    }
+
+    setPopupWarning = (showPopupWarning) =>{
+        this.setState({...this.state, showPopupWarning});
+    }
+
+    isMeasureEditDisabled = () => {
+        const isMeasureAnnotation = this.props.editing?.properties?.type === MEASURE_TYPE || false;
+        return !this.props.measurementAnnotationEdit || !isMeasureAnnotation;
+    }
+
+    setAnnotationMeasurement = () => {
+        // Excluding geometry types not supported by measurement
+        this.props.onSetAnnotationMeasurement(this.props.editing.features.filter(f=> f.geometry.type !== 'Point' && !f.properties.isCircle), this.props.editing?.properties);
+        this.hideWarning();
+    }
+
+    hideWarning = () => {
+        if (this.props.showAgain) {
+            try {
+                getApi().setItem("showPopupWarning", false);
+            } catch (e) {
+                console.error(e);
+            }
+            this.props.onHideMeasureWarning();
+        }
+        this.setPopupWarning(false);
+    }
 }
 
-module.exports = AnnotationsEditor;
+export default AnnotationsEditor;

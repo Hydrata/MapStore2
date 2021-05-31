@@ -1,11 +1,11 @@
-const React = require('react');
-const Message = require('../../I18N/Message');
-const emptyState = require('../../misc/enhancers/emptyState');
+import emptyState from '../../misc/enhancers/emptyState';
+import WidgetEmptyMessage from '../widget/WidgetEmptyMessage';
 
-module.exports = emptyState(
+export default emptyState(
     ({text} = {}) => !text,
-    ({iconFit} = {}) => ({
-        iconFit,
-        tooltip: <Message msgId="widgets.errors.notext" />
-    })
+    () => ({
+        glyph: 'sheet',
+        messageId: 'widgets.errors.notext'
+    }),
+    WidgetEmptyMessage
 );

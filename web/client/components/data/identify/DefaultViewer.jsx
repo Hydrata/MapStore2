@@ -6,15 +6,16 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const React = require('react');
-const PropTypes = require('prop-types');
-const MapInfoUtils = require('../../../utils/MapInfoUtils');
-const HTML = require('../../../components/I18N/HTML');
-const Message = require('../../../components/I18N/Message');
-const {Alert, Panel, Accordion} = require('react-bootstrap');
-const ViewerPage = require('./viewers/ViewerPage');
-const {isEqual} = require('lodash');
-const {getFormatForResponse} = require('../../../utils/IdentifyUtils');
+import React from 'react';
+
+import PropTypes from 'prop-types';
+import { getDefaultInfoFormatValue, getValidator, getViewers, getViewer } from '../../../utils/MapInfoUtils';
+import HTML from '../../../components/I18N/HTML';
+import Message from '../../../components/I18N/Message';
+import { Alert, Panel, Accordion } from 'react-bootstrap';
+import ViewerPage from './viewers/ViewerPage';
+import { isEmpty, reverse } from 'lodash';
+import { getFormatForResponse } from '../../../utils/IdentifyUtils';
 
 class DefaultViewer extends React.Component {
     static propTypes = {
@@ -35,48 +36,75 @@ class DefaultViewer extends React.Component {
         onPrevious: PropTypes.func,
         onUpdateIndex: PropTypes.func,
         setIndex: PropTypes.func,
-        showEmptyMessageGFI: PropTypes.bool
+        showEmptyMessageGFI: PropTypes.bool,
+        renderEmpty: PropTypes.bool,
+        loaded: PropTypes.bool,
+        isMobile: PropTypes.bool
     };
 
     static defaultProps = {
-        format: MapInfoUtils.getDefaultInfoFormatValue(),
+        format: getDefaultInfoFormatValue(),
         responses: [],
+        requests: [],
         missingResponses: 0,
         collapsible: false,
         headerOptions: {},
         container: Accordion,
-        validator: MapInfoUtils.getValidator,
-        viewers: MapInfoUtils.getViewers(),
+        validator: getValidator,
+        viewers: getViewers(),
         style: {
             position: "relative",
             marginBottom: 0
         },
         containerProps: {},
-        index: 0,
         showEmptyMessageGFI: true,
+        renderEmpty: false,
         onNext: () => {},
         onPrevious: () => {},
-        setIndex: () => {}
+        setIndex: () => {},
+        isMobile: false
     };
-
-    UNSAFE_componentWillReceiveProps(nextProps) {
-        // reset current page on new requests set
-        if (!isEqual(nextProps.responses, this.props.responses)) {
-            this.props.setIndex(0);
-        }
-    }
 
     shouldComponentUpdate(nextProps) {
         return nextProps.responses !== this.props.responses || nextProps.missingResponses !== this.props.missingResponses || nextProps.index !== this.props.index;
     }
 
-    renderEmptyLayers = (validator) => {
-        const notEmptyResponses = validator.getValidResponses(this.props.responses).length;
+    /**
+     * Get validation properties of the responses
+     */
+    getResponseProperties = () => {
+        const validator = this.props.validator(this.props.format);
+        const responses = this.props.responses.map(res => res === undefined ? {} : res); // Replace any undefined responses
+        const validResponses = this.props.renderEmpty ? validator.getValidResponses(responses) : responses;
         const invalidResponses = validator.getNoValidResponses(this.props.responses);
-        if (this.props.missingResponses === 0 && notEmptyResponses === 0) {
+        const emptyResponses = this.props.requests.length === invalidResponses.length;
+        const currResponse = this.getCurrentResponse(validResponses[this.props.index]);
+        return {
+            validResponses,
+            currResponse,
+            emptyResponses,
+            invalidResponses
+        };
+    }
+
+    /**
+     * Identify current response is valid
+     */
+    getCurrentResponse = (response) => {
+        const validator = this.props.validator(this.props.format);
+        return validator.getValidResponses([response]);
+    }
+
+    renderEmptyLayers = () => {
+        const {invalidResponses, emptyResponses} = this.getResponseProperties();
+        if (this.props.missingResponses === 0 && emptyResponses) {
             return null;
         }
-        if (invalidResponses.length !== 0) {
+        let allowRender = invalidResponses.length !== 0;
+        if (!this.props.renderEmpty) {
+            allowRender =  allowRender && this.props.missingResponses === 0;
+        }
+        if (allowRender) {
             const titles = invalidResponses.map((res) => {
                 const {layerMetadata} = res;
                 return layerMetadata.title;
@@ -99,72 +127,81 @@ class DefaultViewer extends React.Component {
         return null;
     };
 
-    renderPages = (responses) => {
-        if (this.props.missingResponses === 0 && responses.length === 0) {
+    renderEmptyPages = () => {
+        const {emptyResponses} = this.getResponseProperties();
+        if (this.props.missingResponses === 0 && emptyResponses) {
             return (
                 <Alert bsStyle={"danger"}>
                     <h4><HTML msgId="noFeatureInfo"/></h4>
                 </Alert>
             );
         }
+        return null;
+    }
+
+    renderPages = () => {
+        const {validResponses: responses} = this.getResponseProperties();
         return responses.map((res, i) => {
             const {response, layerMetadata} = res;
             const format = getFormatForResponse(res, this.props);
             const PageHeader = this.props.header;
             let customViewer;
-            if (layerMetadata.viewer && layerMetadata.viewer.type) {
-                customViewer = MapInfoUtils.getViewer(layerMetadata.viewer.type);
+            if (layerMetadata?.viewer?.type) {
+                customViewer = getViewer(layerMetadata.viewer.type);
             }
-            return (
-                <Panel
-                    eventKey={i}
-                    key={i}
-                    collapsible={this.props.collapsible}
-                    header={PageHeader ? <span><PageHeader
-                        size={responses.length}
-                        {...this.props.headerOptions}
-                        {...layerMetadata}
-                        index={this.props.index}
-                        onNext={() => this.props.onNext()}
-                        onPrevious={() => this.props.onPrevious()}/></span> : null
-                    }
-                    style={this.props.style}>
-                    <ViewerPage
-                        response={response}
-                        format={format}
-                        viewers={customViewer || this.props.viewers}
-                        layer={layerMetadata}/>
-                </Panel>
-            );
+            return (<Panel
+                eventKey={i}
+                key={i}
+                collapsible={this.props.collapsible}
+                header={PageHeader ? <span><PageHeader
+                    size={responses.length}
+                    {...this.props.headerOptions}
+                    {...layerMetadata}
+                    index={this.props.index}
+                    onNext={() => this.props.onNext()}
+                    onPrevious={() => this.props.onPrevious()}/></span> : null
+                }
+                style={this.props.style}>
+                <ViewerPage
+                    response={response}
+                    format={format}
+                    viewers={customViewer || this.props.viewers}
+                    layer={layerMetadata}/>
+            </Panel>);
         });
-    };
-
-    renderAdditionalInfo = () => {
-        const validator = this.props.validator(this.props.format);
-        if (validator) {
-            return this.renderEmptyLayers(validator);
-        }
-        return null;
     };
 
     render() {
         const Container = this.props.container;
-        const validator = this.props.validator(this.props.format);
-        const validResponses = validator.getValidResponses(this.props.responses);
-        return (<div className="mapstore-identify-viewer">
+        const {currResponse, emptyResponses} = this.getResponseProperties();
+        let componentOrder = [this.renderEmptyLayers(),
             <Container {...this.props.containerProps}
-                onChangeIndex={(index) => { this.props.setIndex(index); }}
+                onChangeIndex={(index) => {
+                    this.props.setIndex(index);
+                }}
                 ref="container"
                 index={this.props.index || 0}
                 key={"swiper"}
-                className="swipeable-view"
-            >
-                {this.renderPages(validResponses)}
+                style={this.containerStyle(currResponse)}
+                className="swipeable-view">
+                {this.renderPages()}
             </Container>
-            {this.renderAdditionalInfo()}
-        </div>)
-        ;
+        ];
+        // Display renderEmptyPages at top in mobile for seamless swipeable view
+        componentOrder = this.props.isMobile ? componentOrder : reverse(componentOrder);
+        return (
+            <div className="mapstore-identify-viewer">
+                {!emptyResponses ? componentOrder.map((c)=> c) : this.renderEmptyPages()}
+            </div>
+        );
+    }
+
+    containerStyle = (currResponse) => {
+        if (isEmpty(currResponse) && this.props.isMobile) {
+            return {height: "100%"};
+        }
+        return {display: isEmpty(currResponse) ? 'none' : 'block'};
     }
 }
 
-module.exports = DefaultViewer;
+export default DefaultViewer;

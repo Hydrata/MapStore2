@@ -5,36 +5,38 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
+
 import React from 'react';
-import { connect } from 'react-redux';
-import { compose, withProps, withHandlers, setObservableConfig } from 'recompose';
-// TODO: externalize
-import rxjsConfig from 'recompose/rxjsObservableConfig';
-setObservableConfig(rxjsConfig);
-
-import { createSelector } from 'reselect';
-import { createPlugin } from '../utils/PluginsUtils';
-import Message from '../components/I18N/Message';
 import {Glyphicon} from 'react-bootstrap';
+import { connect } from 'react-redux';
+import { compose, setObservableConfig, withHandlers, withProps } from 'recompose';
+import rxjsConfig from 'recompose/rxjsObservableConfig';
+import { createSelector } from 'reselect';
 
-
-import { Controls } from '../utils/GeoStoryUtils';
-
-import { userSelector, isLoggedIn } from '../selectors/security';
-
+import { clearSaveError, saveStory, setControl } from '../actions/geostory';
+import Message from '../components/I18N/Message';
+import handleSaveModal from '../components/resources/modals/enhancers/handleSaveModal';
+import Save from '../components/resources/modals/Save';
+import geostory from '../reducers/geostory';
 import {
-    saveDialogSelector,
     currentStorySelector,
-    resourceSelector,
     loadingSelector,
+    resourceSelector,
+    saveDialogSelector,
     saveErrorSelector
 } from '../selectors/geostory';
-import { saveStory, clearSaveError, setControl } from '../actions/geostory';
-import handleSaveModal from '../components/resources/modals/enhancers/handleSaveModal';
-import geostory from '../reducers/geostory';
+import { isLoggedIn, userSelector } from '../selectors/security';
+import { Controls } from '../utils/GeoStoryUtils';
+import { createPlugin } from '../utils/PluginsUtils';
+
+// TODO: externalize
+
+setObservableConfig(rxjsConfig);
+
 
 /**
  * Save dialog component enhanced for GeoStory
+ * @ignore
  *
  */
 const SaveBaseDialog = compose(
@@ -59,10 +61,11 @@ const SaveBaseDialog = compose(
         category: "GEOSTORY"
     }),
     handleSaveModal
-)(require('../components/resources/modals/Save'));
+)(Save);
 
 /**
- * Plugin for GeoStory Save
+ * Implements "save" button for geostories, to render in the {@link #plugins.BurgerMenu|BurgerMenu}}
+ * @class
  * @name GeoStorySave
  * @memberof plugins
  */
@@ -72,7 +75,10 @@ export const GeoStorySave = createPlugin('GeoStorySave', {
             saveDialogSelector,
             resourceSelector,
             (showSave, resource) => ({ show: showSave === "save", resource })
-        ))
+        )),
+        withProps(({resource}) => ({
+            isNewResource: !resource?.id
+        }))
     )(SaveBaseDialog),
     reducers: { geostory },
     containers: {
@@ -82,7 +88,7 @@ export const GeoStorySave = createPlugin('GeoStorySave', {
                 isLoggedIn,
                 resourceSelector,
                 (loggedIn, {canEdit, id} = {}) => ({
-                    style: loggedIn && (!id || id && canEdit) ? {} : { display: "none" }// the resource is new (no resource) or if present, is editable
+                    style: loggedIn && (id && canEdit) ? {} : { display: "none" } // save is present only if the resource already exists and you can save
                 })
             ),
             position: 1,
@@ -95,8 +101,9 @@ export const GeoStorySave = createPlugin('GeoStorySave', {
     }
 });
 /**
- * Plugin for GeoStory SaveAs functionality
- * @name GeoStorySaveAs
+ * Implements "save as" button for geostories, to render in the {@link #plugins.BurgerMenu|BurgerMenu}}
+ * @class
+ * @name GeoStorySave
  * @memberof plugins
  */
 export const GeoStorySaveAs = createPlugin('GeoStorySaveAs', {
@@ -104,7 +111,10 @@ export const GeoStorySaveAs = createPlugin('GeoStorySaveAs', {
         connect(createSelector(
             saveDialogSelector,
             (showSave) => ({ show: showSave === "saveAs" })
-        ))
+        )),
+        withProps({
+            isNewResource: true
+        })
     )(SaveBaseDialog),
     reducers: { geostory },
     containers: {
@@ -113,8 +123,8 @@ export const GeoStorySaveAs = createPlugin('GeoStorySaveAs', {
             selector: createSelector(
                 isLoggedIn,
                 resourceSelector,
-                (loggedIn, {id} = {}) => ({
-                    style: loggedIn && id ? {} : { display: "none" }// save as is present only if the resource already exists and you can save
+                (loggedIn ) => ({
+                    style: loggedIn ? {} : { display: "none" } // the  resource is new (no resource) or if present, is editable
                 })
             ),
             position: 2,

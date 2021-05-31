@@ -7,12 +7,13 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const expect = require('expect');
-const {head, last} = require('lodash');
+import expect from 'expect';
 
-const configureMockStore = require('redux-mock-store').default;
-const { createEpicMiddleware, combineEpics } = require('redux-observable');
-const {
+import { head, last } from 'lodash';
+import configureMockStore from 'redux-mock-store';
+import { createEpicMiddleware, combineEpics } from 'redux-observable';
+
+import {
     textSearch,
     selectSearchItem,
     TEXT_SEARCH_RESULTS_LOADED,
@@ -22,15 +23,18 @@ const {
     TEXT_SEARCH_NESTED_SERVICES_SELECTED,
     TEXT_SEARCH_TEXT_CHANGE,
     TEXT_SEARCH_ERROR,
-    zoomAndAddPoint, ZOOM_ADD_POINT,
-    searchLayerWithFilter
-} = require('../../actions/search');
-const {SHOW_NOTIFICATION} = require('../../actions/notifications');
-const {FEATURE_INFO_CLICK, SHOW_MAPINFO_MARKER} = require('../../actions/mapInfo');
-const {ZOOM_TO_EXTENT, ZOOM_TO_POINT} = require('../../actions/map');
-const {UPDATE_ADDITIONAL_LAYER} = require('../../actions/additionallayers');
-const {searchEpic, searchItemSelected, zoomAndAddPointEpic, searchOnStartEpic } = require('../search');
-const rootEpic = combineEpics(searchEpic, searchItemSelected, zoomAndAddPointEpic, searchOnStartEpic);
+    zoomAndAddPoint,
+    ZOOM_ADD_POINT,
+    searchLayerWithFilter,
+    showGFI
+} from '../../actions/search';
+
+import { SHOW_NOTIFICATION } from '../../actions/notifications';
+import { FEATURE_INFO_CLICK, SHOW_MAPINFO_MARKER } from '../../actions/mapInfo';
+import { ZOOM_TO_EXTENT, ZOOM_TO_POINT } from '../../actions/map';
+import { UPDATE_ADDITIONAL_LAYER } from '../../actions/additionallayers';
+import { searchEpic, searchItemSelected, zoomAndAddPointEpic, searchOnStartEpic, textSearchShowGFIEpic } from '../search';
+const rootEpic = combineEpics(searchEpic, searchItemSelected, zoomAndAddPointEpic, searchOnStartEpic, textSearchShowGFIEpic);
 const epicMiddleware = createEpicMiddleware(rootEpic);
 const mockStore = configureMockStore([epicMiddleware]);
 
@@ -38,7 +42,7 @@ const SEARCH_NESTED = 'SEARCH NESTED';
 const TEST_NESTED_PLACEHOLDER = 'TEST_NESTED_PLACEHOLDER';
 const STATE_NAME = 'STATE_NAME';
 
-const {testEpic, addTimeoutEpic} = require('./epicTestUtils');
+import { testEpic, addTimeoutEpic, TEST_TIMEOUT } from './epicTestUtils';
 
 const nestedService = {
     nestedPlaceholder: TEST_NESTED_PLACEHOLDER
@@ -204,7 +208,7 @@ describe('search Epics', () => {
     });
 
 
-    it('produces the selectSearchItem epic and GFI for single layer', () => {
+    it('produces the selectSearchItem epic and GFI for single layer', (done) => {
         let action = selectSearchItem({
             "id": "Feature_1",
             "type": "Feature",
@@ -230,18 +234,20 @@ describe('search Epics', () => {
             projection: "EPSG:4326"
         });
 
-        store.dispatch( action );
-
-        let actions = store.getActions();
-        expect(actions.length).toBe(6);
-        expect(actions[1].type).toBe(TEXT_SEARCH_RESULTS_PURGE);
-        expect(actions[2].type).toBe(FEATURE_INFO_CLICK);
-        expect(actions[2].itemId).toEqual("Feature_1");
-        expect(actions[2].filterNameList).toEqual(["gs:layername"]);
-        expect(actions[2].overrideParams).toEqual({"gs:layername": {info_format: "application/json"}});
-        expect(actions[3].type).toBe(SHOW_MAPINFO_MARKER);
-        expect(actions[4].type).toBe(ZOOM_TO_EXTENT);
-        expect(actions[5].type).toBe(TEXT_SEARCH_ADD_MARKER);
+        const NUM_ACTIONS = 6;
+        testEpic(addTimeoutEpic(searchItemSelected, 100), NUM_ACTIONS, action, (actions) => {
+            expect(actions.length).toBe(NUM_ACTIONS);
+            expect(actions[0].type).toBe(TEXT_SEARCH_RESULTS_PURGE);
+            expect(actions[1].type).toBe(FEATURE_INFO_CLICK);
+            expect(actions[1].itemId).toEqual("Feature_1");
+            expect(actions[1].filterNameList).toEqual(["gs:layername"]);
+            expect(actions[1].overrideParams).toEqual({"gs:layername": {info_format: "text/html", featureid: "Feature_1"}});
+            expect(actions[2].type).toBe(SHOW_MAPINFO_MARKER);
+            expect(actions[3].type).toBe(ZOOM_TO_EXTENT);
+            expect(actions[4].type).toBe(TEXT_SEARCH_ADD_MARKER);
+            expect(actions[5].type).toBe(TEST_TIMEOUT);
+            done();
+        }, {layers: {flat: [{name: "gs:layername", url: "base/web/client/test-resources/wms/GetFeature.json", visibility: true, featureInfo: {format: "HTML"}, queryable: true, type: "wms"}]}});
     });
 
     it('searchItemSelected epic with nested services', () => {
@@ -306,6 +312,86 @@ describe('search Epics', () => {
         expect(zoomToExtentAction.maxZoom).toExist();
         expect(zoomToExtentAction.maxZoom).toBe(15);
         expect(zoomToExtentAction.extent.length).toEqual(4);
+    });
+
+    it('searchItemSelected epic with a service with openFeatureInfoButtonEnabled=false', (done) => {
+        let action = selectSearchItem({
+            "id": "Feature_1",
+            "type": "Feature",
+            "bbox": [125, 10, 126, 11],
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [[100, 10], [100, 20]]
+            },
+            "properties": {
+                "name": "Dinagat Islands"
+            },
+            "__SERVICE__": {
+                launchInfoPanel: "single_layer",
+                openFeatureInfoButtonEnabled: false,
+                options: {
+                    typeName: "gs:layername"
+                }
+            }
+        }, {
+            size: {
+                width: 200,
+                height: 200
+            },
+            projection: "EPSG:4326"
+        });
+        const NUM_ACTIONS = 6;
+        testEpic(addTimeoutEpic(searchItemSelected, 100), NUM_ACTIONS, action, (actions) => {
+            let expectedActions = [ZOOM_TO_EXTENT, TEXT_SEARCH_ADD_MARKER, SHOW_MAPINFO_MARKER, FEATURE_INFO_CLICK, TEST_TIMEOUT];
+            let actionsType = actions.map(a => a.type);
+
+            expectedActions.forEach((a) => {
+                expect(actionsType.indexOf(a)).toNotBe(-1);
+            });
+            done();
+        }, {layers: {flat: [{name: "gs:layername", url: "base/web/client/test-resources/wms/GetFeature.json", visibility: true, featureInfo: {format: "HTML"}, queryable: true, type: "wms"}]}});
+    });
+
+    it('searchItemSelected epic with a service with openFeatureInfoButtonEnabled=true', (done) => {
+        let action = selectSearchItem({
+            "id": "Feature_1",
+            "type": "Feature",
+            "bbox": [125, 10, 126, 11],
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [[100, 10], [100, 20]]
+            },
+            "properties": {
+                "name": "Dinagat Islands"
+            },
+            "__SERVICE__": {
+                launchInfoPanel: "single_layer",
+                openFeatureInfoButtonEnabled: true,
+                options: {
+                    typeName: "gs:layername"
+                }
+            }
+        }, {
+            size: {
+                width: 200,
+                height: 200
+            },
+            projection: "EPSG:4326"
+        });
+        const NUM_ACTIONS = 4;
+        testEpic(addTimeoutEpic(searchItemSelected, 100), NUM_ACTIONS, action, (actions) => {
+            let expectedActions = [ZOOM_TO_EXTENT, TEXT_SEARCH_ADD_MARKER, SHOW_MAPINFO_MARKER];
+            let actionsType = actions.map(a => a.type);
+
+            expectedActions.forEach((a) => {
+                expect(actionsType.indexOf(a)).toNotBe(-1);
+            });
+
+            let featureInfoClickAction = actions.filter(m => m.type === FEATURE_INFO_CLICK);
+            expect(featureInfoClickAction).toExist();
+            expect(featureInfoClickAction.length).toBe(0);
+            done();
+        }, {layers: {flat: [{name: "gs:layername", url: "base/web/client/test-resources/wms/GetFeature.json", visibility: true, featureInfo: {format: "HTML"}, queryable: true, type: "wms"}]}});
     });
 
     it('zoomAndAddPointEpic ADD addiditonalLayer and zoom to point', () => {
@@ -514,5 +600,38 @@ describe('search Epics', () => {
             expect(actions[1].type).toBe(SHOW_MAPINFO_MARKER);
             done();
         }, {layers: {flat: [{name: "layerName", url: "base/web/client/test-resources/wms/GetFeature.json", visibility: true, queryable: true, type: "wms"}]}});
+    });
+    it('textSearchShowGFIEpic, it sends info format taken from layer', (done) => {
+        let action = showGFI(
+            {
+                layer: "layerName",
+                type: "Feature",
+                bbox: [125, 10, 126, 11],
+                geometry: {
+                    type: "Point",
+                    coordinates: [125.6, 10.1]
+                },
+                id: "layer_01",
+                "__SERVICE__": {
+                    launchInfoPanel: "single_layer",
+                    openFeatureInfoButtonEnabled: true,
+                    options: {
+                        typeName: "layerName",
+                        maxZoomLevel: 20
+                    }
+                }
+            });
+        const NUM_ACTIONS = 4;
+        testEpic(addTimeoutEpic(textSearchShowGFIEpic, 100), NUM_ACTIONS, action, (actions) => {
+            expect(actions).toExist();
+            expect(actions.length).toBe(NUM_ACTIONS);
+            expect(actions[0].type).toBe(FEATURE_INFO_CLICK);
+            expect(actions[0].overrideParams.layerName.info_format).toBe("text/html");
+            expect(actions[0].overrideParams.layerName.featureid).toBe("layer_01");
+            expect(actions[1].type).toBe(SHOW_MAPINFO_MARKER);
+            expect(actions[2].type).toBe(ZOOM_TO_EXTENT);
+            expect(actions[3].type).toBe(TEXT_SEARCH_ADD_MARKER);
+            done();
+        }, {layers: {flat: [{name: "layerName", url: "base/web/client/test-resources/wms/GetFeature.json", visibility: true, featureInfo: {format: "HTML"}, queryable: true, type: "wms"}]}});
     });
 });

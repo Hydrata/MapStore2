@@ -5,10 +5,10 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const React = require('react');
 
+import React from 'react';
 
-const Toolbar = require('../../../../misc/toolbar/Toolbar');
+import Toolbar from '../../../../misc/toolbar/Toolbar';
 
 const getSaveTooltipId = (step, { id } = {}) => {
     if (id) {
@@ -17,7 +17,7 @@ const getSaveTooltipId = (step, { id } = {}) => {
     return "widgets.builder.wizard.addTheWidget";
 };
 
-module.exports = ({ step = 0, buttons, tocButtons = [], stepButtons = [], editorData = {}, setPage = () => { }, onFinish = () => { }, toggleLayerSelector = () => { } } = {}) => (<Toolbar btnDefaultProps={{
+export default ({ step = 0, buttons, tocButtons = [], stepButtons = [], dashBoardEditing = false, editorData = {}, setPage = () => { }, onFinish = () => { }, toggleLayerSelector = () => { }, onChange = () => {} } = {}) => (<Toolbar btnDefaultProps={{
     bsStyle: "primary",
     bsSize: "sm"
 }}
@@ -26,7 +26,16 @@ buttons={buttons || [...(step === 0 ? tocButtons : []), {
     visible: step === 1,
     glyph: "arrow-left",
     tooltipId: "widgets.builder.wizard.configureMapOptions"
-}, ...stepButtons, {
+},
+...stepButtons,
+{
+    onClick: () => onChange("map.mapInfoControl", !editorData?.map?.mapInfoControl),
+    visible: dashBoardEditing && editorData?.widgetType === "map",
+    glyph: "info-sign",
+    bsStyle: editorData?.map?.mapInfoControl ? "success" : "primary",
+    tooltipId: editorData?.map?.mapInfoControl ? "widgets.builder.wizard.disableIdentifyTool" : "widgets.builder.wizard.enableIdentifyTool"
+},
+{
     onClick: () => toggleLayerSelector(true),
     visible: step === 0,
     glyph: "plus",

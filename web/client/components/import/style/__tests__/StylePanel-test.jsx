@@ -5,13 +5,13 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const React = require('react');
-const ReactDOM = require('react-dom');
-const ReactTestUtils = require('react-dom/test-utils');
-const expect = require('expect');
-const StylePanel = require('../StylePanel');
+import React from 'react';
 
-const MY_JSON = require('../../../../test-resources/wfs/museam.json');
+import ReactDOM from 'react-dom';
+import ReactTestUtils from 'react-dom/test-utils';
+import expect from 'expect';
+import StylePanel from '../StylePanel';
+import MY_JSON from '../../../../test-resources/wfs/museam.json';
 const L1 = { name: "L1", features: MY_JSON.features };
 const L2 = { name: "L2" };
 const W1 = { name: "TEST", "message": "M1" };
@@ -135,5 +135,37 @@ describe('StylePanel component', () => {
         expect(cmp).toExist();
         const btn = document.querySelectorAll('button')[2];
         ReactTestUtils.Simulate.click(btn); // <-- trigger event callback
+    });
+
+    it("Test StylePanel show Style customization information if layer.features has styles", (done) => {
+        const layers = [{name: "Feature", features: [{
+            type: "Feature",
+            id: "poi.1",
+            geometry: {
+                type: "Point",
+                coordinates: [
+                    -74.0104611,
+                    40.70758763
+                ]
+            },
+            geometry_name: "the_geom",
+            properties: {
+                NAME: "museam",
+                THUMBNAIL: "pics/22037827-Ti.jpg",
+                MAINPAGE: "pics/22037827-L.jpg"
+            },
+            style: [{color: 'red'}]
+        }]}];
+        const cmp = ReactDOM.render(<StylePanel
+            errors={[W1]}
+            layers={layers}
+            selected={layers[0]}
+            stylers={{ "Point": <div></div> }}
+        />, document.getElementById("container"));
+        expect(cmp).toExist();
+        const container = document.getElementById('container');
+        const el = container.querySelector('.style-customisation-disabled-container');
+        expect(el).toExist();
+        done();
     });
 });

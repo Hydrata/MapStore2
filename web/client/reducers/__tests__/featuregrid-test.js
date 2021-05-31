@@ -42,17 +42,54 @@ let newfeature3 = {
         someProp: "someValue"
     }
 };
-const expect = require('expect');
-const featuregrid = require('../featuregrid');
-const {setFeatures, dockSizeFeatures, setLayer, toggleTool, customizeAttribute, selectFeatures, deselectFeatures, createNewFeatures, updateFilter,
-    featureSaving, toggleSelection, clearSelection, MODES, toggleEditMode, toggleViewMode, saveSuccess, clearChanges, saveError, startDrawingFeature,
-    deleteGeometryFeature, geometryChanged, setSelectionOptions, changePage, featureModified, setPermission, disableToolbar, openFeatureGrid, closeFeatureGrid,
-    toggleShowAgain, hideSyncPopover, initPlugin, sizeChange, storeAdvancedSearchFilter, setUp, setTimeSync} = require('../../actions/featuregrid');
-const {featureTypeLoaded, createQuery} = require('../../actions/wfsquery');
+import expect from 'expect';
+import featuregrid from '../featuregrid';
 
-const {changeDrawingStatus} = require('../../actions/draw');
+import {
+    setFeatures,
+    dockSizeFeatures,
+    setLayer,
+    toggleTool,
+    customizeAttribute,
+    selectFeatures,
+    deselectFeatures,
+    createNewFeatures,
+    updateFilter,
+    featureSaving,
+    toggleSelection,
+    clearSelection,
+    MODES,
+    toggleEditMode,
+    toggleViewMode,
+    saveSuccess,
+    clearChanges,
+    saveError,
+    startDrawingFeature,
+    deleteGeometryFeature,
+    geometryChanged,
+    setSelectionOptions,
+    changePage,
+    featureModified,
+    setPermission,
+    disableToolbar,
+    openFeatureGrid,
+    closeFeatureGrid,
+    toggleShowAgain,
+    hideSyncPopover,
+    initPlugin,
+    sizeChange,
+    storeAdvancedSearchFilter,
+    setUp,
+    setTimeSync,
+    setPagination
+} from '../../actions/featuregrid';
 
-const museam = require('../../test-resources/wfs/museam.json');
+import { paginationSelector } from '../../selectors/featuregrid';
+
+
+import { featureTypeLoaded, createQuery } from '../../actions/wfsquery';
+import { changeDrawingStatus } from '../../actions/draw';
+import museam from '../../test-resources/wfs/museam.json';
 describe('Test the featuregrid reducer', () => {
 
     it('returns original state on unrecognized action', () => {
@@ -100,26 +137,26 @@ describe('Test the featuregrid reducer', () => {
     it('selectFeature', () => {
         // TODO FIX this test or the reducer
         // single select
-        let state = featuregrid( undefined, selectFeatures([1, 2]));
-        expect(state.select).toExist();
-        expect(state.select.length).toBe(1);
-        expect(state.select[0]).toBe(1);
-        state = featuregrid( state, selectFeatures([1, 2]));
-        expect(state.select).toExist();
-        expect(state.select.length).toBe(1);
-        expect(state.select[0]).toBe(1);
-        // check multiselect true, append false
-        state = featuregrid(undefined, {type: 'UNKNOWN'});
-        state = featuregrid({...state, multiselect: true}, selectFeatures([1, 2], false));
-        expect(state.select).toExist();
-        expect(state.select.length).toBe(1);
-        expect(state.select[0]).toBe(1);
-
-        // check multiselect true, append true
-        state = featuregrid( state, selectFeatures([3], true));
+        let state = featuregrid( undefined, selectFeatures([{id: '1'}, {id: '2'}]));
         expect(state.select).toExist();
         expect(state.select.length).toBe(2);
-        expect(state.select[1]).toBe(3);
+        expect(state.select[0]).toEqual({id: '1'});
+        state = featuregrid( state, selectFeatures([{id: '3'}, {id: '4'}]));
+        expect(state.select).toExist();
+        expect(state.select.length).toBe(2);
+        expect(state.select[0]).toEqual({id: '3'});
+        // check multiselect true, append false
+        state = featuregrid(undefined, {type: 'UNKNOWN'});
+        state = featuregrid({...state, multiselect: true}, selectFeatures([{id: '1'}, {id: '2'}], false));
+        expect(state.select).toExist();
+        expect(state.select.length).toBe(2);
+        expect(state.select[0]).toEqual({id: '1'});
+
+        // check multiselect true, append true and also duplicates
+        state = featuregrid( state, selectFeatures([{id: '3'}, {id: '3'}], true));
+        expect(state.select).toExist();
+        expect(state.select.length).toBe(3);
+        expect(state.select[1]).toEqual({id: '2'});
     });
 
     it('clearSelection', () => {
@@ -274,7 +311,7 @@ describe('Test the featuregrid reducer', () => {
         let state = featuregrid( {newFeatures: []}, geometryChanged([feature1]));
         expect(state.changes.length).toBe(1);
         expect(state.newFeatures.length).toBe(0);
-        state = featuregrid( state, geometryChanged([feature1]));
+        state = featuregrid( state, geometryChanged([feature1, feature2]));
         expect(state.changes.length).toBe(2);
 
     });
@@ -289,11 +326,28 @@ describe('Test the featuregrid reducer', () => {
 
     });
     it('UPDATE_FILTER', () => {
-        const update = {attribute: "ATTRIBUTE", opeartor: "OPERATOR", value: "VAL", rawValue: "RAWVAL"};
+        const update = {
+            attribute: "ATTRIBUTE",
+            opeartor: "OPERATOR",
+            value: {attribute: "ATTRIBUTE", method: "METHOD_1"},
+            rawValue: "RAWVAL"
+        };
         let state = featuregrid({}, updateFilter(update));
         expect(state.filters).toExist();
         expect(state.filters[update.attribute]).toExist();
         expect(state.filters[update.attribute].value).toBe(update.value);
+
+
+        const multiselectUpdate = {...update, value: {attribute: "ATTRIBUTE", method: "METHOD_2"}};
+        state = featuregrid(state, updateFilter(multiselectUpdate, true));
+        expect(state.filters).toExist();
+        expect(state.filters[update.attribute]).toExist();
+        expect(state.filters[update.attribute].attribute).toEqual(update.attribute);
+        expect(state.filters[update.attribute].value).toEqual(
+            [ { attribute: 'ATTRIBUTE', method: 'METHOD_1' },
+                { attribute: 'ATTRIBUTE', method: 'METHOD_2' } ]);
+
+
         state = featuregrid({}, createQuery("url", {}));
         expect(state.filters).toExist();
         expect(state.filters[update.attribute]).toNotExist();
@@ -334,5 +388,9 @@ describe('Test the featuregrid reducer', () => {
     it('setTimeSync ', () => {
         expect(featuregrid({}, setTimeSync(true)).timeSync).toBe(true);
         expect(featuregrid({}, setTimeSync(false)).timeSync).toBe(false);
+    });
+    it('setPagination', () => {
+        const newState = featuregrid(undefined, setPagination(10000));
+        expect(paginationSelector({ featuregrid: newState })).toEqual({page: 0, size: 10000});
     });
 });

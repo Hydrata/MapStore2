@@ -6,20 +6,24 @@
  * LICENSE file in the root directory of this source tree.
 */
 
-const React = require('react');
-const PropTypes = require('prop-types');
-const {compose} = require('recompose');
-const { FormGroup, FormControl } = require('react-bootstrap');
-const {isNil} = require('lodash');
+import {isNil} from 'lodash';
+import PropTypes from 'prop-types';
+import React from 'react';
+import { FormControl, FormGroup } from 'react-bootstrap';
+import {compose} from 'recompose';
+
+import IntlNumberFormControl from '../../../I18N/IntlNumberFormControl';
+import coordinateTypePreset from '../enhancers/coordinateTypePreset';
+import decimalToAeronautical from '../enhancers/decimalToAeronautical';
+import tempAeronauticalValue from '../enhancers/tempAeronauticalValue';
+
+const DEGREES = "degrees";
+const SECONDS = "seconds";
+const MINUTES = "minutes";
 
 /**
- * This component renders a coordiante inpout for aetronautical degrees
+ * This component renders a coordinate input for aeronautical degrees
 */
-
-const decimalToAeronautical = require('../enhancers/decimalToAeronautical');
-const coordinateTypePreset = require('../enhancers/coordinateTypePreset');
-const tempAeronauticalValue = require('../enhancers/tempAeronauticalValue');
-
 class AeronauticalCoordinateEditor extends React.Component {
 
     static propTypes = {
@@ -33,7 +37,8 @@ class AeronauticalCoordinateEditor extends React.Component {
         aeronauticalOptions: PropTypes.object,
         coordinate: PropTypes.string,
         onChange: PropTypes.func,
-        onKeyDown: PropTypes.func
+        onKeyDown: PropTypes.func,
+        disabled: PropTypes.bool
     };
     static defaultProps = {
         coordinate: "lat",
@@ -45,7 +50,8 @@ class AeronauticalCoordinateEditor extends React.Component {
                 step: 0.0001
             }
         },
-        onKeyDown: () => {}
+        onKeyDown: () => {},
+        disabled: false
     }
 
     onChange = (part, newValue) => {
@@ -59,7 +65,7 @@ class AeronauticalCoordinateEditor extends React.Component {
                 minutes: this.props.minutes,
                 seconds: this.props.seconds,
                 direction: this.props.direction,
-                [part]: part === "degrees" ? Math.min(newValue, this.props.maxDegrees) : newValue
+                [part]: part === DEGREES ? Math.min(newValue, this.props.maxDegrees) : newValue
             };
             let seconds = newValues.seconds;
             let minutes = newValues.minutes + this.getSexagesimalStep(seconds);
@@ -111,6 +117,18 @@ class AeronauticalCoordinateEditor extends React.Component {
         return (isNaN(val) || val === "") ? {borderColor: "#a94442"} : {};
     }
 
+    getNewValue = (val, type = DEGREES) => {
+        let newValue;
+        if (val === "") {
+            newValue = "";
+        } else {
+            const parsedVal = type === SECONDS ? parseFloat(val) : parseInt(val, 10);
+            const maxValue = type === DEGREES ? this.props.maxDegrees : 60;
+            newValue = Math.round(parsedVal * 10) / 10 < maxValue ? parsedVal : this.props[type];
+        }
+        return newValue;
+    }
+
     render() {
         const inputStyle = { padding: 0, textAlign: "center", borderRight: 'none' };
         const degreesInvalidStyle = this.getInputStyle(this.props.degrees);
@@ -121,20 +139,22 @@ class AeronauticalCoordinateEditor extends React.Component {
             top: 0,
             overflow: "visible",
             zIndex: 3,
-            left: -13,
+            left: -25,
             width: 0,
             height: 0
         };
         const {step: stepSeconds} = this.props.aeronauticalOptions.seconds;
         return (
             <FormGroup style={{display: "inline-flex"}}>
-                <div className={"degrees"} style={{width: 40, display: 'flex'}}>
-                    <FormControl
-                        key={this.props.coordinate + "degree"}
+                <div className={DEGREES} style={{width: 40, display: 'flex'}}>
+                    <IntlNumberFormControl
+                        key={this.props.coordinate + DEGREES}
                         value={this.props.degrees}
+                        disabled={this.props.disabled}
                         placeholder="d"
-                        onChange={e => this.onChange("degrees", parseInt(e.target.value, 10))}
+                        onChange={val => this.onChange(DEGREES, this.getNewValue(val))}
                         step={1}
+                        size={3}
                         max={this.props.maxDegrees}
                         min={-1}
                         onKeyDown={(event) => {
@@ -145,12 +165,15 @@ class AeronauticalCoordinateEditor extends React.Component {
                     />
                     <span style={labelStyle}>&deg;</span>
                 </div>
-                <div className={"minutes"} style={{width: 40, display: 'flex' }}>
-                    <FormControl
-                        key={this.props.coordinate + "minutes"}
+
+                <div className={MINUTES} style={{width: 40, display: 'flex' }}>
+                    <IntlNumberFormControl
+                        disabled={this.props.disabled}
+                        key={this.props.coordinate + MINUTES}
                         placeholder={"m"}
+                        size={3}
                         value={this.props.minutes}
-                        onChange={e => this.onChange("minutes", parseInt(e.target.value, 10))}
+                        onChange={val => this.onChange(MINUTES, this.getNewValue(val, MINUTES))}
                         max={60}
                         min={-1}
                         onKeyDown={(event) => {
@@ -162,14 +185,16 @@ class AeronauticalCoordinateEditor extends React.Component {
                     />
                     <span style={labelStyle}>&prime;</span>
                 </div>
-                <div className="seconds" style={{display: 'flex'}}>
-                    <FormControl
-                        key={this.props.coordinate + "seconds"}
+                <div className={SECONDS} style={{display: 'flex'}}>
+                    <IntlNumberFormControl
+                        disabled={this.props.disabled}
+                        key={this.props.coordinate + SECONDS}
                         value={this.props.seconds}
                         placeholder="s"
-                        onChange={e => this.onChange("seconds", parseFloat(e.target.value))}
+                        onChange={val => this.onChange(SECONDS, this.getNewValue(val, SECONDS))}
                         step={stepSeconds}
                         max={60}
+                        // size={5}
                         onKeyDown={(event) => {
                             this.verifyOnKeyDownEvent(event);
                         }}
@@ -182,10 +207,11 @@ class AeronauticalCoordinateEditor extends React.Component {
                 <div className={"direction-select"}>
 
                     <FormControl
+                        disabled={this.props.disabled}
                         componentClass="select" placeholder="select"
                         value={this.props.direction}
                         onChange={e => this.onChange("direction", e.target.value)}
-                        style={{ width: 40, paddingLeft: 4, paddingRight: 4 }}>
+                        style={{ paddingLeft: 4, paddingRight: 4, flex: "1 1 0%" }}>
                         {this.props.directions.map((d) => <option key={d} value={d}>{d}</option>)}
                     </FormControl>
                 </div>
@@ -202,6 +228,7 @@ class AeronauticalCoordinateEditor extends React.Component {
         if (event.keyCode === 69) {
             event.preventDefault();
         }
+        if (event?.target?.value === "0") event.target.setSelectionRange(-1, -1);
         if (event.keyCode === 13 ) {
             event.preventDefault();
             event.stopPropagation();
@@ -225,7 +252,7 @@ class AeronauticalCoordinateEditor extends React.Component {
     }
 }
 
-module.exports = compose(
+export default compose(
     coordinateTypePreset,
     decimalToAeronautical,
     tempAeronauticalValue

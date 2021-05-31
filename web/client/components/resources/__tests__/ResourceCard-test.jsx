@@ -5,12 +5,12 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-var React = require('react');
-var ReactDOM = require('react-dom');
-var ResourceCard = require('../ResourceCard.jsx');
-var expect = require('expect');
+import React from 'react';
 
-const TestUtils = require('react-dom/test-utils');
+import ReactDOM from 'react-dom';
+import ResourceCard from '../ResourceCard.jsx';
+import expect from 'expect';
+import TestUtils from 'react-dom/test-utils';
 
 describe('This test for ResourceCard', () => {
     beforeEach((done) => {
@@ -124,5 +124,21 @@ describe('This test for ResourceCard', () => {
         TestUtils.Simulate.click(confirmBtn);
         expect(spyonDelete.calls.length).toEqual(1);
 
+    });
+
+    it('test resource with icon', () => {
+        const resource = {
+            canEdit: true,
+            name: "test",
+            description: "testDescription",
+            icon: '1-map'
+        };
+
+        ReactDOM.render(<ResourceCard resource={resource}/>, document.getElementById('container'));
+
+        const icon = document.querySelector('.map-thumb-description + div');
+        expect(icon).toExist();
+        const glyph = icon.getElementsByClassName('glyphicon-1-map')[0];
+        expect(glyph).toExist();
     });
 });

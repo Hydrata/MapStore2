@@ -12,7 +12,7 @@ import expect from 'expect';
 
 import MeasurementSupport from '../MeasurementSupport';
 
-import { LineString } from 'ol/geom';
+import { LineString, Polygon } from 'ol/geom';
 import { Map, View, Feature } from 'ol';
 
 describe('Openlayers MeasurementSupport', () => {
@@ -210,13 +210,15 @@ describe('Openlayers MeasurementSupport', () => {
     });
     it('test updating distance (LineString) tooltip after change uom', () => {
         const spyOnSetTextLabels = expect.spyOn(testHandlers, "setTextLabels");
+        const spyOnChangeGeometry = expect.spyOn(testHandlers, "changeGeometry");
         let cmp = renderMeasurement();
         cmp = renderMeasurement({
             measurement: {
                 geomType: "LineString",
                 lineMeasureEnabled: true,
                 updatedByUI: false,
-                showLabel: true
+                showLabel: true,
+                showLengthAndBearingLabel: true
             },
             uom
         });
@@ -242,13 +244,20 @@ describe('Openlayers MeasurementSupport', () => {
                 name: 'My line'
             })
         });
+        expect(spyOnChangeGeometry).toHaveBeenCalled();
+        const prevMeasurementFeature = spyOnChangeGeometry.calls[0].arguments[0];
+        expect(prevMeasurementFeature[0].geometry.textLabels).toExist();
+        expect(prevMeasurementFeature[0].geometry.textLabels[0].text).toBe("4.99 m | S 0° 0' 0'' E");
+        expect(prevMeasurementFeature[0].geometry.textLabels[1].text).toBe("5.09 m | S 11° 18' 35'' E");
 
         cmp = renderMeasurement({
             measurement: {
                 geomType: "LineString",
                 lineMeasureEnabled: true,
                 updatedByUI: true,
-                showLabel: true
+                showLabel: true,
+                showLengthAndBearingLabel: true,
+                features: prevMeasurementFeature
             },
             uom: {
                 length: {unit: 'km', label: 'km'},
@@ -262,11 +271,143 @@ describe('Openlayers MeasurementSupport', () => {
         expect(cmp.textLabels.length).toBe(2);
 
         expect(spyOnSetTextLabels).toHaveBeenCalled();
-        expect(spyOnSetTextLabels.calls[0].arguments[0].length).toBe(2);
-        expect(spyOnSetTextLabels.calls[0].arguments[0].map(({text}) => text.substring(text.length - 2, text.length) === 'km').reduce(
+        expect(spyOnSetTextLabels.calls[1].arguments[0].length).toBe(2);
+        expect(spyOnSetTextLabels.calls[1].arguments[0].map(({text}) => text.includes('km')).reduce(
             (result, value) => result && value,
             true
         )).toBe(true);
+        expect(spyOnChangeGeometry).toHaveBeenCalled();
+        const resultFeature = spyOnChangeGeometry.calls[0].arguments[0];
+        expect(resultFeature[0].geometry.textLabels).toExist();
+        expect(resultFeature[0].geometry.textLabels[0].text).toBe("0 km | S 0° 0' 0'' E");
+        expect(resultFeature[0].geometry.textLabels[1].text).toBe("0.01 km | S 11° 18' 35'' E");
+    });
+    it('test changing uom when no existing coordinates', () => {
+        const spyOnSetTextLabels = expect.spyOn(testHandlers, "setTextLabels");
+        const spyOnChangeGeometry = expect.spyOn(testHandlers, "changeGeometry");
+        let cmp = renderMeasurement();
+        cmp = renderMeasurement({
+            measurement: {
+                geomType: "LineString",
+                lineMeasureEnabled: true,
+                updatedByUI: false,
+                showLabel: true,
+                showLengthAndBearingLabel: true
+            },
+            uom
+        });
+        cmp = renderMeasurement({
+            measurement: {
+                geomType: "LineString",
+                lineMeasureEnabled: true,
+                updatedByUI: true,
+                showLabel: true,
+                showLengthAndBearingLabel: true
+            },
+            uom: {
+                length: {unit: 'km', label: 'km'},
+                area: {unit: 'sqm', label: 'm²'}
+            }
+        });
+
+        expect(cmp.outputValues).toExist();
+        expect(cmp.outputValues.length).toBe(0);
+        expect(cmp.textLabels).toExist();
+        expect(cmp.textLabels.length).toBe(0);
+
+        expect(spyOnSetTextLabels).toHaveBeenCalled();
+        expect(spyOnSetTextLabels.calls[0].arguments[0].length).toBe(0);
+        expect(spyOnSetTextLabels.calls[0].arguments[0].map(({text}) => text.includes('km')).reduce(
+            (result, value) => result && value,
+            true
+        )).toBe(true);
+        expect(spyOnChangeGeometry).toHaveBeenCalled();
+        const resultFeature = spyOnChangeGeometry.calls[0].arguments[0];
+        expect(resultFeature.length).toBe(0);
+    });
+    it('test add coordinates manually when no existing coordinates', () => {
+        const features = [{"type": "Feature", "properties": {"disabled": true}, "geometry": {"type": "LineString", "coordinates": [["", ""]], "textLabels": []}}];
+        const spyOnChangeGeometry = expect.spyOn(testHandlers, "changeGeometry");
+        let cmp = renderMeasurement();
+        cmp = renderMeasurement({
+            measurement: {
+                geomType: "LineString",
+                lineMeasureEnabled: true,
+                updatedByUI: false,
+                showLabel: true,
+                showLengthAndBearingLabel: true,
+                features: []
+            },
+            uom
+        });
+        cmp = renderMeasurement({
+            measurement: {
+                geomType: "LineString",
+                lineMeasureEnabled: true,
+                updatedByUI: true,
+                showLabel: true,
+                showLengthAndBearingLabel: true,
+                features
+            },
+            uom
+        });
+
+        expect(cmp.outputValues).toExist();
+        expect(cmp.outputValues.length).toBe(0);
+        expect(cmp.textLabels).toExist();
+        expect(cmp.textLabels.length).toBe(0);
+
+        expect(spyOnChangeGeometry).toHaveBeenCalled();
+        const resultFeature = spyOnChangeGeometry.calls[0].arguments[0];
+        expect(resultFeature.length).toBe(1);
+        expect(resultFeature[0].properties.disabled).toBe(true);
+        expect(resultFeature[0].geometry).toBeTruthy();
+        expect(resultFeature[0].geometry).toEqual(features[0].geometry);
+        // Add empty label when empty coordinate (edit)
+        expect(resultFeature[0].geometry.textLabels).toEqual([{text: "0"}]);
+    });
+    it('test remove last coordinates when updating polygon', () => {
+        const features = [{"type": "Feature", "properties": {"disabled": false}, "geometry": {"type": "Polygon",
+            "coordinates": [[[1, 2], [2, 3], [3, 4], [1, 2], [1, 2]]], "textLabels": [{text: "1m"}, {text: "2m"}, {text: "3m"}, {text: "4m"}]}}];
+        const spyOnChangeGeometry = expect.spyOn(testHandlers, "changeGeometry");
+        let cmp = renderMeasurement();
+        cmp = renderMeasurement({
+            measurement: {
+                geomType: "LineString",
+                lineMeasureEnabled: true,
+                updatedByUI: false,
+                showLabel: true,
+                showLengthAndBearingLabel: true,
+                features: []
+            },
+            uom
+        });
+        cmp = renderMeasurement({
+            measurement: {
+                geomType: "Polygon",
+                lineMeasureEnabled: true,
+                updatedByUI: true,
+                showLabel: true,
+                showLengthAndBearingLabel: true,
+                features,
+                currentFeature: 0
+            },
+            uom
+        });
+
+        expect(cmp.outputValues).toExist();
+        expect(cmp.outputValues.length).toBe(2);
+        expect(cmp.textLabels).toExist();
+        expect(cmp.textLabels.length).toBe(3);
+
+        expect(spyOnChangeGeometry).toHaveBeenCalled();
+        const resultFeature = spyOnChangeGeometry.calls[0].arguments[0];
+        expect(resultFeature.length).toBe(1);
+        expect(resultFeature[0].properties.disabled).toBe(false);
+        expect(resultFeature[0].geometry).toBeTruthy();
+        expect(resultFeature[0].geometry.type).toBe('Polygon');
+        expect(resultFeature[0].geometry.coordinates[0].length).toBe(4);
+        expect(resultFeature[0].geometry.textLabels.length).toBe(3);
     });
     it('test drawing (LineString)', () => {
         const spyOnChangeGeometry = expect.spyOn(testHandlers, "changeGeometry");
@@ -275,13 +416,14 @@ describe('Openlayers MeasurementSupport', () => {
             measurement: {
                 geomType: "LineString",
                 lineMeasureEnabled: true,
-                updatedByUI: false
+                updatedByUI: false,
+                showLengthAndBearingLabel: true
             },
             uom
         });
 
-        const geometry = new LineString([[15.0, 45.0], [15.0, 45.0]]);
-        const feature = new Feature({
+        let geometry = new LineString([[15.0, 45.0], [15.0, 45.0]]);
+        let feature = new Feature({
             geometry,
             name: 'My line'
         });
@@ -307,13 +449,167 @@ describe('Openlayers MeasurementSupport', () => {
             })
         });
         expect(spyOnChangeGeometry).toHaveBeenCalled();
-        const changedFeatures = spyOnChangeGeometry.calls[0].arguments[0];
+        let changedFeatures = spyOnChangeGeometry.calls[0].arguments[0];
         expect(changedFeatures.length).toBe(1);
         expect(changedFeatures[0].type).toBe("Feature");
         expect(changedFeatures[0].geometry.coordinates.length).toBe(3);
         expect(cmp.segmentOverlays.length).toBe(2);
         expect(cmp.measureTooltips.length).toBe(1);
+        expect(changedFeatures[0].geometry.textLabels).toExist();
+        expect(changedFeatures[0].geometry.textLabels[0].text).toBe("4.99 m | S 0° 0' 0'' E");
+        expect(changedFeatures[0].geometry.textLabels[1].text).toBe("5.09 m | S 11° 18' 35'' E");
+        expect(cmp.textLabels.length).toBe(2);
+        expect(cmp.textLabels[0].type).toBe("LineString");
+        expect(cmp.textLabels[0].textId).toBe(0);
+
+
+        // Text label display when drawing line with true bearing
+        cmp = renderMeasurement({
+            measurement: {
+                geomType: "LineString",
+                lineMeasureEnabled: true,
+                updatedByUI: false,
+                showLengthAndBearingLabel: true,
+                trueBearing: {measureTrueBearing: true},
+                features: [{
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "LineString",
+                        "coordinates": [[0, 1], [10, 20]]
+                    },
+                    "properties": {
+                        "name": "My line",
+                        "values": [
+                            {
+                                "value": 10.087,
+                                "formattedValue": "10.09 m",
+                                "position": [
+                                    0.00014373044545912343,
+                                    0.0003144103494347836
+                                ],
+                                "type": "length"
+                            }
+                        ]
+                    }
+                }]
+            },
+            uom
+        });
+
+        geometry = new LineString([[15.0, 45.0], [15.0, 45.0]]);
+        feature = new Feature({
+            geometry,
+            name: 'My line'
+        });
+
+        cmp.drawInteraction.dispatchEvent({
+            type: 'drawstart',
+            feature
+        });
+        expect(cmp.sketchFeature).toExist();
+        cmp.sketchFeature.getGeometry().setCoordinates([[15.0, 45.0], [15.0, 40.0]]);
+        cmp.sketchFeature.getGeometry().appendCoordinate([16.0, 35.0]);
+        cmp.sketchFeature.getGeometry().appendCoordinate([16.0, 35.0]);
+        cmp.drawInteraction.dispatchEvent({
+            type: 'drawend',
+            feature: new Feature({
+                geometry: new LineString([[15.0, 45.0], [15.0, 40.0], [16.0, 35.0]]),
+                name: 'My line'
+            })
+        });
+
+        expect(spyOnChangeGeometry).toHaveBeenCalled();
+        changedFeatures = spyOnChangeGeometry.calls[1].arguments[0];
+        expect(spyOnChangeGeometry).toHaveBeenCalled();
+        expect(changedFeatures[1].geometry.textLabels).toExist();
+        expect(changedFeatures[1].geometry.textLabels[0].text).toBe("4.99 m | 180°");
+        expect(changedFeatures[1].geometry.textLabels[1].text).toBe("5.09 m | 168°");
+        expect(cmp.textLabels.length).toBe(4);
+        expect(cmp.textLabels[2].type).toBe("LineString");
+        expect(cmp.textLabels[2].textId).toBe(1);
+
     });
+    it('test showLengthAndBearingLabel', ()=>{
+        const spyOnChangeGeometry = expect.spyOn(testHandlers, "changeGeometry");
+        let cmp = renderMeasurement();
+        cmp = renderMeasurement({
+            measurement: {
+                geomType: "LineString",
+                lineMeasureEnabled: true,
+                updatedByUI: false,
+                showLengthAndBearingLabel: true,
+                trueBearing: {measureTrueBearing: true}
+            },
+            uom
+        });
+
+        let geometry = new LineString([[15.0, 45.0], [15.0, 45.0]]);
+        let feature = new Feature({
+            geometry,
+            name: 'My line'
+        });
+
+        cmp.drawInteraction.dispatchEvent({
+            type: 'drawstart',
+            feature
+        });
+        expect(cmp.sketchFeature).toExist();
+        cmp.sketchFeature.getGeometry().setCoordinates([[15.0, 45.0], [15.0, 40.0]]);
+        cmp.sketchFeature.getGeometry().appendCoordinate([16.0, 35.0]);
+        cmp.sketchFeature.getGeometry().appendCoordinate([16.0, 35.0]);
+        cmp.drawInteraction.dispatchEvent({
+            type: 'drawend',
+            feature: new Feature({
+                geometry: new LineString([[15.0, 45.0], [15.0, 40.0], [16.0, 35.0]]),
+                name: 'My line'
+            })
+        });
+        expect(spyOnChangeGeometry).toHaveBeenCalled();
+        let changedFeatures = spyOnChangeGeometry.calls[0].arguments[0];
+        expect(changedFeatures[0].geometry.textLabels).toExist();
+        expect(changedFeatures[0].geometry.textLabels[0].text).toBe("4.99 m | 180°");
+        expect(changedFeatures[0].geometry.textLabels[1].text).toBe("5.09 m | 168°");
+
+        // Hide show length and bearing combination label
+        cmp = renderMeasurement({
+            measurement: {
+                geomType: "LineString",
+                lineMeasureEnabled: true,
+                updatedByUI: false,
+                showLengthAndBearingLabel: false,
+                features: changedFeatures
+            },
+            uom
+        });
+
+        geometry = new LineString([[15.0, 45.0], [15.0, 45.0]]);
+        feature = new Feature({
+            geometry,
+            name: 'My line'
+        });
+
+        cmp.drawInteraction.dispatchEvent({
+            type: 'drawstart',
+            feature
+        });
+        expect(cmp.sketchFeature).toExist();
+        cmp.sketchFeature.getGeometry().setCoordinates([[15.0, 45.0], [15.0, 40.0]]);
+        cmp.sketchFeature.getGeometry().appendCoordinate([16.0, 35.0]);
+        cmp.sketchFeature.getGeometry().appendCoordinate([16.0, 35.0]);
+        cmp.drawInteraction.dispatchEvent({
+            type: 'drawend',
+            feature: new Feature({
+                geometry: new LineString([[15.0, 45.0], [15.0, 40.0], [16.0, 35.0]]),
+                name: 'My line'
+            })
+        });
+        expect(spyOnChangeGeometry).toHaveBeenCalled();
+        changedFeatures = spyOnChangeGeometry.calls[1].arguments[0];
+        expect(changedFeatures[1].geometry.textLabels).toExist();
+        expect(changedFeatures[1].geometry.textLabels[0].text).toBe("4.99 m");
+        expect(changedFeatures[1].geometry.textLabels[1].text).toBe("5.09 m");
+    });
+
     it('test drawInteraction callbacks for a distance (Bearing)', () => {
         const spyOnChangeMeasurementState = expect.spyOn(testHandlers, "changeMeasurementState");
         const spyOnChangeGeometry = expect.spyOn(testHandlers, "changeGeometry");
@@ -336,6 +632,7 @@ describe('Openlayers MeasurementSupport', () => {
                 name: 'Line with 2 points'
             })
         });
+        expect(cmp.sketchFeature).toExist();
         cmp.drawInteraction.dispatchEvent({
             type: 'drawend',
             feature: new Feature({
@@ -350,7 +647,7 @@ describe('Openlayers MeasurementSupport', () => {
         expect(changedFeatures.length).toBe(1);
         expect(changedFeatures[0].type).toBe("Feature");
         expect(changedFeatures[0].geometry.coordinates.length).toBe(2);
-        expect(changedFeatures[0].properties.values[0].formattedValue).toContain("T");
+        expect(changedFeatures[0].properties.values[0].formattedValue).toNotContain("T");
         expect(changedFeatures[0].properties.values[0].type).toContain("bearing");
     });
     it('test drawState restore on geomType change', () => {
@@ -501,5 +798,201 @@ describe('Openlayers MeasurementSupport', () => {
         expect(cmp.measureTooltipElements.length).toBe(1);
         expect(cmp.outputValues.length).toBe(1);
         expect(map.getOverlays().getLength()).toBe(savedOverlayCount);
+    });
+    it('test removeInteraction and measurement state on geomType change', () => {
+        const spyOnchangeGeometry = expect.spyOn(testHandlers, 'changeGeometry');
+        const spyOnsetTextLabels = expect.spyOn(testHandlers, 'setTextLabels');
+
+        let cmp = renderMeasurement();
+        cmp = renderMeasurement({
+            measurement: {
+                geomType: "LineString",
+                lineMeasureEnabled: true,
+                updatedByUI: false,
+                showLabel: true
+            },
+            uom
+        });
+
+        const feature = new Feature({
+            geometry: new LineString([[10.0, 15.0], [10.0, 15.0]]),
+            name: 'My line 1'
+        });
+        const savedOverlayCount = map.getOverlays().getLength();
+        const savedInteractionsCount = map.getInteractions().getLength();
+        cmp.drawInteraction.dispatchEvent({
+            type: 'drawstart',
+            feature
+        });
+        cmp.sketchFeature.getGeometry().setCoordinates([[10.0, 15.0], [10.0, 10.0]]);
+        cmp.sketchFeature.getGeometry().appendCoordinate([11.0, 25.0]);
+        expect(map.getOverlays().getLength()).toBe(savedOverlayCount + 3);
+        expect(map.getInteractions().getLength()).toBe(savedInteractionsCount);
+        expect(map.getLayers().getLength()).toBe(1);
+
+        // On geomtype null
+        cmp = renderMeasurement({
+            measurement: {
+                geomType: null,
+                updatedByUI: false,
+                features: ['test'],
+                textLabels: ['test']
+            },
+            uom
+        });
+        expect(cmp.drawInteraction).toBe(null);
+        expect(cmp.sketchFeature).toBe(null);
+        expect(map.getInteractions().getLength()).toBe(savedInteractionsCount - 1);
+        expect(cmp.measureTooltips.length).toBe(0);
+        expect(cmp.measureTooltipElements.length).toBe(0);
+        expect(cmp.outputValues.length).toBe(0);
+        expect(cmp.segmentOverlays.length).toBe(0);
+        expect(cmp.segmentOverlayElements.length).toBe(0);
+        expect(map.getOverlays().getLength()).toBe(0);
+        expect(cmp.textLabels).toEqual([]);
+        expect(cmp.segmentLengths).toEqual([]);
+        expect(map.getLayers().getLength()).toBe(0);
+        expect(cmp.vector).toBe(null);
+        expect(cmp.measureLayer).toBe(null);
+        expect(cmp.source).toBe(null);
+        expect(spyOnchangeGeometry.calls[0].arguments[0]).toEqual([]);
+        expect(spyOnsetTextLabels.calls[0].arguments[0]).toEqual([]);
+    });
+    it('test removeInteraction in edit when feature has invalid coordinates', () => {
+        let cmp = renderMeasurement();
+        cmp = renderMeasurement({
+            measurement: {
+                geomType: "LineString",
+                lineMeasureEnabled: true,
+                updatedByUI: false,
+                showLabel: true
+            },
+            uom
+        });
+
+        const feature = new Feature({
+            geometry: new LineString([[10.0, 15.0], [10.0, 15.0]]),
+            name: 'My line 1'
+        });
+        const savedInteractionsCount = map.getInteractions().getLength();
+        cmp.drawInteraction.dispatchEvent({
+            type: 'drawstart',
+            feature
+        });
+        cmp.sketchFeature.getGeometry().setCoordinates([[10.0, 15.0], [10.0, 10.0]]);
+        cmp.sketchFeature.getGeometry().appendCoordinate([11.0, 25.0]);
+
+        const features = [{
+            type: "Feature",
+            geometry: {type: "LineString", coordinates: [[1, 2], [2, 3], ["", ""]], textLabels: [{text: "1m"}]},
+            properties: {values: [{value: 1154.583, formattedValue: "10 m", position: [1, 2], type: "length"}], disabled: true}
+        }];
+        cmp = renderMeasurement({
+            measurement: {
+                geomType: "LineString",
+                lineMeasureEnabled: true,
+                updatedByUI: true,
+                features
+            },
+            uom
+        });
+        // Remove drawInteraction when feature has disabled property
+        expect(cmp.drawInteraction).toBe(null);
+        expect(cmp.sketchFeature).toBe(null);
+        expect(map.getInteractions().getLength()).toBe(savedInteractionsCount - 1);
+        expect(cmp.measureTooltips.length).toBe(0);
+        expect(cmp.measureTooltipElements.length).toBe(0);
+        expect(cmp.outputValues.length).toBe(0);
+        expect(cmp.segmentOverlays.length).toBe(0);
+        expect(cmp.segmentOverlayElements.length).toBe(0);
+        expect(map.getOverlays().getLength()).toBe(0);
+        expect(cmp.textLabels).toEqual([]);
+        expect(cmp.segmentLengths).toEqual([]);
+        expect(map.getLayers().getLength()).toBe(1);
+        cmp = renderMeasurement({
+            measurement: {
+                geomType: "LineString",
+                lineMeasureEnabled: true,
+                updatedByUI: true,
+                features: [{
+                    type: "Feature",
+                    geometry: {type: "LineString", coordinates: [[1, 2], [2, 3], [3, 4]], textLabels: [{text: "1m"}, {text: "2m"}]},
+                    properties: {values: [{value: 1154.583, formattedValue: "10 m", position: [1, 2], type: "length"}], disabled: false}
+                }]
+            },
+            uom
+        });
+        // Restore drawInteraction when feature is valid
+        expect(cmp.drawInteraction).toBeTruthy();
+    });
+
+    it('test modify features when geometry in edit is not fully formed', () => {
+        const spyOnchangeGeometry = expect.spyOn(testHandlers, 'changeGeometry');
+        let cmp = renderMeasurement();
+        cmp = renderMeasurement({
+            measurement: {
+                geomType: "LineString",
+                lineMeasureEnabled: true,
+                updatedByUI: false,
+                showLabel: true
+            },
+            uom
+        });
+
+        cmp.drawInteraction.dispatchEvent({
+            type: 'drawstart',
+            feature: new Feature({
+                geometry: new Polygon([[10.0, 15.0], [10.0, 15.0]])
+            })
+        });
+
+        // LineString
+        let ftLineString = {
+            type: "Feature",
+            geometry: {type: "LineString", coordinates: [[1, 2]], textLabels: []}
+        };
+        cmp = renderMeasurement({
+            measurement: {
+                geomType: "LineString",
+                lineMeasureEnabled: true,
+                updatedByUI: true,
+                features: [ftLineString],
+                currentFeature: 0
+            },
+            uom
+        });
+        expect(cmp.source.getFeatures().length).toBe(1);
+        let feature = cmp.source.getFeatures()[0];
+        expect(feature.getGeometry().getType()).toBe('LineString');
+        expect(spyOnchangeGeometry).toHaveBeenCalled();
+        let updatedFeatures = spyOnchangeGeometry.calls[0].arguments[0];
+        expect(updatedFeatures[0].geometry.coordinates).toEqual([[1, 2], ["", ""]]);
+        expect(updatedFeatures[0].geometry.textLabels).toEqual([{text: "0"}]);
+        expect(updatedFeatures[0].properties.disabled).toBe(true);
+
+        // Polygon
+        cmp = renderMeasurement({
+            measurement: {
+                geomType: "Polygon",
+                areaMeasureEnabled: true,
+                currentFeature: 1,
+                updatedByUI: true,
+                features: [{...ftLineString, geometry: {...ftLineString.geometry, coordinates: [[1, 2], [2, 3]]}}, {
+                    type: "Feature",
+                    geometry: {type: "Polygon", coordinates: [[[1, 2], ["", ""], [1, 2]]], textLabels: [{text: "0"}, {text: "0"}]},
+                    properties: {disabled: true}
+                }]
+            },
+            uom
+        });
+
+        // Generate Linestring geometry for unformed Polygon
+        expect(cmp.source.getFeatures().length).toBe(2);
+        feature = cmp.source.getFeatures()[1];
+        expect(feature.getGeometry().getType()).toBe('LineString');
+        updatedFeatures = spyOnchangeGeometry.calls[1].arguments[0];
+        expect(updatedFeatures[1].geometry.coordinates).toEqual([[[1, 2], ["", ""], [1, 2]]]);
+        expect(updatedFeatures[1].geometry.textLabels.length).toBe(3);
+        expect(updatedFeatures[1].properties.disabled).toBe(true);
     });
 });

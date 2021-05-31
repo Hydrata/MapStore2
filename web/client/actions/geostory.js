@@ -17,6 +17,7 @@ export const EDIT_RESOURCE = "GEOSTORY:EDIT_RESOURCE";
 export const EDIT_WEBPAGE = "GEOSTORY:EDIT_WEBPAGE";
 export const ERRORS_LOGO = "GEOSTORY:ERRORS_LOGO";
 export const GEOSTORY_LOADED = "GEOSTORY:GEOSTORY_LOADED";
+export const GEOSTORY_SCROLLING = "GEOSTORY:SCROLLING";
 export const LOAD_GEOSTORY = "GEOSTORY:LOAD_GEOSTORY";
 export const LOAD_GEOSTORY_ERROR = "GEOSTORY:LOAD_GEOSTORY_ERROR";
 export const LOADING_GEOSTORY = "GEOSTORY:LOADING_GEOSTORY";
@@ -39,7 +40,8 @@ export const UPDATE_SETTING = "GEOSTORY:UPDATE_SETTING";
 export const UPDATE_CURRENT_PAGE = "GEOSTORY:UPDATE_CURRENT_PAGE";
 export const REMOVE_RESOURCE = "GEOSTORY:REMOVE_RESOURCE";
 export const SET_PENDING_CHANGES = "GEOSTORY:SET_PENDING_CHANGES";
-
+export const SET_UPDATE_URL_SCROLL = "GEOSTORY:SET_UPDATE_URL_SCROLL";
+export const UPDATE_MEDIA_EDITOR_SETTINGS = "GEOSTORY:UPDATE_MEDIA_EDITOR_SETTINGS";
 /**
  * Adds an entry to current story. The entry can be a section, a content or anything to append in an array (even sub-content)
  *
@@ -233,3 +235,12 @@ export const removeResource = ( id, mediaType) => ({type: REMOVE_RESOURCE, id, m
  * Sets pending changes
  */
 export const setPendingChanges = value => ({type: SET_PENDING_CHANGES, value});
+
+/**
+ * Sets should url be updated on scroll
+ */
+export const updateUrlOnScroll = value => ({type: SET_UPDATE_URL_SCROLL, value});
+
+export const updateMediaEditorSettings = mediaEditorSettings => ({ type: UPDATE_MEDIA_EDITOR_SETTINGS, mediaEditorSettings });
+
+export const geostoryScrolling = (status) => ({ type: GEOSTORY_SCROLLING, status});

@@ -6,12 +6,19 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const { urlParts } = require('../utils/URLUtils');
-const url = require('url');
-const { sortBy, head, castArray, isNumber } = require('lodash');
-const assign = require('object-assign');
-const chroma = require('chroma-js');
-const {getLayerUrl} = require('../utils/LayersUtils');
+import { urlParts } from '../utils/URLUtils';
+
+import url from 'url';
+import { sortBy, head, castArray, isNumber, isString, uniq } from 'lodash';
+import assign from 'object-assign';
+import chroma from 'chroma-js';
+import { getLayerUrl } from '../utils/LayersUtils';
+
+const supportedColorBrewer = uniq(Object.keys(chroma.brewer).map((key) => key.toLocaleLowerCase()))
+    .map((key) => ({
+        name: key,
+        colors: key
+    }));
 
 const isAttributeAllowed = (type) => ['Integer', 'Long', 'Double', 'Float', 'BigDecimal'].indexOf(type) !== -1;
 const getSimpleType = () => {
@@ -48,7 +55,7 @@ const standardColors = [{
     colors: ['#000', '#f00']
 }, {
     name: 'green',
-    colors: ['#000', '#0f0']
+    colors: ['#000', '#008000', '#0f0']
 }, {
     name: 'blue',
     colors: ['#000', '#00f']
@@ -58,12 +65,18 @@ const standardColors = [{
 }, {
     name: 'jet',
     colors: ['#00f', '#ff0', '#f00']
-}];
+},
+...supportedColorBrewer];
 
-const getColor = (layer, name, intervals) => {
-    const chosenColors = head((layer.thematic.colors || layer.thematic.additionalColors || []).filter(c => c.name === name)) ||
-        head(standardColors.filter(c => c.name === name));
-    if (chosenColors && chosenColors.colors.length >= 2) {
+const getColor = (layer, name, intervals, customRamp) => {
+    const chosenColors = layer
+        ? head((layer.thematic.colors || layer.thematic.additionalColors || [])
+            .filter(c => c.name === name)
+        ) || head(standardColors.filter(c => c.name === name))
+        : customRamp
+            ? head([ customRamp, ...standardColors].filter(c => c.name === name))
+            : head(standardColors.filter(c => c.name === name));
+    if (chosenColors && (isString(chosenColors.colors) || chosenColors.colors.length >= 2)) {
         return {
             ramp: "custom",
             colors: chroma.scale(chosenColors.colors).colors(intervals).join(',')
@@ -153,6 +166,9 @@ const getRuleColor = (rule) => {
 };
 
 const validateClassification = (classificationObj) => {
+    if (classificationObj && classificationObj.Rule) {
+        throw new Error("toc.thematic.invalid_attribute");
+    }
     if (!classificationObj || !classificationObj.Rules || !classificationObj.Rules.Rule) {
         throw new Error("toc.thematic.invalid_object");
     }
@@ -188,6 +204,12 @@ const API = {
         return url.format(assign(getUrl(parts), {
             pathname: parts.applicationRootPath + "/rest/sldservice/" + layer.name + "/classify.xml",
             query: assign({}, mapParams(layer, params), { fullSLD: true })
+        }));
+    },
+    getCapabilitiesUrl: (layer) => {
+        const parts = urlParts(getLayerUrl(layer));
+        return url.format(assign(getUrl(parts), {
+            pathname: parts.applicationRootPath + "/rest/sldservice/capabilities.json"
         }));
     },
     /**
@@ -287,16 +309,56 @@ const API = {
      * @memberof API.SLDService
      * @method readClassification
      * @param {object} classificationObj object returned by SLDService classifier service
+     * @param {string} method name of classification
      * @returns {array} simplified classification classes list
      */
-    readClassification: (classificationObj) => {
+    readClassification: (classificationObj, method) => {
         validateClassification(classificationObj);
-        return castArray(classificationObj.Rules.Rule || []).map((rule) => ({
+        const rules = castArray(classificationObj.Rules.Rule || []);
+        return rules.map((rule, idx) => ({
+            title: rule.Title,
             color: getRuleColor(rule),
             type: getGeometryType(rule),
-            min: getNumber([rule.Filter.And && (rule.Filter.And.PropertyIsGreaterThanOrEqualTo || rule.Filter.And.PropertyIsGreaterThan).Literal, rule.Filter.PropertyIsEqualTo && rule.Filter.PropertyIsEqualTo.Literal]),
-            max: getNumber([rule.Filter.And && (rule.Filter.And.PropertyIsLessThanOrEqualTo || rule.Filter.And.PropertyIsLessThan).Literal, rule.Filter.PropertyIsEqualTo && rule.Filter.PropertyIsEqualTo.Literal])
+            ...(method === 'uniqueInterval'
+                ? { unique: rule.Filter.PropertyIsEqualTo && rule.Filter.PropertyIsEqualTo.Literal }
+                : {
+                    min: getNumber([
+                        rule.Filter.And && (rule.Filter.And.PropertyIsGreaterThanOrEqualTo || rule.Filter.And.PropertyIsGreaterThan).Literal,
+                        rule.Filter.PropertyIsEqualTo && rule.Filter.PropertyIsEqualTo.Literal,
+                        // standard deviation
+                        idx === rules.length - 1 && rule?.Filter?.PropertyIsGreaterThanOrEqualTo?.Literal
+                    ]),
+                    max: getNumber([
+                        rule.Filter.And && (rule.Filter.And.PropertyIsLessThanOrEqualTo || rule.Filter.And.PropertyIsLessThan).Literal,
+                        rule.Filter.PropertyIsEqualTo && rule.Filter.PropertyIsEqualTo.Literal,
+                        // standard deviation
+                        idx === 0 && rule?.Filter?.PropertyIsLessThan?.Literal
+                    ])
+                })
         })) || [];
+    },
+    /**
+     * Reads classification entries returned by the raster classification service and builds a simple list of:
+     *  - color
+     *  - opacity
+     *  - label
+     *  - quantity
+     * @memberof API.SLDService
+     * @method readRasterClassification
+     * @param {object} rasterClassificationObj object returned by SLDService classifier service
+     * @returns {array} simplified classification classes list
+     */
+    readRasterClassification: (rasterClassificationObj) => {
+        const rules = castArray(rasterClassificationObj?.Rules?.Rule);
+        const entries = rules[0]?.RasterSymbolizer?.ColorMap?.ColorMapEntry || [];
+        return entries.map((entry) => ({
+            color: entry['@color'],
+            opacity: entry['@opacity'] === undefined
+                ? 1
+                : entry['@opacity'],
+            label: entry['@label'],
+            quantity: parseFloat(entry['@quantity'])
+        }));
     },
     /**
      * supported classification methods
@@ -349,6 +411,7 @@ const API = {
             }]
         }
     },
+    getColor,
     /**
      * Gets a list of color samples for all the given palettes.
      *
@@ -359,12 +422,16 @@ const API = {
      * @param {number} samples number of samples for each palette
      * @returns {array} list of palettes with sample colors
      */
-    getColors: (baseColors = standardColors, layer, samples) => {
-        const colors = layer.thematic.colors || [...baseColors, ...(layer.thematic.additionalColors || [])];
+    getColors: (baseColors = standardColors, layer, samples, customRamp) => {
+        const colors = layer
+            ? layer.thematic.colors || [...baseColors, ...(layer.thematic.additionalColors || [])]
+            : customRamp ? [ customRamp, ...baseColors ] : [...baseColors];
 
-        return colors.map((color) => color.colors.length >= samples ? color : assign({}, color, {
-            colors: chroma.scale(color.colors).colors(samples)
-        }));
+        return colors.map((color) => !isString(color.colors) && color.colors.length >= samples
+            ? color
+            : assign({}, color, {
+                colors: chroma.scale(color.colors).colors(samples)
+            }));
     },
     /**
      * Checks if the given layer has a thematic style applied on it (SLD param not empty)
@@ -406,4 +473,4 @@ const API = {
     }
 };
 
-module.exports = API;
+export default API;

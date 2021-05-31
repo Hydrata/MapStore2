@@ -13,19 +13,73 @@ const service = {
     url,
     type
 };
-const expect = require('expect');
-const LayersUtils = require('../../utils/LayersUtils');
-const {
-    addLayersMapViewerUrl, ADD_LAYERS_FROM_CATALOGS, textSearch, TEXT_SEARCH, getRecords, addLayerError, addLayer, ADD_LAYER_ERROR, changeCatalogFormat, CHANGE_CATALOG_FORMAT, changeSelectedService, CHANGE_SELECTED_SERVICE,
-    focusServicesList, FOCUS_SERVICES_LIST, changeCatalogMode, CHANGE_CATALOG_MODE, changeTitle, CHANGE_TITLE,
-    changeUrl, CHANGE_URL, changeType, CHANGE_TYPE, addService, ADD_SERVICE, addCatalogService, ADD_CATALOG_SERVICE, resetCatalog, RESET_CATALOG,
-    changeServiceProperty, CHANGE_SERVICE_PROPERTY, deleteCatalogService, DELETE_CATALOG_SERVICE, deleteService, DELETE_SERVICE, savingService,
-    SAVING_SERVICE, DESCRIBE_ERROR, initCatalog, CATALOG_INITED, changeText, CHANGE_TEXT,
-    TOGGLE_ADVANCED_SETTINGS, toggleAdvancedSettings, TOGGLE_THUMBNAIL, toggleThumbnail, TOGGLE_TEMPLATE, toggleTemplate, CHANGE_METADATA_TEMPLATE, changeMetadataTemplate, SET_LOADING,
-    recordsNotFound
-} = require('../catalog');
-const { CHANGE_LAYER_PROPERTIES, ADD_LAYER } = require('../layers');
-const { SHOW_NOTIFICATION } = require('../notifications');
+import expect from 'expect';
+import {
+    getLayerId
+} from '../../utils/LayersUtils';
+
+import {
+    addLayersMapViewerUrl,
+    ADD_LAYERS_FROM_CATALOGS,
+    textSearch,
+    TEXT_SEARCH,
+    getRecords,
+    addLayerError,
+    addLayer,
+    ADD_LAYER_ERROR,
+    changeCatalogFormat,
+    CHANGE_CATALOG_FORMAT,
+    changeSelectedService,
+    CHANGE_SELECTED_SERVICE,
+    focusServicesList,
+    FOCUS_SERVICES_LIST,
+    changeCatalogMode,
+    CHANGE_CATALOG_MODE,
+    changeTitle,
+    CHANGE_TITLE,
+    changeUrl,
+    CHANGE_URL,
+    changeType,
+    CHANGE_TYPE,
+    addService,
+    ADD_SERVICE,
+    addCatalogService,
+    ADD_CATALOG_SERVICE,
+    resetCatalog,
+    RESET_CATALOG,
+    changeServiceProperty,
+    CHANGE_SERVICE_PROPERTY,
+    deleteCatalogService,
+    DELETE_CATALOG_SERVICE,
+    deleteService,
+    DELETE_SERVICE,
+    savingService,
+    SAVING_SERVICE,
+    DESCRIBE_ERROR,
+    initCatalog,
+    CATALOG_INITED,
+    changeText,
+    CHANGE_TEXT,
+    TOGGLE_ADVANCED_SETTINGS,
+    toggleAdvancedSettings,
+    TOGGLE_THUMBNAIL,
+    toggleThumbnail,
+    TOGGLE_TEMPLATE,
+    toggleTemplate,
+    CHANGE_METADATA_TEMPLATE,
+    changeMetadataTemplate,
+    SET_LOADING,
+    recordsNotFound,
+    FORMAT_OPTIONS_FETCH,
+    formatOptionsFetch,
+    FORMAT_OPTIONS_LOADING,
+    formatsLoading,
+    SET_FORMAT_OPTIONS,
+    setSupportedFormats
+} from '../catalog';
+
+import { CHANGE_LAYER_PROPERTIES, ADD_LAYER } from '../layers';
+import { SHOW_NOTIFICATION } from '../notifications';
 describe('Test correctness of the catalog actions', () => {
 
     it('addLayersMapViewerUrl', () => {
@@ -239,7 +293,7 @@ describe('Test correctness of the catalog actions', () => {
                 expect(action.layer).toExist();
                 const layer = action.layer;
                 expect(layer.id).toExist();
-                expect(layer.id).toBe(LayersUtils.getLayerId(action.layer, []));
+                expect(layer.id).toBe(getLayerId(action.layer, []));
             } else if (action.type === CHANGE_LAYER_PROPERTIES) {
                 expect(action.layer).toExist();
                 expect(action.newProperties).toExist();
@@ -262,7 +316,7 @@ describe('Test correctness of the catalog actions', () => {
                 expect(action.layer).toExist();
                 const layer = action.layer;
                 expect(layer.id).toExist();
-                expect(layer.id).toBe(LayersUtils.getLayerId(action.layer, []));
+                expect(layer.id).toBe(getLayerId(action.layer, []));
             } else if (action.type === CHANGE_LAYER_PROPERTIES) {
                 expect(action.layer).toExist();
                 expect(action.newProperties).toExist();
@@ -285,7 +339,7 @@ describe('Test correctness of the catalog actions', () => {
                 expect(action.layer).toExist();
                 const layer = action.layer;
                 expect(layer.id).toExist();
-                expect(layer.id).toBe(LayersUtils.getLayerId(action.layer, []));
+                expect(layer.id).toBe(getLayerId(action.layer, []));
             } else if (action.type === DESCRIBE_ERROR) {
                 expect(action.layer).toExist();
                 expect(action.error).toExist();
@@ -327,5 +381,22 @@ describe('Test correctness of the catalog actions', () => {
         expect(action.type).toBe(SHOW_NOTIFICATION);
         expect(action.message).toBe("catalog.notification.errorSearchingRecords");
         expect(action.values).toEqual({ records: "topp:states , topp:states-tasmania" });
+    });
+    it('test formatOptionsFetch', () => {
+        const action = formatOptionsFetch(url);
+        expect(action.type).toBe(FORMAT_OPTIONS_FETCH);
+        expect(action.url).toBe(url);
+    });
+    it('test formatsLoading', () => {
+        const action = formatsLoading(false);
+        expect(action.type).toBe(FORMAT_OPTIONS_LOADING);
+        expect(action.loading).toBe(false);
+    });
+    it('test setSupportedFormats', () => {
+        const formats = {imageFormats: ["image/png"], infoFormats: ["text/plain"]};
+        const action = setSupportedFormats(formats, url);
+        expect(action.type).toBe(SET_FORMAT_OPTIONS);
+        expect(action.formats).toEqual(formats);
+        expect(action.url).toEqual(url);
     });
 });

@@ -6,7 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const {
+import {
     UPDATE_TEMPORARY_STYLE,
     UPDATE_STATUS,
     ERROR_STYLE,
@@ -15,8 +15,11 @@ const {
     LOADING_STYLE,
     LOADED_STYLE,
     INIT_STYLE_SERVICE,
-    SET_EDIT_PERMISSION
-} = require('../actions/styleeditor');
+    SET_EDIT_PERMISSION,
+    UPDATE_EDITOR_METADATA
+} from '../actions/styleeditor';
+
+import isString from 'lodash/isString';
 
 function styleeditor(state = {}, action) {
     switch (action.type) {
@@ -65,7 +68,8 @@ function styleeditor(state = {}, action) {
     case RESET_STYLE_EDITOR: {
         return {
             service: state.service && {...state.service} || {},
-            canEdit: state.canEdit
+            canEdit: state.canEdit,
+            loading: state.loading
         };
     }
     case ADD_STYLE: {
@@ -74,8 +78,7 @@ function styleeditor(state = {}, action) {
     case LOADING_STYLE: {
         return {
             ...state,
-            loading: action.status ? action.status : true,
-            error: {}
+            loading: action.status ? action.status : true
         };
     }
     case LOADED_STYLE: {
@@ -86,7 +89,9 @@ function styleeditor(state = {}, action) {
         };
     }
     case ERROR_STYLE: {
-        const message = action.error && action.error.statusText || '';
+        const message = action?.error?.statusText || action?.error?.message || '';
+        const messageIdParam = isString(action?.error?.messageId)
+            && { messageId: action.error.messageId };
         const position = message.match(/line\s([\d]+)|column\s([\d]+)|lineNumber:\s([\d]+)|columnNumber:\s([\d]+)/g);
         const errorInfo = position && position.length === 2 && position.reduce((info, pos) => {
             const splittedValues = pos.split(' ');
@@ -96,11 +101,15 @@ function styleeditor(state = {}, action) {
                 ...info,
                 [param]: value
             } || { ...info };
-        }, { message }) || { message };
+        }, { message, ...messageIdParam }) || { message, ...messageIdParam };
         return {
             ...state,
             loading: false,
-            canEdit: !(action.error && (action.error.status === 401 || action.error.status === 403)),
+            canEdit: !(action.error && (
+                action.error.status === 401 ||
+                action.error.status === 403 ||
+                (action.error.message && action.error.message.indexOf("could not be unmarshalled") !== -1))
+            ),
             error: {
                 ...state.error,
                 [action.status || 'global']: {
@@ -110,9 +119,18 @@ function styleeditor(state = {}, action) {
             }
         };
     }
+    case UPDATE_EDITOR_METADATA: {
+        return {
+            ...state,
+            metadata: {
+                ...state.metadata,
+                ...action.metadata
+            }
+        };
+    }
     default:
         return state;
     }
 }
 
-module.exports = styleeditor;
+export default styleeditor;

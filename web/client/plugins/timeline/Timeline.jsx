@@ -5,30 +5,35 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const React = require('react');
-const { connect } = require('react-redux');
-const { isString, differenceBy, isNil } = require('lodash');
-const { currentTimeSelector } = require('../../selectors/dimension');
+import React from 'react';
 
+import { connect } from 'react-redux';
+import { isString, isObject, differenceBy, isNil } from 'lodash';
+import { currentTimeSelector } from '../../selectors/dimension';
+import { selectTime, selectLayer, onRangeChanged } from '../../actions/timeline';
 
-const { selectTime, selectLayer, onRangeChanged } = require('../../actions/timeline');
-const { itemsSelector, loadingSelector, selectedLayerSelector, currentTimeRangeSelector, rangeSelector, timelineLayersSelector } = require('../../selectors/timeline');
-const { moveTime, setCurrentOffset } = require('../../actions/dimension');
-const { selectPlaybackRange } = require('../../actions/playback');
-const { playbackRangeSelector, statusSelector } = require('../../selectors/playback');
-const { createStructuredSelector, createSelector } = require('reselect');
-const { createShallowSelectorCreator } = require('../../utils/ReselectUtils');
+import {
+    itemsSelector,
+    loadingSelector,
+    selectedLayerSelector,
+    currentTimeRangeSelector,
+    rangeSelector,
+    timelineLayersSelector
+} from '../../selectors/timeline';
 
-const { compose, withPropsOnChange, defaultProps } = require('recompose');
-const withMask = require('../../components/misc/enhancers/withMask');
-const Message = require('../../components/I18N/Message');
-const LoadingSpinner = require('../../components/misc/LoadingSpinner');
-
-
-const customTimesHandlers = require('../../components/time/enhancers/customTimesHandlers');
-const customTimesEnhancer = require('../../components/time/enhancers/customTimesEnhancer');
-
-const moment = require('moment');
+import { moveTime, setCurrentOffset } from '../../actions/dimension';
+import { selectPlaybackRange } from '../../actions/playback';
+import { playbackRangeSelector, statusSelector } from '../../selectors/playback';
+import { createStructuredSelector, createSelector } from 'reselect';
+import { createShallowSelectorCreator } from '../../utils/ReselectUtils';
+import { compose, withPropsOnChange, defaultProps } from 'recompose';
+import withMask from '../../components/misc/enhancers/withMask';
+import Message from '../../components/I18N/Message';
+import LoadingSpinner from '../../components/misc/LoadingSpinner';
+import customTimesHandlers from '../../components/time/enhancers/customTimesHandlers';
+import customTimesEnhancer from '../../components/time/enhancers/customTimesEnhancer';
+import moment from 'moment';
+import { currentLocaleSelector } from '../../selectors/locale';
 /**
  * Optimization to skip re-render when the layers update properties that are not needed.
  * Typically `loading` attribute
@@ -50,27 +55,30 @@ const layerData = compose(
             itemsSelector,
             timeLayersSelector,
             loadingSelector,
-            (viewRange, items, layers, loading) => ({
+            currentLocaleSelector,
+            (viewRange, items, layers, loading, currentLocale) => ({
                 viewRange,
                 items,
                 layers,
-                loading
+                loading,
+                currentLocale
             })
         )
     ),
     withPropsOnChange(
         (props, nextProps) => {
-            const { layers = [], loading, selectedLayer} = props;
-            const { layers: nextLayers, loading: nextLoading, selectedLayer: nextSelectedLayer } = nextProps;
+            const { layers = [], loading, selectedLayer, currentLocale} = props;
+            const { layers: nextLayers, loading: nextLoading, selectedLayer: nextSelectedLayer, nextLocale } = nextProps;
             const hideNamesChange = props.hideLayersName !== nextProps.hideLayersName;
             return loading !== nextLoading
                 || selectedLayer !== nextSelectedLayer
+                || currentLocale !== nextLocale
                 || hideNamesChange
                 || (layers && nextLayers && layers.length !== nextLayers.length)
                 || differenceBy(layers, nextLayers || [], ({id, title, name} = {}) => id + title + name).length > 0;
         },
         // (props = {}, nextProps = {}) => Object.keys(props.data).length !== Object.keys(nextProps.data).length,
-        ({ layers = [], loading = {}, selectedLayer }) => ({
+        ({ layers = [], loading = {}, selectedLayer, currentLocale }) => ({
             groups: layers.map((l) => ({
                 id: l.id,
                 className: (loading[l.id] ? "loading" : "") + ((l.id && l.id === selectedLayer) ? " selected" : ""),
@@ -82,8 +90,8 @@ const layerData = compose(
                                 ? '<i class="glyphicon glyphicon-time"></i>'
                                 : ''
                             }</div>`)
-                        + `<div class="timeline-layer-title">${(isString(l.title) ? l.title : l.name)}</div>`
-                    + "</div>" // TODO: i18n for layer titles*/
+                        + `<div class="timeline-layer-title">${isObject(l.title) ? l.title[currentLocale] ?? l.title.default : isString(l.title) && l.title ? l.title : l.name}</div>`
+                    + "</div>"
             }))
         })
     )
@@ -196,6 +204,7 @@ const enhance = compose(
         {white: true}
     )
 );
-const Timeline = require('../../components/time/TimelineComponent');
+import Timeline from '../../components/time/TimelineComponent';
 
-module.exports = enhance(Timeline);
+
+export default enhance(Timeline);

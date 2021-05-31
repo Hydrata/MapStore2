@@ -21,7 +21,7 @@ import {addLayer as addNewLayer, changeLayerProperties} from './layers';
 import { zoomToExtent } from './map';
 
 
-import * as LayersUtils from '../utils/LayersUtils';
+import {getLayerId, getLayerUrl} from '../utils/LayersUtils';
 import * as ConfigUtils from '../utils/ConfigUtils';
 import {find} from 'lodash';
 import {authkeyParamNameSelector} from '../selectors/catalog';
@@ -43,7 +43,7 @@ export const CHANGE_METADATA_TEMPLATE = 'CATALOG:CHANGE_METADATA_TEMPLATE';
 export const CHANGE_TITLE = 'CATALOG:CHANGE_TITLE';
 export const CHANGE_TEXT = 'CATALOG:CHANGE_TEXT';
 export const CHANGE_TYPE = 'CATALOG:CHANGE_TYPE';
-export const CHANGE_SERVICE_PROPERTY = "CATALOG:CHANGE_SERVICE_PROPERTY";
+export const CHANGE_SERVICE_PROPERTY = 'CATALOG:CHANGE_SERVICE_PROPERTY';
 export const CHANGE_SERVICE_FORMAT = 'CATALOG:CHANGE_SERVICE_FORMAT';
 export const FOCUS_SERVICES_LIST = 'CATALOG:FOCUS_SERVICES_LIST';
 export const CHANGE_URL = 'CATALOG:CHANGE_URL';
@@ -58,6 +58,9 @@ export const SET_LOADING = 'CATALOG:SET_LOADING';
 export const TOGGLE_TEMPLATE = 'CATALOG:TOGGLE_TEMPLATE';
 export const TOGGLE_THUMBNAIL = 'CATALOG:TOGGLE_THUMBNAIL';
 export const TOGGLE_ADVANCED_SETTINGS = 'CATALOG:TOGGLE_ADVANCED_SETTINGS';
+export const FORMAT_OPTIONS_FETCH = 'CATALOG:FORMAT_OPTIONS_FETCH';
+export const FORMAT_OPTIONS_LOADING = 'CATALOG:FORMAT_OPTIONS_LOADING';
+export const SET_FORMAT_OPTIONS = 'CATALOG:SET_FORMAT_OPTIONS';
 
 /**
  * Adds a list of layers from the given catalogs to the map
@@ -264,14 +267,14 @@ export function addLayerAndDescribe(layer, {zoomToLayer = false} = {}) {
     return (dispatch, getState) => {
         const state = getState();
         const layers = layersSelector(state);
-        const id = LayersUtils.getLayerId(layer, layers || []);
+        const id = getLayerId(layer, layers || []);
         dispatch(addNewLayer({...layer, id}));
         if (zoomToLayer && layer.bbox) {
             dispatch(zoomToExtent(layer.bbox.bounds, layer.bbox.crs));
         }
         if (layer.type === 'wms') {
             // try to describe layer
-            return API.wms.describeLayers(LayersUtils.getLayerUrl(layer), layer.name).then((results) => {
+            return API.wms.describeLayers(getLayerUrl(layer), layer.name).then((results) => {
                 if (results) {
                     let description = find(results, (desc) => desc.name === layer.name );
                     if (description && description.owsType === 'WFS') {
@@ -308,6 +311,9 @@ export const changeMetadataTemplate = (metadataTemplate) => ({type: CHANGE_METAD
 export const toggleAdvancedSettings = () => ({type: TOGGLE_ADVANCED_SETTINGS});
 export const toggleTemplate = () => ({type: TOGGLE_TEMPLATE});
 export const toggleThumbnail = () => ({type: TOGGLE_THUMBNAIL});
+export const formatOptionsFetch = (url) => ({type: FORMAT_OPTIONS_FETCH, url});
+export const formatsLoading = (loading) => ({type: FORMAT_OPTIONS_LOADING, loading});
+export const setSupportedFormats = (formats, url) => ({type: SET_FORMAT_OPTIONS, formats, url});
 
 import {error} from './notifications';
 

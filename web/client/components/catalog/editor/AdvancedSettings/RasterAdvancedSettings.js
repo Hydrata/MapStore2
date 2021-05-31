@@ -6,27 +6,60 @@
  * LICENSE file in the root directory of this source tree.
  */
 import React from 'react';
-import Select from "react-select";
 import { FormGroup, Col, ControlLabel } from "react-bootstrap";
+import RS from 'react-select';
+import { DEFAULT_FORMAT_WMS } from '../../../../utils/CatalogUtils';
+import localizedProps from '../../../misc/enhancers/localizedProps';
+const Select = localizedProps('noResultsText')(RS);
+
 import CommonAdvancedSettings from './CommonAdvancedSettings';
+/**
+ * Generates an array of options in the form e.g. [{value: "256", label: "256x256"}]
+ * @param {number[]} opts an array of tile sizes
+ */
+const getTileSizeSelectOptions = (opts) => {
+    return opts.map(opt => ({label: `${opt}x${opt}`, value: opt}));
+};
 
 export default ({
     service,
-    formatOptions,
+    formatOptions =  DEFAULT_FORMAT_WMS,
     onChangeServiceFormat = () => { },
+    onChangeServiceProperty = () => {},
+    currentWMSCatalogLayerSize,
+    selectedService,
+    onFormatOptionsFetch = () => {},
+    advancedRasterSettingsStyles = {},
+    tileSizeOptions,
     ...props
 }) => {
-    return (<CommonAdvancedSettings service={service} {...props}>
-        <FormGroup style={{ display: 'flex', alignItems: 'center', paddingTop: 15, borderTop: '1px solid #ddd' }}>
+    const tileSelectOptions = getTileSizeSelectOptions(tileSizeOptions);
+    return (<CommonAdvancedSettings {...props} onChangeServiceProperty={onChangeServiceProperty} service={service} >
+        <FormGroup style={advancedRasterSettingsStyles}>
             <Col xs={6}>
                 <ControlLabel>Format</ControlLabel>
             </Col >
-            <Col xs={6}>
+            <Col xs={6} style={{marginBottom: '5px'}}>
                 <Select
+                    isLoading={props.formatsLoading}
+                    onOpen={() => onFormatOptionsFetch(service.url)}
                     value={service && service.format}
                     clearable
-                    options={formatOptions}
+                    noResultsText={props.formatsLoading
+                        ? "catalog.format.loading" : "catalog.format.noOption"}
+                    options={props.formatsLoading ? [] : formatOptions}
                     onChange={event => onChangeServiceFormat(event && event.value)} />
+            </Col >
+        </FormGroup>
+        <FormGroup style={advancedRasterSettingsStyles}>
+            <Col xs={6} >
+                <ControlLabel>WMS Layer tile size</ControlLabel>
+            </Col >
+            <Col xs={6} style={{marginBottom: '5px'}}>
+                <Select
+                    value={getTileSizeSelectOptions([service.layerOptions?.tileSize || 256])[0]}
+                    options={tileSelectOptions}
+                    onChange={event => onChangeServiceProperty("layerOptions", { tileSize: event && event.value })} />
             </Col >
         </FormGroup>
     </CommonAdvancedSettings>);

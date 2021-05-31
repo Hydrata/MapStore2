@@ -5,15 +5,16 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
 */
-const { castArray, findIndex, get, has, isArray, merge, omit, pick} = require('lodash');
-const assign = require('object-assign');
-const uuidv1 = require('uuid/v1');
-const xml2js = require('xml2js');
+import { castArray, findIndex, get, has, isArray, merge, omit, pick } from 'lodash';
+
+import assign from 'object-assign';
+import uuidv1 from 'uuid/v1';
+import xml2js from 'xml2js';
 const xmlBuilder = new xml2js.Builder();
 
-const axios = require('../libs/ajax');
-const ConfigUtils = require('../utils/ConfigUtils');
-const {registerErrorParser} = require('../utils/LocaleUtils');
+import axios from '../libs/ajax';
+import ConfigUtils from '../utils/ConfigUtils';
+import { registerErrorParser } from '../utils/LocaleUtils';
 
 const generateMetadata = (name = "", description = "") =>
     "<description><![CDATA[" + description + "]]></description>"
@@ -172,10 +173,14 @@ const Api = {
     },
     changePassword: function(user, newPassword, options) {
         return axios.put(
-            "users/user/" + user.id, "<User><newPassword>" + newPassword + "</newPassword></User>",
+            "users/user/" + user.id, {
+                User: {
+                    newPassword
+                }
+            },
             this.addBaseUrl(merge({
                 headers: {
-                    'Content-Type': "application/xml"
+                    'Content-Type': "application/json"
                 }
             }, options)));
     },
@@ -327,7 +332,7 @@ const Api = {
     getAvailableGroups: function(user) {
         if (user && user.role === "ADMIN") {
             return axios.get(
-                "usergroups/?all=true",
+                "usergroups/?all=true&users=false",
                 this.addBaseUrl({
                     headers: {
                         'Accept': "application/json"
@@ -512,4 +517,4 @@ const Api = {
     errorParser
 };
 
-module.exports = Api;
+export default Api;

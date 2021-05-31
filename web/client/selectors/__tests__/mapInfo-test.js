@@ -7,13 +7,16 @@
 */
 
 
-const expect = require('expect');
-const { set } = require('../../utils/ImmutableUtils');
-const {
+import expect from 'expect';
+
+import { set } from '../../utils/ImmutableUtils';
+
+import {
     mapInfoRequestsSelector,
     generalInfoFormatSelector,
     stopGetFeatureInfoSelector,
     isMapInfoOpen,
+    isMapPopup,
     mapInfoConfigurationSelector,
     showEmptyMessageGFISelector,
     clickPointSelector,
@@ -21,8 +24,13 @@ const {
     highlightStyleSelector,
     itemIdSelector,
     filterNameListSelector,
-    overrideParamsSelector
-} = require('../mapInfo');
+    overrideParamsSelector,
+    mapTriggerSelector,
+    hoverEnabledSelector,
+    currentFeatureSelector,
+    mapInfoEnabledSelector,
+    mapInfoDisabledSelector
+} from '../mapInfo';
 
 const QUERY_PARAMS = {
     service: 'WMS',
@@ -338,5 +346,46 @@ describe('Test mapinfo selectors', () => {
             set('mapInfo.responses[0].layerMetadata.features[0].geometry.type', "Polygon", STATE_HIGHLIGHT)
         ).features[0].style.radius).toNotExist();
     });
+    it('test mapTriggerSelector', () => {
+        // when no mapInfo object is not present in state
+        expect(mapTriggerSelector({})).toBe('click');
+        // when no trigger in the configuration
+        expect(mapTriggerSelector({mapInfo: { configuration: {} }})).toBe('click');
+        // when mapInfo is present
+        expect(mapTriggerSelector({mapInfo: { configuration: { trigger: 'hover' } }})).toBe('hover');
+    });
+    it('test hoverEnabledSelector', () => {
+        // when no mapInfo object is not present in state
+        expect(hoverEnabledSelector({})).toBe(true);
+        // when mapInfo is present
+        expect(hoverEnabledSelector({maptype: {mapType: "openlayers"} })).toBe(true);
+        expect(hoverEnabledSelector({maptype: {mapType: "cesium"} })).toBe(false);
+    });
+    it('isMapPopup', () => {
+        expect(isMapPopup({ mapInfo: {showInMapPopup: true} })).toBeTruthy();
+    });
 
+    it('test currentFeatureSelector with default index', () => {
+        const state = { mapInfo: {...RESPONSE_STATE_WITH_FEATURES_METADATA.mapInfo, highlight: true}};
+        const [feature] = currentFeatureSelector(state);
+        expect(feature).toBeTruthy();
+        expect(feature.id).toBe('poi.4');
+    });
+    it('test currentFeatureSelector with derived index', () => {
+        const mapInfo = RESPONSE_STATE_WITH_FEATURES_METADATA.mapInfo;
+        const state = { mapInfo: {...mapInfo, responses: [{response: "no features were found"}, {...mapInfo.responses[0]}], highlight: true, index: 1}};
+        const [feature] = currentFeatureSelector(state);
+        expect(feature).toBeTruthy();
+        expect(feature.id).toBe('poi.4');
+    });
+    it('test mapInfoEnabledSelector ', () => {
+        const state = { mapInfo: { enabled: true}};
+        const mapInfoEnabled = mapInfoEnabledSelector(state);
+        expect(mapInfoEnabled).toBeTruthy();
+    });
+    it('test mapInfoDisabledSelector ', () => {
+        const state = { mapInfo: { enabled: true}};
+        const mapInfoEnabled = mapInfoDisabledSelector(state);
+        expect(mapInfoEnabled).toBeFalsy();
+    });
 });

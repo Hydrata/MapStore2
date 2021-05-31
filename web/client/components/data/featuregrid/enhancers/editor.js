@@ -1,15 +1,31 @@
-const {featureTypeToGridColumns, getToolColumns, getRow, getRowVirtual, getGridEvents, applyAllChanges, createNewAndEditingFilter} = require('../../../../utils/FeatureGridUtils');
-const EditorRegistry = require('../../../../utils/featuregrid/EditorRegistry');
-const {compose, withPropsOnChange, withHandlers, defaultProps, createEventHandler} = require('recompose');
-const {isNil} = require('lodash');
-const {getFilterRenderer} = require('../filterRenderers');
-const {getFormatter} = require('../formatters');
-const {manageFilterRendererState} = require('../enhancers/filterRenderers');
+/*
+ * Copyright 2017, GeoSolutions Sas.
+ * All rights reserved.
+ *
+ * This source code is licensed under the BSD-style license found in the
+ * LICENSE file in the root directory of this source tree.
+*/
 
-const propsStreamFactory = require('../../../misc/enhancers/propsStreamFactory');
+import { isNil } from 'lodash';
+import { compose, createEventHandler, defaultProps, withHandlers, withPropsOnChange } from 'recompose';
 
-const editors = require('../editors');
-const {getRowIdx} = require('../../../../utils/FeatureGridUtils');
+import EditorRegistry from '../../../../utils/featuregrid/EditorRegistry';
+import {
+    applyAllChanges,
+    createNewAndEditingFilter,
+    featureTypeToGridColumns,
+    getGridEvents,
+    getRow,
+    getRowIdx,
+    getRowVirtual,
+    getToolColumns
+} from '../../../../utils/FeatureGridUtils';
+import propsStreamFactory from '../../../misc/enhancers/propsStreamFactory';
+import editors from '../editors';
+import { manageFilterRendererState } from '../enhancers/filterRenderers';
+import { getFilterRenderer } from '../filterRenderers';
+import { getFormatter } from '../formatters';
+
 const loadMoreFeaturesStream = $props => {
     return $props
         .distinctUntilChanged(({features: oF, pages: oPages, isFocused: oFocused}, {features: nF, pages: nPages, isFocused: nFocused}) => oF === nF && oFocused === nFocused && oPages === nPages)
@@ -55,12 +71,12 @@ const featuresToGrid = compose(
         newFeatures: [],
         select: [],
         changes: {},
-        focusOnEdit: true,
+        focusOnEdit: false,
         editors,
         dataStreamFactory,
         virtualScroll: true
     }),
-    withPropsOnChange("showDragHandle", ({showDragHandle = false} = {}) => ({
+    withPropsOnChange("showDragHandle", ({showDragHandle = true} = {}) => ({
         className: showDragHandle ? 'feature-grid-drag-handle-show' : 'feature-grid-drag-handle-hide'
     })),
     withPropsOnChange(
@@ -93,8 +109,9 @@ const featuresToGrid = compose(
                 .filter(props.focusOnEdit ? createNewAndEditingFilter(props.changes && Object.keys(props.changes).length > 0, props.newFeatures, props.changes) : () => true)
                 .map(orig => applyAllChanges(orig, props.changes)).map(result =>
                     ({...result,
+                        ["_!_id_!_"]: result.id,
                         get: key => {
-                            return (key === "id" || key === "geometry" || key === "_new") ? result[key] : result.properties && result.properties[key];
+                            return (key === "geometry" || key === "_new") ? result[key] : result.properties && result.properties[key];
                         }
                     }))
         })
@@ -106,10 +123,13 @@ const featuresToGrid = compose(
         })
     ),
     withPropsOnChange(
-        ["features", "newFeatures", "isFocused", "virtualScroll"],
-        props => ({
-            rowsCount: ( props.isFocused || !props.virtualScroll) && props.rows && props.rows.length || (props.pagination && props.pagination.totalFeatures) || 0
-        })
+        ["features", "newFeatures", "isFocused", "virtualScroll", "pagination"],
+        props => {
+            const rowsCount = (props.isFocused || !props.virtualScroll) && props.rows && props.rows.length || (props.pagination && props.pagination.totalFeatures) || 0;
+            return {
+                rowsCount
+            };
+        }
     ),
     withHandlers({rowGetter: props => props.virtualScroll && (i => getRowVirtual(i, props.rows, props.pages, props.size)) || (i => getRow(i, props.rows))}),
     withPropsOnChange(
@@ -173,7 +193,7 @@ const featuresToGrid = compose(
                     showCheckbox: props.mode === "EDIT",
                     selectBy: {
                         keys: {
-                            rowKey: 'id',
+                            rowKey: '_!_id_!_',
                             values: props.select.map(f => f.id)
                         }
                     },
@@ -196,6 +216,5 @@ const featuresToGrid = compose(
     ),
     propsStreamFactory
 );
-module.exports = {
-    featuresToGrid
-};
+
+export default featuresToGrid;

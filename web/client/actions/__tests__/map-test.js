@@ -6,8 +6,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-var expect = require('expect');
-var {
+import expect from 'expect';
+
+import {
     CHANGE_MAP_VIEW,
     CLICK_ON_MAP,
     CHANGE_MOUSE_POINTER,
@@ -47,10 +48,9 @@ var {
     unRegisterEventListener,
     mouseMove,
     mouseOut
-} = require('../map');
-const {
-    SHOW_NOTIFICATION
-} = require('../notifications');
+} from '../map';
+
+import { SHOW_NOTIFICATION } from '../notifications';
 
 describe('Test correctness of the map actions', () => {
 
@@ -134,13 +134,15 @@ describe('Test correctness of the map actions', () => {
     });
 
     it('zoom to extent', () => {
-        const retval = zoomToExtent([-30, -30, 30, 30], 'EPSG:4326', 18);
+        const options = {nearest: true};
+        const retval = zoomToExtent([-30, -30, 30, 30], 'EPSG:4326', 18, options);
 
         expect(retval).toExist();
         expect(retval.type).toBe(ZOOM_TO_EXTENT);
         expect(retval.extent).toExist();
         expect(retval.crs).toBe('EPSG:4326');
         expect(retval.maxZoom).toBe(18);
+        expect(retval.options).toEqual(options);
     });
 
     it('changes map crs', () => {

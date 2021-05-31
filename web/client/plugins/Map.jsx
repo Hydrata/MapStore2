@@ -6,23 +6,30 @@
  * LICENSE file in the root directory of this source tree.
 */
 
-const PropTypes = require('prop-types');
-const React = require('react');
-const {connect} = require('../utils/PluginsUtils');
-const {createSelector} = require('reselect');
+import PropTypes from 'prop-types';
+import React from 'react';
+import { connect, createPlugin } from '../utils/PluginsUtils';
+import { loadFont } from '../utils/AgentUtils';
+import assign from 'object-assign';
+import Spinner from 'react-spinkit';
+import './map/css/map.css';
+import Message from '../components/I18N/Message';
+import ConfigUtils from '../utils/ConfigUtils';
+import { errorLoadingFont, setMapResolutions } from '../actions/map';
+import { isString } from 'lodash';
+import selector from './map/selector';
+import mapReducer from "../reducers/map";
+import layersReducer from "../reducers/layers";
+import drawReducer from "../reducers/draw";
+import boxReducer from '../reducers/box';
+import highlightReducer from "../reducers/highlight";
+import mapTypeReducer from "../reducers/maptype";
+import additionalLayersReducer from "../reducers/additionallayers";
+import mapEpics from "../epics/map";
+import pluginsCreator from "./map/index";
+import withScalesDenominators from "../components/map/enhancers/withScalesDenominators";
+import { createFeatureFilter } from '../utils/FilterUtils';
 
-const {loadFont} = require('../utils/AgentUtils');
-
-const assign = require('object-assign');
-const Spinner = require('react-spinkit');
-require('./map/css/map.css');
-
-const Message = require('../components/I18N/Message');
-const ConfigUtils = require('../utils/ConfigUtils');
-const {errorLoadingFont, setMapResolutions} = require('../actions/map');
-
-const {isString} = require('lodash');
-let plugins;
 /**
  * The Map plugin allows adding mapping library dependent functionality using support tools.
  * Some are already available for the supported mapping libraries (openlayers, leaflet, cesium), but it's possible to develop new ones.
@@ -171,6 +178,7 @@ let plugins;
  *         "format": "application/bil16",
  *         "useForElevation": true,
  *         "nodata": -9999,
+ *         "littleendian": false,
  *         "hidden": true
  *      }]
  *   }
@@ -204,7 +212,9 @@ class MapPlugin extends React.Component {
         elevationEnabled: PropTypes.bool,
         isLocalizedLayerStylesEnabled: PropTypes.bool,
         localizedLayerStylesName: PropTypes.string,
-        currentLocaleLanguage: PropTypes.string
+        currentLocaleLanguage: PropTypes.string,
+        items: PropTypes.array,
+        onLoadingMapPlugins: PropTypes.func
     };
 
     static defaultProps = {
@@ -213,7 +223,7 @@ class MapPlugin extends React.Component {
         zoomControl: false,
         mapLoadingMessage: "map.loading",
         loadingSpinner: true,
-        tools: ["measurement", "locate", "scalebar", "draw", "highlight", "popup"],
+        tools: ["measurement", "scalebar", "draw", "highlight", "popup", "box"],
         options: {},
         mapOptions: {},
         fonts: ['FontAwesome'],
@@ -241,7 +251,9 @@ class MapPlugin extends React.Component {
         shouldLoadFont: false,
         elevationEnabled: false,
         onFontError: () => {},
-        onResolutionsChange: () => {}
+        onResolutionsChange: () => {},
+        items: [],
+        onLoadingMapPlugins: () => {}
     };
     state = {
         canRender: true
@@ -277,6 +289,7 @@ class MapPlugin extends React.Component {
     }
 
     getHighlightLayer = (projection, index, env) => {
+        const plugins = this.state.plugins;
         return (<plugins.Layer type="vector" srs={projection} position={index} key="highlight" options={{name: "highlight"}} env={env}>
             {this.props.features.map( (feature) => {
                 return (<plugins.Feature
@@ -294,7 +307,7 @@ class MapPlugin extends React.Component {
         if (isString(tool)) {
             return {
                 name: tool,
-                impl: plugins.tools[tool]
+                impl: this.state.plugins.tools[tool]
             };
         }
         return tool[this.props.mapType] || tool;
@@ -315,7 +328,7 @@ class MapPlugin extends React.Component {
                 value: this.props.currentLocaleLanguage
             });
         }
-
+        const plugins = this.state.plugins;
         return [...this.props.layers, ...this.props.additionalLayers].filter(this.filterLayer).map((layer, index) => {
             return (
                 <plugins.Layer
@@ -334,8 +347,9 @@ class MapPlugin extends React.Component {
     };
 
     renderLayerContent = (layer, projection) => {
+        const plugins = this.state.plugins;
         if (layer.features && layer.type === "vector") {
-            return layer.features.map( (feature) => {
+            return layer.features.filter(createFeatureFilter(layer.filterObj)).map( (feature) => {
                 return (
                     <plugins.Feature
                         key={feature.id}
@@ -356,19 +370,24 @@ class MapPlugin extends React.Component {
     };
 
     renderSupportTools = () => {
+        // Tools passed by other plugins
+        const toolsFromItems = this.props.items
+            .filter(({Tool}) => !!Tool)
+            .map(({Tool, name, cfg}) => <Tool {...cfg} key={name} mapType={this.props.mapType} />);
+
         return this.props.tools.map((tool) => {
             const Tool = this.getTool(tool);
             const options = this.props.toolsOptions[Tool.name] && this.props.toolsOptions[Tool.name][this.props.mapType] || this.props.toolsOptions[Tool.name] || {};
             return <Tool.impl key={Tool.name} {...options}/>;
-        });
+        }).concat(toolsFromItems);
     };
 
     render() {
-        if (this.props.map && this.state.canRender) {
+        if (this.props.map && this.state.canRender && this.state.plugins) {
             const {mapOptions = {}} = this.props.map;
 
             return (
-                <plugins.Map id="map"
+                <this.state.plugins.Map id="map"
                     {...this.props.options}
                     projectionDefs={this.props.projectionDefs}
                     {...this.props.map}
@@ -378,7 +397,7 @@ class MapPlugin extends React.Component {
                 >
                     {this.renderLayers()}
                     {this.renderSupportTools()}
-                </plugins.Map>
+                </this.state.plugins.Map>
             );
         }
         if (this.props.loadingError) {
@@ -408,75 +427,34 @@ class MapPlugin extends React.Component {
         return !layer.useForElevation || this.props.mapType === 'cesium' || this.props.elevationEnabled;
     };
     updatePlugins = (props) => {
-        plugins = require('./map/index')(props.mapType, props.actions);
+        this.currentMapType = props.mapType;
+        props.onLoadingMapPlugins(true);
+        // reset the map plugins to avoid previous map library in children
+        this.setState({plugins: undefined });
+        pluginsCreator(props.mapType, props.actions).then((plugins) => {
+            // #6652 fix mismatch on multiple concurrent plugins loading
+            // to make the last mapType match the list of plugins
+            if (plugins.mapType === this.currentMapType) {
+                this.setState({plugins});
+                props.onLoadingMapPlugins(false, props.mapType);
+            }
+        });
     };
 }
 
-const {mapSelector, projectionDefsSelector} = require('../selectors/map');
-const { mapTypeSelector, isOpenlayers } = require('../selectors/maptype');
-const {layerSelectorWithMarkers} = require('../selectors/layers');
-const {highlighedFeatures} = require('../selectors/highlight');
-const {securityTokenSelector} = require('../selectors/security');
-const {currentLocaleLanguageSelector} = require('../selectors/locale');
-const {
-    isLocalizedLayerStylesEnabledSelector,
-    localizedLayerStylesNameSelector
-} = require('../selectors/localizedLayerStyles');
-
-const selector = createSelector(
-    [
-        projectionDefsSelector,
-        mapSelector,
-        mapTypeSelector,
-        layerSelectorWithMarkers,
-        highlighedFeatures,
-        (state) => state.mapInitialConfig && state.mapInitialConfig.loadingError && state.mapInitialConfig.loadingError.data,
-        securityTokenSelector,
-        (state) => state.mousePosition && state.mousePosition.enabled,
-        isOpenlayers,
-        isLocalizedLayerStylesEnabledSelector,
-        localizedLayerStylesNameSelector,
-        currentLocaleLanguageSelector
-    ], (
-        projectionDefs,
-        map,
-        mapType,
-        layers,
-        features,
-        loadingError,
-        securityToken,
-        elevationEnabled,
-        shouldLoadFont,
-        isLocalizedLayerStylesEnabled,
-        localizedLayerStylesName,
-        currentLocaleLanguage
-    ) => ({
-        projectionDefs,
-        map,
-        mapType,
-        layers,
-        features,
-        loadingError,
-        securityToken,
-        elevationEnabled,
-        shouldLoadFont,
-        isLocalizedLayerStylesEnabled,
-        localizedLayerStylesName,
-        currentLocaleLanguage
-    })
-);
-module.exports = {
-    MapPlugin: connect(selector, {
+export default createPlugin('Map', {
+    component: connect(selector, {
         onFontError: errorLoadingFont,
         onResolutionsChange: setMapResolutions
-    })(MapPlugin),
+    })(withScalesDenominators(MapPlugin)),
     reducers: {
-        map: require('../reducers/map'),
-        layers: require('../reducers/layers'),
-        draw: require('../reducers/draw'),
-        highlight: require('../reducers/highlight'),
-        maptype: require('../reducers/maptype'),
-        additionallayers: require('../reducers/additionallayers')
+        map: mapReducer,
+        layers: layersReducer,
+        draw: drawReducer,
+        box: boxReducer,
+        highlight: highlightReducer,
+        maptype: mapTypeReducer,
+        additionallayers: additionalLayersReducer
     },
-    epics: require('../epics/map')
-};
+    epics: mapEpics
+});

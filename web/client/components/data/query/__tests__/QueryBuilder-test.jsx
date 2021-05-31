@@ -5,12 +5,13 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const React = require('react');
-const ReactDOM = require('react-dom');
 
-const expect = require('expect');
+import expect from 'expect';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import TestUtils from 'react-dom/test-utils';
 
-const QueryBuilder = require('../QueryBuilder.jsx');
+import QueryBuilder from '../QueryBuilder';
 
 describe('QueryBuilder', () => {
 
@@ -140,7 +141,7 @@ describe('QueryBuilder', () => {
 
         const queryButton = document.getElementById('query-toolbar-query');
         expect(queryButton).toExist();
-        expect(queryButton.getAttribute("disabled")).toBe('');
+        expect(queryButton.classList.contains("disabled")).toBe(true);
         // check presence of attribute, spatial and cross layer filter
         expect(document.querySelectorAll('.mapstore-switch-panel').length).toBe(3);
     });
@@ -197,6 +198,41 @@ describe('QueryBuilder', () => {
         document.getElementById("container"));
 
         expect(querybuilder).toExist();
+    });
+
+    it('shows the QueryPanelHeader component in error state', () => {
+
+        const querybuilder = ReactDOM.render(<QueryBuilder
+            featureTypeError={"true"}
+            featureTypeErrorText={"bla bla"}
+            featureTypeConfigUrl={"randomurl"} />,
+        document.getElementById("container"));
+
+        expect(querybuilder).toExist();
+        const closeButton = document.getElementById("toc-query-close-button");
+        expect(closeButton).toExist();
+    });
+
+    it('calls onToggleQuery in error state on click closeButton', () => {
+        const controlActions = {onToggleQuery: () => {}};
+        const spy =  expect.spyOn(controlActions, 'onToggleQuery');
+        let querybuilder;
+        TestUtils.act(() => {
+            querybuilder =  ReactDOM.render(<QueryBuilder
+                controlActions={controlActions}
+                featureTypeError={"true"}
+                featureTypeErrorText={"bla bla"}
+                featureTypeConfigUrl={"randomurl"} />,
+            document.getElementById("container"));
+
+        });
+
+        expect(querybuilder).toExist();
+        const closeButton = document.getElementById("toc-query-close-button");
+        TestUtils.act(() => {
+            TestUtils.Simulate.click(closeButton);
+        });
+        expect(spy).toHaveBeenCalled();
     });
 
     it('creates the QueryBuilder component with empty filter support', () => {

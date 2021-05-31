@@ -5,18 +5,23 @@
 * This source code is licensed under the BSD-style license found in the
 * LICENSE file in the root directory of this source tree.
 */
-const PropTypes = require('prop-types');
-const React = require('react');
-const {get} = require('lodash');
-const Portal = require('../../misc/Portal');
-const ResizableModal = require('../../misc/ResizableModal');
+
+import { get } from 'lodash';
+import PropTypes from 'prop-types';
+import React from 'react';
 // require('./css/modals.css');
-const {Grid} = require('react-bootstrap');
-const Message = require('../../I18N/Message');
-const ErrorBox = require('./fragments/ErrorBox');
-const MainForm = require('./fragments/MainForm');
-const ruleEditor = require('./enhancers/ruleEditor');
-const PermissionEditor = ruleEditor(require('./fragments/PermissionEditor'));
+import { Grid } from 'react-bootstrap';
+
+import Message from '../../I18N/Message';
+import Portal from '../../misc/Portal';
+import ResizableModal from '../../misc/ResizableModal';
+import ruleEditor from './enhancers/ruleEditor';
+import DetailsComp from './fragments/Details';
+import ErrorBox from './fragments/ErrorBox';
+import MainForm from './fragments/MainForm';
+import PermissionEditorComp from './fragments/PermissionEditor';
+
+const PermissionEditor = ruleEditor(PermissionEditorComp);
 
 /**
  * Defines if the resource permissions are available or not.
@@ -68,6 +73,10 @@ class SaveModal extends React.Component {
         linkedResources: PropTypes.object,
         style: PropTypes.object,
         modalSize: PropTypes.string,
+        enableDetails: PropTypes.bool,
+        detailsComponent: PropTypes.element,
+        detailsEditor: PropTypes.string,
+        detailsEditorProps: PropTypes.object,
         // CALLBACKS
         onError: PropTypes.func,
         onUpdate: PropTypes.func,
@@ -105,13 +114,15 @@ class SaveModal extends React.Component {
         onError: ()=> {},
         onUpdate: ()=> {},
         onUpdateLinkedResource: () => {},
+        onDeleteLinkedResource: () => {},
         onSave: ()=> {},
         disablePermission: false,
         availablePermissions: ["canRead", "canWrite"],
         availableGroups: [],
         canSave: true,
         user: {},
-        dialogClassName: ''
+        dialogClassName: '',
+        detailsComponent: require('./enhancers/handleDetails').default((DetailsComp))
     };
     onCloseMapPropertiesModal = () => {
         this.props.onClose();
@@ -126,9 +137,10 @@ class SaveModal extends React.Component {
     */
     render() {
         const canEditPermission = !this.props.disablePermission && canEditResourcePermission(this.props.user, this.props.resource);
+        const Details = this.props.detailsComponent;
 
         return (<Portal key="saveDialog">
-            {<ResizableModal
+            <ResizableModal
                 loading={this.props.loading}
                 title={<Message msgId={this.props.title}/>}
                 show={this.props.show}
@@ -166,6 +178,15 @@ class SaveModal extends React.Component {
                             onError={this.props.onError}
                             nameFieldFilter={this.props.nameFieldFilter}
                             onUpdate={this.props.onUpdate} />
+                        {this.props.enableDetails && <Details
+                            editor={this.props.detailsEditor}
+                            editorProps={this.props.detailsEditorProps}
+                            loading={this.props.loading}
+                            resource={this.props.resource}
+                            linkedResources={this.props.linkedResources}
+                            onUpdateResource={this.props.onUpdate}
+                            onUpdateLinkedResource={this.props.onUpdateLinkedResource}/>
+                        }
                         {
                             !!canEditPermission &&  <PermissionEditor
                                 rules={this.props.rules}
@@ -175,10 +196,10 @@ class SaveModal extends React.Component {
                         }
                     </div>
                 </Grid>
-            </ResizableModal>}
+            </ResizableModal>
         </Portal>);
     }
     isValidForm = () => get(this.props.resource, "metadata.name") && (!this.props.enableFileDrop || this.props.fileDropStatus === 'accepted')
 }
 
-module.exports = SaveModal;
+export default SaveModal;

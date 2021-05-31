@@ -9,7 +9,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Rx from 'rxjs';
-import { isArray, zip } from 'lodash';
+import { isArray, zip, split, isNil, bind } from 'lodash';
 import { compose, getContext } from 'recompose';
 import { Glyphicon } from 'react-bootstrap';
 
@@ -21,7 +21,7 @@ import withShareTool from '../resources/enhancers/withShareTool';
 import withFilter from './enhancers/withFilter';
 import withDelete from './enhancers/withDelete';
 import withEdit from './enhancers/withEdit';
-import LocaleUtils from '../../utils/LocaleUtils';
+import {getMessageById} from '../../utils/LocaleUtils';
 import Toolbar from '../misc/toolbar/Toolbar';
 import Filter from '../misc/Filter';
 import MapCatalog from '../maps/MapCatalog';
@@ -69,6 +69,22 @@ const loadPage = ({searchText = '', limit = 12} = {}, page = 0) => searchMaps({
     }
 });
 
+const onClickHandler = (map, router, mapType, toggleCatalog, reloadFunction) => {
+    toggleCatalog();
+    // reload if the same context was selected from catalog
+    const {location} = router.history;
+    if (!isNil(location.pathname)
+    && (map.contextName === split(location.pathname, '/')[2])
+    && (map.id === Number(split(location.pathname, '/')[3]))) {
+        reloadFunction();
+    } else {
+        router.history.push(map.contextName ?
+            "/context/" + map.contextName + "/" + map.id :
+            "/viewer/" + mapType + "/" + map.id
+        );
+    }
+};
+
 const MapCatalogPanel = ({
     loading,
     mapType,
@@ -79,7 +95,9 @@ const MapCatalogPanel = ({
     onEdit = () => {},
     onShare = () => {},
     messages = {},
-    router = {}
+    router = {},
+    toggleCatalog = () => {},
+    reloadFunction = bind(window.location.reload, window.location)
 }) => {
     const mapToItem = (map) => ({
         title: map.name,
@@ -122,10 +140,7 @@ const MapCatalogPanel = ({
                     <img src={decodeURIComponent(map.thumbnail)}/> :
                     <Glyphicon glyph="1-map"/>}
             </div>,
-        onClick: () => router.history.push(map.contextName ?
-            "/context/" + map.contextName + "/" + map.id :
-            "/viewer/" + mapType + "/" + map.id
-        )
+        onClick: () => onClickHandler(map, router, mapType, toggleCatalog, reloadFunction)
     });
 
     return (
@@ -138,7 +153,7 @@ const MapCatalogPanel = ({
                 }}
                 header={<Filter
                     filterText={filterText}
-                    filterPlaceholder={LocaleUtils.getMessageById(messages, 'mapCatalog.filterPlaceholder')}
+                    filterPlaceholder={getMessageById(messages, 'mapCatalog.filterPlaceholder')}
                     onFilter={onFilter}/>
                 }
                 items={items.map(mapToItem)}/>

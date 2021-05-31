@@ -45,11 +45,16 @@ const Immersive = ({
     storyTheme,
     mediaViewer,
     contentToolbar,
-    inView
+    inView,
+    sections = [],
+    storyFonts
 }) => {
     const hideContent = focusedContent && focusedContent.hideContent && (get(focusedContent, "target.id") === contentId);
     const visibility = hideContent ? 'hidden' : 'visible';
     const expandableBackgroundClassName = expandableMedia && background && background.type === 'map' ? ' ms-expandable-background' : '';
+    const overlayStoryTheme = storyTheme?.overlay || {};
+    const generalStoryTheme = storyTheme?.general || {};
+
     return (<section
         className={`ms-section ms-section-immersive${expandableBackgroundClassName}`}
         id={id}
@@ -83,7 +88,7 @@ const Immersive = ({
                 background: `url(${pattern})`,
                 backgroundSize: '600px auto'
             }}
-            storyTheme={storyTheme}
+            storyTheme={generalStoryTheme}
             mediaViewer={mediaViewer}
             contentToolbar={contentToolbar}
             inView={inView}/>
@@ -113,7 +118,9 @@ const Immersive = ({
             focusedContent={focusedContent}
             bubblingTextEditing={bubblingTextEditing}
             sectionType={sectionType}
-            storyTheme={storyTheme}
+            storyTheme={overlayStoryTheme}
+            sections={sections}
+            storyFonts={storyFonts}
         />
         {mode === Modes.EDIT && !hideContent && <AddBar
             containerWidth={viewWidth}
@@ -123,6 +130,13 @@ const Immersive = ({
                 tooltipId: 'geostory.addTitleSection',
                 onClick: () => {
                     add('sections', id, SectionTypes.TITLE);
+                }
+            },
+            {
+                glyph: 'story-banner-section',
+                tooltipId: 'geostory.addBannerSection',
+                onClick: () => {
+                    add('sections', id, SectionTypes.BANNER);
                 }
             },
             {

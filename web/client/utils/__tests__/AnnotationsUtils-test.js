@@ -5,23 +5,48 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
 */
-const expect = require('expect');
+import expect from 'expect';
 
-const feature = require("../../test-resources/Annotation_geomColl.json");
+import feature from '../../test-resources/Annotation_geomColl.json';
+import MarkerUtils from '../MarkerUtils';
 
-const {getAvailableStyler, getRelativeStyler, convertGeoJSONToInternalModel,
-    DEFAULT_ANNOTATIONS_STYLES, createFont, circlesToMultiPolygon, textToPoint,
-    flattenGeometryCollection, normalizeAnnotation, removeDuplicate,
-    formatCoordinates, getComponents, addIds, validateCoords, validateCoordsArray,
-    validateCoord, getBaseCoord, validateText, validateCircle, validateCoordinates,
-    coordToArray, validateFeature, fromTextToPoint, fromCircleToPolygon,
-    fromAnnotationToGeoJson, annotationsToPrint,
+
+import {
+    getAvailableStyler,
+    getRelativeStyler,
+    convertGeoJSONToInternalModel,
+    DEFAULT_ANNOTATIONS_STYLES,
+    createFont,
+    circlesToMultiPolygon,
+    textToPoint,
+    flattenGeometryCollection,
+    normalizeAnnotation,
+    removeDuplicate,
+    formatCoordinates,
+    getComponents,
+    addIds,
+    validateCoords,
+    validateCoordsArray,
+    validateCoord,
+    getBaseCoord,
+    validateText,
+    validateCircle,
+    validateCoordinates,
+    coordToArray,
+    validateFeature,
+    fromTextToPoint,
+    fromCircleToPolygon,
+    fromAnnotationToGeoJson,
+    annotationsToPrint,
     getStartEndPointsForLinestring,
     createGeometryFromGeomFunction,
     updateAllStyles,
-    fromLineStringToGeodesicLineString, isCompletePolygon,
-    getDashArrayFromStyle
-} = require('../AnnotationsUtils');
+    fromLineStringToGeodesicLineString,
+    isCompletePolygon,
+    getDashArrayFromStyle,
+    getGeometryType,
+    getGeometryGlyphInfo
+} from '../AnnotationsUtils';
 
 const featureCollection = {
     features: [{
@@ -91,7 +116,20 @@ const geodesicLineString = {
         }
     }
 };
+
 describe('Test the AnnotationsUtils', () => {
+    let old = MarkerUtils.extraMarkers.images[1];
+    beforeEach((done) => {
+        // prevent issues with lazy load in karma by faking image and preloading
+        MarkerUtils.extraMarkers.images[1] = new Image();
+        MarkerUtils.extraMarkers.images[1].onload = () => {
+            done();
+        };
+        MarkerUtils.extraMarkers.images[1].src = MarkerUtils.extraMarkers.images[0].src;
+    });
+    afterEach(() => {
+        MarkerUtils.extraMarkers.images[1] = old;
+    });
     it('getAvailableStyler for point or MultiPoint', () => {
         let stylers = getAvailableStyler({type: "Point"});
         expect(stylers.length).toBe(1);
@@ -543,6 +581,32 @@ describe('Test the AnnotationsUtils', () => {
 
         textAnnot.components = [undefined, 4];
         expect(validateCircle(textAnnot)).toBe(false);
+    });
+    it('test getGeometryType', ()=>{
+        let geomFeature = {};
+        expect(getGeometryType(geomFeature)).toBeFalsy();
+
+        geomFeature = {...geomFeature, properties: {isCircle: true}};
+        expect(getGeometryType(geomFeature)).toBe('Circle');
+
+        geomFeature = {properties: {isText: true}};
+        expect(getGeometryType(geomFeature)).toBe('Text');
+
+        geomFeature = {geometry: {type: "Polygon"}};
+        expect(getGeometryType(geomFeature)).toBe('Polygon');
+    });
+    it('test getGeometryGlyphInfo', ()=>{
+        let point = '';
+        expect(getGeometryGlyphInfo().glyph).toBe('point');
+
+        point = 'LineString';
+        expect(getGeometryGlyphInfo(point).glyph).toBe('polyline');
+
+        point = 'Text';
+        expect(getGeometryGlyphInfo(point).glyph).toBe('font');
+
+        point = 'Circle';
+        expect(getGeometryGlyphInfo(point).glyph).toBe('1-circle');
     });
     it('test validateCoordinates defaults', () => {
         let components = [{lat: 4, lon: 4}];

@@ -5,12 +5,13 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
 */
-const {Glyphicon, DropdownButton, MenuItem} = require('react-bootstrap');
-const tooltip = require('../../misc/enhancers/tooltip');
-const {DEFAULT_ANNOTATIONS_STYLES, getStartEndPointsForLinestring} = require('../../../utils/AnnotationsUtils');
-const React = require('react');
-const uuidv1 = require('uuid/v1');
-const assign = require('object-assign');
+import { Glyphicon, DropdownButton, MenuItem } from 'react-bootstrap';
+
+import tooltip from '../../misc/enhancers/tooltip';
+import { DEFAULT_ANNOTATIONS_STYLES, getStartEndPointsForLinestring } from '../../../utils/AnnotationsUtils';
+import React from 'react';
+import uuidv1 from 'uuid/v1';
+import assign from 'object-assign';
 
 
 const DropdownButtonT = tooltip(DropdownButton);
@@ -19,6 +20,8 @@ const DropdownFeatureType = ({
     onStartDrawing = () => {},
     onAddText = () => {},
     onSetStyle = () => {},
+    defaultStyles = {},
+    defaultPointType = 'marker',
     titles = {},
     glyph = "",
     bsStyle = "primary",
@@ -35,7 +38,7 @@ const DropdownFeatureType = ({
 
         <MenuItem eventKey="1" onClick={() => {
             onClick("Point");
-            onSetStyle([{ ...DEFAULT_ANNOTATIONS_STYLES.Point, highlight: true, id: uuidv1()}]);
+            onSetStyle([{ ...defaultStyles.POINT?.[defaultPointType], highlight: true, id: uuidv1()}]);
             onStartDrawing();
         }}>
             <Glyphicon glyph="point"/>{titles.marker}
@@ -85,4 +88,4 @@ const DropdownFeatureType = ({
     </DropdownButtonT>
 );
 
-module.exports = DropdownFeatureType;
+export default DropdownFeatureType;

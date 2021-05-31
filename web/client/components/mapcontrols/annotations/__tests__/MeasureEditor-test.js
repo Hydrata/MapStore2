@@ -5,11 +5,12 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
 */
-const React = require('react');
-const ReactDOM = require('react-dom');
-const ReactTestUtils = require('react-dom/test-utils');
-const expect = require('expect');
-const MeasureEditor = require('../MeasureEditor');
+import React from 'react';
+
+import ReactDOM from 'react-dom';
+import ReactTestUtils from 'react-dom/test-utils';
+import expect from 'expect';
+import MeasureEditor from '../MeasureEditor';
 
 describe('MeasureEditor component', () => {
     beforeEach((done) => {
@@ -76,6 +77,7 @@ describe('MeasureEditor component', () => {
         const container = document.getElementById('container');
 
         const el = container.querySelector('input');
+        ReactTestUtils.Simulate.focus(el);
         el.value = "1";
         ReactTestUtils.Simulate.change(el);
         ReactDOM.render(<MeasureEditor onChange={actions.onChange} displayUom="km" value={1000} />, document.getElementById("container"));

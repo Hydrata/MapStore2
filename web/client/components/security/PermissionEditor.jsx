@@ -1,4 +1,3 @@
-const PropTypes = require('prop-types');
 /**
 * Copyright 2016, GeoSolutions Sas.
 * All rights reserved.
@@ -7,14 +6,17 @@ const PropTypes = require('prop-types');
 * LICENSE file in the root directory of this source tree.
 */
 
-const React = require('react');
-const assign = require('object-assign');
-const _ = require('lodash');
-const Select = require('react-select').default;
-const Spinner = require('react-spinkit');
-const {Table, Button, Glyphicon} = require('react-bootstrap');
-const Message = require('../I18N/Message');
-const LocaleUtils = require('../../utils/LocaleUtils');
+import React from 'react';
+
+import PropTypes from 'prop-types';
+import assign from 'object-assign';
+import {find, findIndex, head} from 'lodash';
+import Select from 'react-select';
+import Spinner from 'react-spinkit';
+import { Table, Glyphicon } from 'react-bootstrap';
+import Message from '../I18N/Message';
+import { getMessageById } from '../../utils/LocaleUtils';
+import Button from '../misc/Button';
 
 /**
 * Map permission editor
@@ -71,8 +73,8 @@ class PermissionEditor extends React.Component {
     };
 
     onNewGroupChoose = (selected) => {
-        // TODO: use _.find(this.props.availableGroups,['id', _.toInteger(id)]) when lodash will be updated to version 4
-        this.props.onNewGroupChoose(_.find(this.props.availableGroups, (o)=> o.id === selected.value));
+        // TODO: use find(this.props.availableGroups,['id', toInteger(id)]) when lodash will be updated to version 4
+        this.props.onNewGroupChoose(find(this.props.availableGroups, (o)=> o.id === selected.value));
     };
 
     onAddPermission = () => {
@@ -139,9 +141,9 @@ class PermissionEditor extends React.Component {
     getPermissonLabel = (perm) => {
         switch (perm) {
         case "canRead":
-            return LocaleUtils.getMessageById(this.context.messages, "map.permissions.canView");
+            return getMessageById(this.context.messages, "map.permissions.canView");
         case "canWrite":
-            return LocaleUtils.getMessageById(this.context.messages, "map.permissions.canWrite");
+            return getMessageById(this.context.messages, "map.permissions.canWrite");
         default:
             return perm;
         }
@@ -220,11 +222,11 @@ class PermissionEditor extends React.Component {
                         <tr key="addRowKey">
                             <td>
                                 <Select
-                                    noResultsText={LocaleUtils.getMessageById(this.context.messages, "map.permissions.noResult")}
+                                    noResultsText={getMessageById(this.context.messages, "map.permissions.noResult")}
                                     ref="newGroup"
                                     isLoading={!this.getSelectableGroups()}
                                     clearable={false}
-                                    placeholder={LocaleUtils.getMessageById(this.context.messages, "map.permissions.selectGroup")}
+                                    placeholder={getMessageById(this.context.messages, "map.permissions.selectGroup")}
                                     options={this.getSelectableGroups()}
                                     value={this.props.newGroup && this.props.newGroup.id}
                                     onChange={this.onNewGroupChoose}/>
@@ -234,7 +236,7 @@ class PermissionEditor extends React.Component {
                                     ref="newChoice"
                                     clearable={false}
                                     options={this.getAvailablePermissions()}
-                                    value={this.props.newPermission || _.head(this.props.availablePermissions)}
+                                    value={this.props.newPermission || head(this.props.availablePermissions)}
                                     onChange={(sel) => {this.props.onNewPermissionChoose(sel && sel.value); }}/>
                             </td>
                             <td style={{width: "50px"}}>
@@ -257,8 +259,8 @@ class PermissionEditor extends React.Component {
     }
     isPermissionPresent = (group) => {
         return this.props.map && this.props.map.permissions && this.props.map.permissions.SecurityRuleList && this.props.map.permissions.SecurityRuleList.SecurityRule &&
-            _.findIndex(this.props.map.permissions.SecurityRuleList.SecurityRule, (o) => o.group && o.group.groupName === group) >= 0;
+            findIndex(this.props.map.permissions.SecurityRuleList.SecurityRule, (o) => o.group && o.group.groupName === group) >= 0;
     };
 }
 
-module.exports = PermissionEditor;
+export default PermissionEditor;

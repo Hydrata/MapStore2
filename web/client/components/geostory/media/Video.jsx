@@ -11,6 +11,7 @@ import Loader from '../../misc/Loader';
 import { withResizeDetector } from 'react-resize-detector';
 import { Glyphicon } from 'react-bootstrap';
 import { Modes } from '../../../utils/GeoStoryUtils';
+import Message from '../../I18N/Message';
 
 /**
  * Video component
@@ -48,8 +49,12 @@ const Video = withResizeDetector(({
     const [started, setStarted] = useState(playing);
     const [error, setError] = useState();
     const [loading, setLoading] = useState(play);
+    // we have only message error, doesn't have the code
+    const AUTOPLAY_ERROR = `NotAllowedError`;
+
 
     const isCover = fit === 'cover';
+    const [autoPlayError, setAutoPlayError] = useState(false);
 
     useEffect(() => {
         if (!started && playing) {
@@ -83,6 +88,44 @@ const Video = withResizeDetector(({
     const showControls = isCover ? false : controls;
     const forceLoop = isCover ? true : loop;
 
+    const handlePlay = () => {
+        onPlay(true);
+        // in autoPlay Error case, reset the error status to force the video play
+        if (autoPlayError) {
+            setError(false);
+            setAutoPlayError(false);
+        }
+
+    };
+
+    const handlePause = () => {
+        onPlay(false);
+    };
+
+    const handleError = (e) => {
+        setError(e);
+        // cast the error message, we don't have the error code available
+        let errorMsg = '' + e;
+        // check we are in NotAllowedError case
+        if (errorMsg.includes(AUTOPLAY_ERROR)) {
+            onPlay(false);
+            setAutoPlayError(true);
+            setLoading(false);
+        }
+    };
+
+    const handleOnclick = () => {
+        if (autoPlayError) {
+            setAutoPlayError(false);
+            setError(false);
+        } else {
+            setLoading(true);
+        }
+        setStarted(true);
+        onPlay(true);
+
+    };
+
     return (
         <div
             className="ms-video"
@@ -97,78 +140,82 @@ const Video = withResizeDetector(({
             }}>
             {src &&
             <>
-            {started && <ReactPlayer
-                url={src}
-                width={size[0]}
-                height={size[1]}
-                playing={playing}
-                loop={forceLoop}
-                volume={volume}
-                muted={muted}
-                style={isCover
-                    ? {
-                        left: '50%',
-                        top: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        position: 'absolute'
-                    } : {}}
-                controls={showControls}
-                pip={false}
-                fileConfig={{
-                    attributes: {
-                        controlsList: 'nodownload',
-                        disablePictureInPicture: true
-                    }
-                }}
-                youtubeConfig={{
-                    playerVars: {
-                        controls: showControls ? 2 : 0,
-                        modestbranding: 1,
-                        rel: 0
-                    }
-                }}
-                onReady={() => setLoading(false)}
-                onError={e => setError(e)}
-                onPause={() => onPlay(false)}
-                onPlay={() => onPlay(true)}
-            />}
-            {(!started || started && (loading || error)) && <div
-                className="ms-video-cover"
-                style={{
-                    position: 'absolute',
-                    width: size[0],
-                    height: size[1],
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: 'rgba(0, 0, 0, 1.0)',
-                    ...(!(loading || error) && { cursor: 'pointer' }),
-                    ...(!playing && thumbnail && {
-                        backgroundImage: `url(${thumbnail})`,
-                        backgroundSize: isCover ? 'cover' : '640px auto',
-                        backgroundPosition: 'center',
-                        backgroundRepeat: 'no-repeat'
-                    })
-                }}
-                onClick={() => {
-                    setStarted(true);
-                    setLoading(true);
-                    onPlay(true);
-                }}>
-                {loading && <Loader size={70}/>}
-                {error && 'Error'}
-                {!(loading || error) && !playing &&
-                    <Glyphicon
-                        glyph="play"
+                {started && <ReactPlayer
+                    url={src}
+                    width={size[0]}
+                    height={size[1]}
+                    playing={playing}
+                    loop={forceLoop}
+                    volume={volume}
+                    muted={muted}
+                    style={isCover
+                        ? {
+                            left: '50%',
+                            top: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            position: 'absolute'
+                        } : {}}
+                    controls={showControls}
+                    pip={false}
+                    fileConfig={{
+                        attributes: {
+                            controlsList: 'nodownload',
+                            disablePictureInPicture: true
+                        }
+                    }}
+                    youtubeConfig={{
+                        playerVars: {
+                            controls: showControls ? 2 : 0,
+                            modestbranding: 1,
+                            rel: 0
+                        }
+                    }}
+                    onReady={() => setLoading(false)}
+                    onError={handleError}
+                    onPause={handlePause}
+                    onPlay={handlePlay}
+                />}
+                {(!started || started && (loading || error)) && <div
+                    className="ms-video-cover"
+                    style={{
+                        position: 'absolute',
+                        width: size[0],
+                        height: size[1],
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backgroundColor: 'rgba(0, 0, 0, 1.0)',
+                        ...(!(loading || error) && { cursor: 'pointer' }),
+                        ...(!playing && thumbnail && {
+                            backgroundImage: `url(${thumbnail})`,
+                            backgroundSize: isCover ? 'cover' : '640px auto',
+                            backgroundPosition: 'center',
+                            backgroundRepeat: 'no-repeat'
+                        })
+                    }}
+                    onClick={handleOnclick}>
+                    {loading && <Loader size={70}/>}
+                    {(error && !autoPlayError) && <div className="text-center" ><Glyphicon
+                        glyph="alert"
                         style={{
                             fontSize: size[1] / 4 > 100 ? 100 : size[1] / 4,
                             mixBlendMode: 'difference',
                             color: '#ffffff'
                         }}
-                    />}
-            </div>}
+                    /><h3><Message msgId="geostory.errors.loading.video"/></h3> </div>
+                    }
+                    {((!(loading || error) && !playing) || (error && autoPlayError)) &&
+                        <Glyphicon
+                            glyph="play"
+                            style={{
+                                fontSize: size[1] / 4 > 100 ? 100 : size[1] / 4,
+                                mixBlendMode: 'difference',
+                                color: '#ffffff'
+                            }}
+                        />}
+                </div>}
             </>}
-            {!showControls && <div
+            {(!showControls && !autoPlayError ) && <div
                 className="ms-video-mask-cover"
                 style={{
                     position: 'absolute',

@@ -7,12 +7,11 @@
  */
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import VisibilityContainer from '../common/VisibilityContainer';
-import { Glyphicon } from 'react-bootstrap';
+
 import image from './Image';
 import map from './Map';
 import video from './Video';
-import Loader from '../../misc/Loader';
+
 
 export const Image = image;
 
@@ -22,9 +21,6 @@ export const typesMap = {
     video
 };
 
-const ErrorComponent = () => <div className="ms-media-error"><Glyphicon glyph="exclamation-sign"/></div>;
-const LoaderComponent = () => <div className="ms-media-loader"><Loader size={52}/></div>;
-
 /**
  * Media component renders different kind of media based on type or mediaType
  * @prop {string} id unique id that represent the media
@@ -33,41 +29,28 @@ const LoaderComponent = () => <div className="ms-media-loader"><Loader size={52}
  * @prop {string} type one of 'image' or 'map' (used when mediaType is equal to undefined)
  * @prop {number} debounceTime debounce time for lazy loading
  */
-const Media = ({ debounceTime, mediaViewer, ...props }) => {
+export const Media = ({ debounceTime, mediaViewer, ...props }) => {
     // store all ids inside an immersive section
     // in this way every media is loaded only when in view
+    const loadingId = `${props.id}${props.resourceId ? `-${props.resourceId}` : ''}`;
+    // define a specific loading id to match the one in the visibility container
     const [loading, onLoad] = useState({});
-    const isLoading = loading[props.id] === undefined
+    const isLoading = loading[loadingId] === undefined
         ? true
-        : loading[props.id];
+        : loading[loadingId];
 
     const MediaType = mediaViewer || typesMap[props.mediaType || props.type] || Image;
 
-    return props.lazy
-        ? (
-            <VisibilityContainer
-                // key needed for immersive background children
-                key={props.id}
-                id={props.id}
-                debounceTime={debounceTime}
-                loading={isLoading}
-                onLoad={(id) => onLoad({ ...loading, [id]: false })}
-                loaderComponent={LoaderComponent}>
-                <MediaType
-                    {...props}
-                    type={props.mediaType || props.type}
-                    loaderComponent={LoaderComponent}
-                    errorComponent={ErrorComponent}/>
-            </VisibilityContainer>
-        )
-        : (
-            <MediaType
-                {...props}
-                key={props.id}
-                type={props.mediaType || props.type}
-                loaderComponent={LoaderComponent}
-                errorComponent={ErrorComponent}/>
-        );
+    return (
+        <MediaType
+            sectionType={props.sectionType}
+            debounceTime={debounceTime}
+            loading={loading}
+            isLoading={isLoading}
+            onLoad={onLoad}
+            loadingId={loadingId}
+            {...props} />
+    );
 };
 
 Media.propTypes = {

@@ -2,6 +2,7 @@ const path = require("path");
 
 const themeEntries = require('./MapStore2/build/themes.js').themeEntries;
 const extractThemesPlugin = require('./MapStore2/build/themes.js').extractThemesPlugin;
+const ModuleFederationPlugin = require('./MapStore2/build/moduleFederation').plugin;
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 const paths = {
@@ -14,12 +15,14 @@ const paths = {
 module.exports = require('./MapStore2/build/buildConfig')(
     {
         '__PROJECTNAME__': path.join(__dirname, "js", "app"),
-        '__PROJECTNAME__-embedded': path.join(__dirname, "MapStore2", "web", "client", "product", "embedded"),
-        '__PROJECTNAME__-api': path.join(__dirname, "MapStore2", "web", "client", "product", "api")
+        '__PROJECTNAME__-embedded': path.join(__dirname, "js", "embedded"),
+        '__PROJECTNAME__-api': path.join(__dirname, "MapStore2", "web", "client", "product", "api"),
+        'geostory-embedded': path.join(__dirname, "js", "geostoryEmbedded"),
+        "dashboard-embedded": path.join(__dirname, "js", "dashboardEmbedded")
     },
     themeEntries,
     paths,
-    extractThemesPlugin,
+    [extractThemesPlugin, ModuleFederationPlugin],
     true,
     "dist/",
     '.__PROJECTNAME__',
@@ -43,9 +46,24 @@ module.exports = require('./MapStore2/build/buildConfig')(
             inject: 'head',
             hash: true,
             filename: 'api.html'
+        }),
+        new HtmlWebpackPlugin({
+            template: path.join(__dirname, 'geostory-embedded-template.html'),
+            chunks: ['geostory-embedded'],
+            inject: "body",
+            hash: true,
+            filename: 'geostory-embedded.html'
+        }),
+        new HtmlWebpackPlugin({
+            template: path.join(__dirname, 'dashboard-embedded-template.html'),
+            chunks: ['dashboard-embedded'],
+            inject: 'body',
+            hash: true,
+            filename: 'dashboard-embedded.html'
         })
     ],
     {
+        "@mapstore/patcher": path.resolve(__dirname, "node_modules", "@mapstore", "patcher"),
         "@mapstore": path.resolve(__dirname, "MapStore2", "web", "client"),
         "@js": path.resolve(__dirname, "js")
     }

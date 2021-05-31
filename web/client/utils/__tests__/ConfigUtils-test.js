@@ -5,8 +5,9 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-var expect = require('expect');
-var ConfigUtils = require('../ConfigUtils');
+import expect from 'expect';
+
+import ConfigUtils from '../ConfigUtils';
 var lconfig = {};
 var testMap = {
     "defaultSourceType": "gxp_wmssource",
@@ -302,6 +303,15 @@ describe('ConfigUtils', () => {
             expect(retval).toExist();
             retval.newProperty = "newValue";
             expect(ConfigUtils.getDefaults().newProperty).toNotExist();
+            done();
+        });
+    });
+
+    it("loadConfiguration supports patch files", done => {
+        ConfigUtils.setLocalConfigurationFile(["base/web/client/test-resources/localConfig.json", "base/web/client/test-resources/localConfig.patch.json"]);
+        ConfigUtils.loadConfiguration().then((retval) => {
+            expect(retval.initialState.defaultState).toExist();
+            expect(retval.initialState.defaultState.mobile).toBeFalsy();
             done();
         });
     });

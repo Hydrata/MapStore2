@@ -8,7 +8,7 @@
  */
 import React from 'react';
 import { connect } from 'react-redux';
-import { createStructuredSelector } from 'reselect';
+import { createStructuredSelector, createSelector } from 'reselect';
 import withCloseConfirm from './withCloseConfirm';
 
 import {
@@ -18,8 +18,7 @@ import {
     setMediaService,
     saveMedia,
     selectItem,
-    updateItem,
-    loadMediaSuccess
+    loadMedia
 } from '../../actions/mediaEditor';
 import {
     availableSourcesSelector,
@@ -28,32 +27,74 @@ import {
     saveStateSelector,
     sourceIdSelector,
     selectedSourceSelector,
-    selectedItemSelector
+    selectedItemSelector,
+    getCurrentMediaResourcesParams,
+    getCurrentMediaResourcesTotalCount,
+    getLoadingSelectedMedia,
+    getLoadingMediaList
 } from '../../selectors/mediaEditor';
 
 import ResizableModal from '../../components/misc/ResizableModal';
 import Portal from '../../components/misc/Portal';
 import MediaEditor from '../../components/mediaEditor/MediaEditor';
+import MediaSelector from '../../components/mediaEditor/MediaSelector';
 import Message from '../../components/I18N/Message';
+
+const ConnectedMediaSelector = connect(createSelector([
+    currentResourcesSelector,
+    selectedItemSelector,
+    sourceIdSelector,
+    selectedSourceSelector,
+    editingSelector,
+    getCurrentMediaResourcesParams,
+    getCurrentMediaResourcesTotalCount,
+    getLoadingSelectedMedia,
+    getLoadingMediaList,
+    saveStateSelector,
+    availableSourcesSelector
+], (
+    resources,
+    selectedItem,
+    selectedService,
+    selectedSource,
+    editing,
+    params,
+    totalCount,
+    loadingSelected,
+    loading,
+    saveState,
+    services
+) => ({
+    resources,
+    selectedItem,
+    selectedService,
+    selectedSource,
+    editing,
+    services,
+    params,
+    totalCount,
+    loadingSelected,
+    loading,
+    ...saveState
+})), {
+    selectItem,
+    setAddingMedia,
+    setEditingMedia,
+    saveMedia,
+    onLoad: loadMedia,
+    setMediaService
+})(MediaSelector);
 
 // connect editor state
 const Editor = connect(createStructuredSelector({
-    saveState: saveStateSelector,
     selectedItem: selectedItemSelector,
     selectedService: sourceIdSelector,
-    selectedSource: selectedSourceSelector,
     services: availableSourcesSelector,
     editing: editingSelector,
-    resources: currentResourcesSelector
+    saveState: saveStateSelector
 }), {
-    selectItem,
-    updateItem,
     setMediaService,
-    setAddingMedia,
-    setMediaType,
-    setEditingMedia,
-    loadItems: loadMediaSuccess,
-    saveMedia
+    setMediaType
 })(MediaEditor);
 
 /**
@@ -69,7 +110,9 @@ const MediaModal = ({
     selectedItem,
     editing,
     adding,
-    hide = () => { }
+    hide = () => { },
+    disableAddMedia,
+    disableEditMedia
 }) => {
     return (
         <Portal>
@@ -84,11 +127,20 @@ const MediaModal = ({
                     {
                         text: <Message msgId="mediaEditor.apply"/>,
                         bsSize: 'sm',
-                        disabled: adding || editing || !selectedItem,
+                        disabled: adding || editing,
                         onClick: () => chooseMedia(selectedItem)
                     }
                 ]}>
-                <Editor mediaType={mediaType} />
+                <Editor
+                    mediaType={mediaType}
+                    mediaSelector={
+                        <ConnectedMediaSelector
+                            mediaType={mediaType}
+                            disableAddMedia={disableAddMedia}
+                            disableEditMedia={disableEditMedia}
+                        />
+                    }
+                />
             </ResizableModal>
         </Portal>
     );

@@ -6,11 +6,12 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const React = require('react');
-const ReactDOM = require('react-dom');
-const expect = require('expect');
-const TestUtils = require('react-dom/test-utils');
-const NumberEditor = require('../NumberEditor').default;
+import expect from 'expect';
+import React from 'react';
+import ReactDOM from 'react-dom';
+import TestUtils from 'react-dom/test-utils';
+
+import NumberEditor from '../NumberEditor';
 
 let testColumn = {
     key: 'columnKey'
@@ -53,11 +54,10 @@ describe('FeatureGrid NumberEditor/IntegerEditor component', () => {
             maxValue={1.5}
             column={testColumn}/>, document.getElementById("container"));
         expect(cmp).toExist();
-
-        let inputElement = cmp.getInputNode();
+        const container = document.getElementById('container');
+        const inputElement = container.querySelector('input');
         expect(inputElement).toExist();
         expect(inputElement.value).toBe('1.1');
-
         TestUtils.Simulate.change(inputElement, {target: {value: '1.6'}});
 
         expect(cmp.getValue().columnKey).toBe(1.1);
@@ -71,7 +71,8 @@ describe('FeatureGrid NumberEditor/IntegerEditor component', () => {
             column={testColumn}/>, document.getElementById("container"));
         expect(cmp).toExist();
 
-        let inputElement = cmp.getInputNode();
+        const container = document.getElementById('container');
+        const inputElement = container.querySelector('input');
         expect(inputElement).toExist();
         expect(inputElement.value).toBe('1.1');
 

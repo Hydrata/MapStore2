@@ -1,23 +1,34 @@
-/**
+/*
  * Copyright 2018, GeoSolutions Sas.
  * All rights reserved.
  *
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const React = require('react');
-const PropTypes = require('prop-types');
-const {connect} = require('react-redux');
-const { get, isNil } = require('lodash');
-const url = require('url');
+
+import React from 'react';
+
+import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
+import { get, isNil } from 'lodash';
+import url from 'url';
 const urlQuery = url.parse(window.location.href, true).query;
 
-const { loadDashboard, resetDashboard } = require('../../actions/dashboard');
-const { checkLoggedUser } = require('../../actions/security');
+import { loadDashboard, resetDashboard } from '../../actions/dashboard';
+import { checkLoggedUser } from '../../actions/security';
+import Page from '../../containers/Page';
+import BorderLayout from '../../components/layout/BorderLayout';
 
-const Page = require('../../containers/Page');
-const BorderLayout = require('../../components/layout/BorderLayout');
-
+/**
+  * @name Dashboard
+  * @memberof pages
+  * @class
+  * @classdesc
+  * This is the main container page for Dashboard.
+  * It handles all the routing and initial loading functionalities dedicated to Dashboard contents and
+  * it is a container for the Dashboard plugins.
+  *
+  */
 class DashboardPage extends React.Component {
     static propTypes = {
         mode: PropTypes.string,
@@ -25,7 +36,8 @@ class DashboardPage extends React.Component {
         loadResource: PropTypes.func,
         checkLoggedUser: PropTypes.func,
         reset: PropTypes.func,
-        plugins: PropTypes.object
+        plugins: PropTypes.object,
+        name: PropTypes.string
     };
 
     static defaultProps = {
@@ -60,7 +72,7 @@ class DashboardPage extends React.Component {
     }
     render() {
         return (<Page
-            id="dashboard"
+            id={this.props.name}
             component={BorderLayout}
             includeCommon={false}
             plugins={this.props.plugins}
@@ -69,7 +81,7 @@ class DashboardPage extends React.Component {
     }
 }
 
-module.exports = connect((state) => ({
+export default connect((state) => ({
     mode: urlQuery.mobile || state.browser && state.browser.mobile ? 'mobile' : 'desktop'
 }),
 {

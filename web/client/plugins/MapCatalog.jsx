@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright 2020, GeoSolutions Sas.
  * All rights reserved.
  *
@@ -9,7 +9,7 @@
 import React from 'react';
 import { Glyphicon } from 'react-bootstrap';
 import { connect } from 'react-redux';
-import { createSelector, createStructuredSelector } from 'reselect';
+import { createStructuredSelector } from 'reselect';
 
 import { toggleControl } from '../actions/controls';
 import {
@@ -18,11 +18,11 @@ import {
     saveMap,
     deleteMap
 } from '../actions/mapcatalog';
-import { mapTypeSelector } from '../selectors/maptype';
-import { userSelector, isLoggedIn } from '../selectors/security';
+import { userSelector } from '../selectors/security';
 import {
     triggerReloadValueSelector,
-    filterReloadDelaySelector
+    filterReloadDelaySelector,
+    mapTypeSelector
 } from '../selectors/mapcatalog';
 
 import MapCatalogPanel from '../components/mapcatalog/MapCatalogPanel';
@@ -40,6 +40,7 @@ import * as epics from '../epics/mapcatalog';
  * @name MapCatalog
  */
 const MapCatalogComponent = ({
+    allow3d,
     active,
     mapType,
     user,
@@ -75,6 +76,7 @@ const MapCatalogComponent = ({
                     `context/${map.contextName}/${map.id}` :
                     `viewer/${mapType}/${map.id}`
                 }
+                toggleCatalog={() => onToggleControl()}
                 shareApi/>
         </DockPanel>
     );
@@ -100,13 +102,8 @@ export default createPlugin('MapCatalog', {
             position: 6,
             text: <Message msgId="mapCatalog.title" />,
             icon: <Glyphicon glyph="maps-catalog" />,
+            tooltip: "mapCatalog.tooltip",
             action: () => toggleControl('mapCatalog', 'enabled'),
-            selector: createSelector(
-                isLoggedIn,
-                (loggedIn) => ({
-                    style: loggedIn ? {} : { display: "none" }
-                })
-            ),
             priority: 2,
             doNotHide: true
         }

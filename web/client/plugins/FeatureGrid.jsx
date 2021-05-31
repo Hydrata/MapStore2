@@ -1,20 +1,32 @@
-/**
+/*
  * Copyright 2016, GeoSolutions Sas.
  * All rights reserved.
  *
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const {connect} = require('react-redux');
-const {selectFeatures, dockSizeFeatures} = require('../actions/featuregrid');
-const {query, queryClose} = require('../actions/wfsquery');
-const {changeMapView} = require('../actions/map');
-const {toggleControl} = require('../actions/controls');
 
-module.exports = {
+import { connect } from 'react-redux';
+
+import { toggleControl } from '../actions/controls';
+import { dockSizeFeatures, selectFeatures } from '../actions/featuregrid';
+import { changeMapView } from '../actions/map';
+import { query } from '../actions/wfsquery';
+import DockedFeatureGrid from '../components/data/featuregrid_ag/DockedFeatureGrid';
+import featuregridReducers from '../reducers/featuregrid';
+import highlightReducers from '../reducers/highlight';
+
+/**
+ * this plugin has been deprecated in favor of FeatureEditor {@link plugins.FeatureEditor}
+ * @name FeatureGrid
+ * @memberof plugins
+ * @class
+ * @deprecated
+*/
+export default {
     FeatureGridPlugin: connect((state) => ({
         open: state.query && state.query.open,
-        exportEnabled: state && state.controls && state.controls.wfsdownload && state.controls.wfsdownload.available,
+        exportEnabled: state && state.controls && state.controls.layerdownload && state.controls.layerdownload.available,
         features: state.query && state.query.result && state.query.result.features,
         filterObj: state.query && state.query.filterObj,
         searchUrl: state.query && state.query.searchUrl,
@@ -36,14 +48,13 @@ module.exports = {
     }),
     {
         selectFeatures,
-        exportAction: () => toggleControl("wfsdownload"),
+        exportAction: () => toggleControl("layerdownload"),
         changeMapView,
         onQuery: query,
-        onBackToSearch: queryClose,
         setDockSize: dockSizeFeatures
-    })(require('../components/data/featuregrid_ag/DockedFeatureGrid')),
+    })(DockedFeatureGrid),
     reducers: {
-        featuregrid: require('../reducers/featuregrid'),
-        highlight: require('../reducers/highlight')
+        featuregrid: featuregridReducers,
+        highlight: highlightReducers
     }
 };

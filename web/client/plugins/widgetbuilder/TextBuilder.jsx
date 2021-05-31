@@ -5,14 +5,17 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const React = require('react');
-const {connect} = require('react-redux');
-const { compose, withProps } = require('recompose');
-const {onEditorChange, insertWidget, setPage} = require('../../actions/widgets');
-const {wizardSelector, wizardStateToProps} = require('./commons');
-const BorderLayout = require('../../components/layout/BorderLayout');
-const withExitButton = require('./enhancers/withExitButton');
-const BuilderHeader = require('./BuilderHeader');
+import React from 'react';
+import { connect } from 'react-redux';
+import { compose, withProps } from 'recompose';
+
+import { insertWidget, onEditorChange, setPage } from '../../actions/widgets';
+import BorderLayout from '../../components/layout/BorderLayout';
+import ToolbarComp from '../../components/widgets/builder/wizard/text/Toolbar';
+import TextWizardComp from '../../components/widgets/builder/wizard/TextWizard';
+import BuilderHeader from './BuilderHeader';
+import { wizardSelector, wizardStateToProps } from './commons';
+import withExitButton from './enhancers/withExitButton';
 
 const Toolbar = compose(
     connect(wizardSelector, {
@@ -20,7 +23,7 @@ const Toolbar = compose(
         insertWidget,
         onResetChange: onEditorChange
     },
-    wizardStateToProps,
+    wizardStateToProps
     ),
     withProps(({ onResetChange = () => { } }) => ({
         exitButton: {
@@ -29,8 +32,8 @@ const Toolbar = compose(
             onClick: () => onResetChange('widgetType', undefined)
         }
     })),
-    withExitButton(),
-)(require('../../components/widgets/builder/wizard/text/Toolbar'));
+    withExitButton()
+)(ToolbarComp);
 
 const Builder = connect(
     wizardSelector,
@@ -38,8 +41,9 @@ const Builder = connect(
         onChange: onEditorChange
     },
     wizardStateToProps
-)(require('../../components/widgets/builder/wizard/TextWizard'));
-module.exports = ({ enabled, onClose = () => {}} = {}) =>
+)(TextWizardComp);
+
+export default ({ enabled, onClose = () => {}} = {}) =>
     (<BorderLayout
         header={<BuilderHeader onClose={onClose}><Toolbar /></BuilderHeader>}
     >

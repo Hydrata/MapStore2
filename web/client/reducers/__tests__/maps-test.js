@@ -5,14 +5,18 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const expect = require('expect');
+import expect from 'expect';
 
-const maps = require('../maps');
-const {
-    mapsLoaded, mapsLoading, loadError, mapCreated, mapUpdating,
-    mapMetadataUpdated, mapDeleting, attributeUpdated, thumbnailError, mapError, permissionsLoading,
-    permissionsLoaded, saveMap, permissionsUpdated, resetUpdating,
-    mapsSearchTextChanged, setShowMapDetails} = require('../../actions/maps');
+import maps from '../maps';
+
+import {
+    mapsLoaded,
+    mapsLoading,
+    loadError,
+    mapCreated,
+    mapDeleting,
+    mapsSearchTextChanged
+} from '../../actions/maps';
 
 const sampleMap = {
     canDelete: false,
@@ -35,10 +39,6 @@ const mapsSampleResult = {
     ],
     totalCount: 1
 };
-const SecurityRule = {canRead: true, canWrite: false};
-const permissions = {
-    SecurityRuleList: {SecurityRule}
-};
 describe('Test the maps reducer', () => {
     it('on default state and unknown action, ', () => {
         let state = maps(undefined, {type: "____NOT_EXISTING_ACTION____"});
@@ -50,11 +50,6 @@ describe('Test the maps reducer', () => {
     it('on mapsSearchTextChanged action', () => {
         let state = maps(null, mapsSearchTextChanged("TEST"));
         expect(state.searchText).toBe("TEST");
-    });
-    it('on setShowMapDetails action', () => {
-        let bool = false;
-        let state = maps({showMapDetails: true}, setShowMapDetails(bool));
-        expect(state.showMapDetails).toBe(bool);
     });
     it('on mapSearchText', () => {
         let state = maps(null, mapsLoading("TEST", {
@@ -95,32 +90,6 @@ describe('Test the maps reducer', () => {
         let state = maps(null, loadError("ERROR"));
         expect(state.loadingError).toBe("ERROR");
     });
-    it('on mapUpdating, mapMetadataUpdated, attributeUpdated, permissionsUpdated and resetUpdating, thumbnailError, mapError', () => {
-        let state = maps(null, mapsLoaded(mapsSampleResult, "TEST", {
-            start: 0,
-            limit: 10
-        }));
-        state = maps(state, mapUpdating(sampleMap.id));
-        expect(state.results[0].updating).toBe(true);
-        state = maps(state, resetUpdating(sampleMap.id));
-        expect(state.results[0].updating).toBe(false);
-        state = maps(state, mapUpdating(sampleMap.id));
-        expect(state.results[0].updating).toBe(true);
-        state = maps(state, mapMetadataUpdated(sampleMap.id, "newName", "newDescription" ));
-        expect(state.results[0].updating).toBe(false);
-        expect(state.results[0].name).toBe("newName");
-        expect(state.results[0].description).toBe("newDescription");
-        state = maps(state, attributeUpdated(sampleMap.id, "attr", "newValue" ));
-        expect(state.results[0].attr).toBe("newValue");
-        state = maps(state, permissionsUpdated(sampleMap.id, "ERROR" ));
-        expect(state.results[0].loadingError).toBe("ERROR");
-        state = maps(state, mapUpdating(sampleMap.id));
-        expect(state.results[0].updating).toBe(true);
-        state = maps(state, thumbnailError(sampleMap.id));
-        expect(state.results[0].updating).toBe(false);
-        state = maps(state, mapError(sampleMap.id));
-        expect(state.results[0].updating).toBe(false);
-    });
     it('on mapCreated, mapDeleting and mapDeleted', () => {
         let state = maps(null, mapsLoaded(mapsSampleResult, "TEST", {
             start: 0,
@@ -133,47 +102,4 @@ describe('Test the maps reducer', () => {
         expect(state.totalCount).toBe(2);
 
     });
-    it('on saveMap', () => {
-        let state = maps(null, mapsLoaded(mapsSampleResult, "TEST", {
-            start: 0,
-            limit: 10
-        }));
-        state = maps(state, saveMap({
-            newThumbnail: "THUMB",
-            thumbnailError: "ERR",
-            thumbnail: "thumb"
-        }, sampleMap.id));
-
-        expect(state.results[0].thumbnail).toBe("thumb");
-        expect(state.results[0].thumbnailError).toBe("ERR");
-        expect(state.results[0].newThumbnail).toBe("THUMB");
-    });
-    it('on permissionsLoading and permissionsLoaded', () => {
-        let state = maps(null, mapsLoaded(mapsSampleResult, "TEST", {
-            start: 0,
-            limit: 10
-        }));
-        state = maps(state, permissionsLoading(sampleMap.id));
-        expect(state.results[0].permissionLoading).toBe(true);
-
-        state = maps(state, permissionsLoaded(permissions, sampleMap.id));
-        expect(state.results[0].permissionLoading).toBe(false);
-        expect(state.results[0].permissions).toExist();
-        expect(state.results[0].permissions.SecurityRuleList).toExist();
-        expect(state.results[0].permissions.SecurityRuleList.SecurityRule).toExist();
-        expect(state.results[0].permissions.SecurityRuleList.SecurityRule.length).toBe(1);
-        state = maps(state, permissionsLoaded({
-            SecurityRuleList: {SecurityRule: [SecurityRule]}
-        }, sampleMap.id));
-        expect(state.results[0].permissions.SecurityRuleList).toExist();
-        expect(state.results[0].permissions.SecurityRuleList.SecurityRule).toExist();
-        expect(state.results[0].permissions.SecurityRuleList.SecurityRule.length).toBe(1);
-
-        // check permission list loading doesn't fail if permission is undefined or null
-        // i.e. when some error occurs loading permissions
-        const errorState = maps({}, permissionsLoaded(null, sampleMap.id));
-        expect(errorState).toExist();
-        expect(errorState.results).toExist();
-    });
-
 });

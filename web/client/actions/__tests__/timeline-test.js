@@ -6,8 +6,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-var expect = require('expect');
-const {
+import expect from 'expect';
+
+import {
     RANGE_CHANGED,
     onRangeChanged,
     SELECT_TIME,
@@ -21,8 +22,10 @@ const {
     SET_COLLAPSED,
     setCollapsed,
     SET_MAP_SYNC,
-    setMapSync
-} = require('../timeline');
+    setMapSync,
+    INIT_TIMELINE,
+    initTimeline
+} from '../timeline';
 
 describe('timeline actions', () => {
     it('onRangeChanged', () => {
@@ -62,5 +65,11 @@ describe('timeline actions', () => {
         expect(retval).toExist();
         expect(retval.type).toBe(SET_MAP_SYNC);
         expect(retval.mapSync).toBe(true);
+    });
+    it('initTimeline', () => {
+        const retval = initTimeline(true);
+        expect(retval).toExist();
+        expect(retval.type).toBe(INIT_TIMELINE);
+        expect(retval.showHiddenLayers).toBe(true);
     });
 });

@@ -6,11 +6,12 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-const React = require('react');
-const ReactDOM = require('react-dom');
+import expect from 'expect';
+import React from 'react';
+import ReactDOM from 'react-dom';
 
-const expect = require('expect');
-const CounterView = require('../CounterView');
+import CounterView from '../CounterView';
+
 describe('CounterView component', () => {
     beforeEach((done) => {
         document.body.innerHTML = '<div id="container"></div>';
@@ -24,13 +25,13 @@ describe('CounterView component', () => {
     it('CounterView rendering with defaults', () => {
         ReactDOM.render(<CounterView />, document.getElementById("container"));
         const container = document.getElementById('container');
-        const el = container.querySelector('.empty-state-image');
+        const el = container.querySelector('.ms-widget-empty-message');
         expect(el).toExist();
     });
     it('CounterView rendering with data', () => {
         ReactDOM.render(<CounterView data={[{ dataKey: 1 }]} series={[{dataKey: "dataKey"}]}/>, document.getElementById("container"));
         const container = document.getElementById('container');
-        const el = container.querySelector('.empty-state-image');
+        const el = container.querySelector('.ms-widget-empty-message');
         expect(el).toNotExist();
         expect(container.querySelector('span')).toExist();
     });

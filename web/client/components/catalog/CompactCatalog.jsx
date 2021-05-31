@@ -5,34 +5,29 @@
  * This source code is licensed under the BSD-style license found in the
  * LICENSE file in the root directory of this source tree.
  */
-const React = require('react');
-const {compose, mapPropsStream} = require('recompose');
-const {isNil} = require('lodash');
-const Message = require('../I18N/Message');
-const Rx = require('rxjs');
-const { isObject } = require('lodash');
 
-const API = {
-    "csw": require('../../api/CSW'),
-    "wms": require('../../api/WMS'),
-    "wmts": require('../../api/WMTS'),
-    "backgrounds": require('../../api/mapBackground')
-};
+import { isNil, isObject, isEmpty } from 'lodash';
+import React from 'react';
+import { compose, mapPropsStream, withPropsOnChange } from 'recompose';
+import Rx from 'rxjs';
+import uuid from 'uuid';
+import API from '../../api/catalog';
+import { getCatalogRecords } from '../../utils/CatalogUtils';
+import Message from '../I18N/Message';
+import BorderLayout from '../layout/BorderLayout';
+import SideGridComp from '../misc/cardgrids/SideGrid';
+import emptyState from '../misc/enhancers/emptyState';
+import withVirtualScroll from '../misc/enhancers/infiniteScroll/withInfiniteScroll';
+import loadingState from '../misc/enhancers/loadingState';
+import withControllableState from '../misc/enhancers/withControllableState';
+import Icon from '../misc/FitIcon';
+import LoadingSpinner from '../misc/LoadingSpinner';
+import CatalogForm from './CatalogForm';
 
-const BorderLayout = require('../layout/BorderLayout');
-const LoadingSpinner = require('../misc/LoadingSpinner');
-const withVirtualScroll = require('../misc/enhancers/infiniteScroll/withInfiniteScroll');
-const loadingState = require('../misc/enhancers/loadingState');
-const emptyState = require('../misc/enhancers/emptyState');
-const errorState = require('../misc/enhancers/emptyState');
-const withControllableState = require('../misc/enhancers/withControllableState');
-const CatalogForm = require('./CatalogForm');
-const {getCatalogRecords} = require('../../utils/CatalogUtils');
-const Icon = require('../misc/FitIcon');
 const defaultPreview = <Icon glyph="geoserver" padding={20}/>;
 const SideGrid = compose(
     loadingState(({loading, items = []} ) => items.length === 0 && loading),
-    errorState(
+    emptyState(
         ({loading, error} ) => !loading && error,
         {
             title: <Message msgId="catalog.error" />,
@@ -45,17 +40,33 @@ const SideGrid = compose(
             style: { transform: "translateY(50%)"}
         })
 
-)(require('../misc/cardgrids/SideGrid'));
+)(SideGridComp);
+
+/*
+ * assigns an identifier to a record
+ */
+/*
+ * assigns an identifier to a record. The ID is required for local selection.
+ * TODO: improve identifier generation.
+ */
+const getIdentifier = (r) =>
+    r.identifier ? r.identifier
+        :  r.provider
+            ? r.provider + (r.variant ?? "") // existing tileprovider
+            : (r.tileMapUrl // TMS 1.0.0
+        || r.url + uuid()); //  default
 /*
  * converts record item into a item for SideGrid
  */
-const resToProps = ({records, result = {}}) => ({
+const resToProps = ({records, result = {}, catalog = {}}) => ({
     items: (records || []).map((record = {}) => ({
         title: record.title && isObject(record.title) && record.title.default || record.title,
-        caption: record.identifier,
+        caption: getIdentifier(record),
         description: record.description,
-        preview: record.thumbnail ? <img src="thumbnail" /> : defaultPreview,
-        record
+        preview: !catalog.hideThumbnail ? record.thumbnail ? <img src={record.thumbnail} /> : defaultPreview : null,
+        record: {
+            ...record, identifier: getIdentifier(record)
+        }
     })),
     total: result && result.numberOfRecordsMatched
 });
@@ -64,10 +75,10 @@ const PAGE_SIZE = 10;
  * retrieves data from a catalog service and converts to props
  */
 const loadPage = ({text, catalog = {}}, page = 0) => Rx.Observable
-    .fromPromise(API[catalog.type].textSearch(catalog.url, page * PAGE_SIZE + (catalog.type === "csw" ? 1 : 0), PAGE_SIZE, text))
+    .fromPromise(API[catalog.type].textSearch(catalog.url, page * PAGE_SIZE + (catalog.type === "csw" ? 1 : 0), PAGE_SIZE, text, catalog.type === 'tms' ? {options: {service: catalog}} : {}))
     .map((result) => ({ result, records: getCatalogRecords(catalog.type, result || [], { url: catalog && catalog.url, service: catalog })}))
-    .map(resToProps);
-const scrollSpyOptions = {querySelector: ".ms2-border-layout-body", pageSize: PAGE_SIZE};
+    .map(({records, result}) => resToProps({records, result, catalog}));
+const scrollSpyOptions = {querySelector: ".ms2-border-layout-body .ms2-border-layout-content", pageSize: PAGE_SIZE};
 /**
  * Compat catalog : Reusable catalog component, with infinite scroll.
  * You can simply pass the catalog to browse and the handler onRecordSelected.
@@ -83,25 +94,37 @@ const scrollSpyOptions = {querySelector: ".ms2-border-layout-body", pageSize: PA
  * @prop {string} [searchText] the search text (if you want to control it)
  * @prop {function} [setSearchText] handler to get search text changes (if not defined, the component will control the text by it's own)
  */
-module.exports = compose(
+export default compose(
     withControllableState('searchText', "setSearchText", ""),
     withVirtualScroll({loadPage, scrollSpyOptions}),
     mapPropsStream( props$ =>
-        props$.merge(props$.take(1).switchMap(({catalog, loadFirst = () => {} }) =>
+        props$.merge(props$.take(1).switchMap(({loadFirst = () => {}, services }) =>
             props$
                 .debounceTime(500)
-                .startWith({searchText: "", catalog})
+                .startWith({searchText: ""})
                 .distinctUntilKeyChanged('searchText')
-                .do(({searchText, catalog: nextCatalog} = {}) => loadFirst({text: searchText, catalog: nextCatalog}))
+                .do(({searchText, selectedService: nextSelectedService} = {}) => !isEmpty(services[nextSelectedService]) && loadFirst({text: searchText, catalog: services[nextSelectedService] }))
                 .ignoreElements() // don't want to emit props
-        )))
-
-)(({ setSearchText = () => { }, selected, onRecordSelected, loading, searchText, items = [], total, catalog, services, title, showCatalogSelector, error}) => {
+        ))),
+    withPropsOnChange(['selectedService'], props => {
+        const service = props.services[props.selectedService];
+        if (!isEmpty(service)) {
+            props.loadFirst({text: props.searchText || "", catalog: service});
+        }
+    })
+)(({ setSearchText = () => { }, selected, onRecordSelected, loading, searchText, items = [], total, catalog, services, title, showCatalogSelector = true, error,
+    onChangeSelectedService = () => {},
+    selectedService, onChangeCatalogMode = () => {}}) => {
     return (<BorderLayout
         className="compat-catalog"
-        header={<CatalogForm services={services ? services : [catalog]} showCatalogSelector={showCatalogSelector} title={title} searchText={searchText} onSearchTextChange={setSearchText}/>}
+        header={<CatalogForm onChangeCatalogMode={onChangeCatalogMode} onChangeSelectedService={onChangeSelectedService}
+            services={Object.keys(services).map(key =>({ label: services[key]?.title, value: {...services[key], key}}))}
+            selectedService={services[selectedService]} showCatalogSelector={showCatalogSelector}
+            title={title}
+            searchText={searchText}
+            onSearchTextChange={setSearchText}/>}
         footer={<div className="catalog-footer">
-            <span>{loading ? <LoadingSpinner /> : null}</span>
+            {loading ? <LoadingSpinner /> : null}
             {!isNil(total) ? <span className="res-info"><Message msgId="catalog.pageInfoInfinite" msgParams={{loaded: items.length, total}}/></span> : null}
         </div>}>
         <SideGrid
