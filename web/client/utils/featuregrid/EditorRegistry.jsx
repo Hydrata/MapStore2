@@ -23,11 +23,24 @@ const testRule = (rule = {}, values = {}) => {
     return false;
 };
 const getEditor = (type, name, props) => {
+    console.log('**** getEditor');
+    console.log('**** type', type);
+    console.log('**** name', name);
+    console.log('**** props', props);
+    console.log('**** Editors', Editors);
+    if (props.typeName.includes("geonode:bdy_")) {
+        console.log('**** getEditor found DropDownEditor', Editors);
+        console.log('**** getEditor returning', Editors['default']['DropDownEditor'].string(props));
+        return Editors['default']['DropDownEditor'].string(props);
+    }
     if (Editors[name]) {
+        console.log('**** getEditor found Editors[name]', Editors[name]);
         if (Editors[name][type]) {
+            console.log('**** getEditor found Editors[name][type]', Editors[name][type]);
             return Editors[name][type](props);
         }
         if (Editors[name].defaultEditor) {
+            console.log('**** getEditor found Editors[name].defaultEditor', Editors[name].defaultEditor);
             return Editors[name].defaultEditor(props);
         }
     }
@@ -56,8 +69,17 @@ module.exports = {
     },
     getCustomEditor: ({attribute, url, typeName}, rules = [], {type, generalProps = {}, props}) => {
         const editor = find(rules, (r) => testRule(r.regex, {attribute, url, typeName }));
+        console.log('*** editor', editor)
         if (!!editor) {
+            console.log('*** attribute', attribute)
+            console.log('*** url', url)
+            console.log('*** typeName', typeName)
+            console.log('*** rules', rules)
+            console.log('*** type', type)
+            console.log('*** generalProps', generalProps)
+            console.log('*** props', props)
             const result = getEditor(type, editor.editor, {...props, ...generalProps, ...editor.editorProps || {}});
+            console.log('*** result', result)
             return result;
         }
         return null;
