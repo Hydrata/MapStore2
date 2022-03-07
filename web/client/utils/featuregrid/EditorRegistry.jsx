@@ -28,7 +28,10 @@ const getEditor = (type, name, props) => {
     console.log('**** name', name);
     console.log('**** props', props);
     console.log('**** Editors', Editors);
-    if (props.typeName.includes("geonode:bdy_")) {
+    if (props.typeName.includes("geonode:bdy_") ||
+        props.typeName.includes("geonode:inf_") ||
+        props.typeName.includes("geonode:str_")
+    ) {
         console.log('**** getEditor found DropDownEditor', Editors);
         console.log('**** getEditor returning', Editors['default']['DropDownEditor'].string(props));
         return Editors['default']['DropDownEditor'].string(props);
