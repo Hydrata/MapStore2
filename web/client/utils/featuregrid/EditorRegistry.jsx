@@ -23,27 +23,19 @@ const testRule = (rule = {}, values = {}) => {
     return false;
 };
 const getEditor = (type, name, props) => {
-    console.log('**** getEditor');
-    console.log('**** type', type);
-    console.log('**** name', name);
-    console.log('**** props', props);
-    console.log('**** Editors', Editors);
     if (props.typeName.includes("geonode:bdy_") ||
         props.typeName.includes("geonode:inf_") ||
+        props.typeName.includes("geonode:fri_") ||
+        props.typeName.includes("geonode:mes_") ||
         props.typeName.includes("geonode:str_")
     ) {
-        console.log('**** getEditor found DropDownEditor', Editors);
-        console.log('**** getEditor returning', Editors['default']['DropDownEditor'].string(props));
         return Editors['default']['DropDownEditor'].string(props);
     }
     if (Editors[name]) {
-        console.log('**** getEditor found Editors[name]', Editors[name]);
         if (Editors[name][type]) {
-            console.log('**** getEditor found Editors[name][type]', Editors[name][type]);
             return Editors[name][type](props);
         }
         if (Editors[name].defaultEditor) {
-            console.log('**** getEditor found Editors[name].defaultEditor', Editors[name].defaultEditor);
             return Editors[name].defaultEditor(props);
         }
     }
