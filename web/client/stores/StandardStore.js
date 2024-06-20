@@ -32,6 +32,7 @@ const appStore = (
     plugins = {},
     storeOpts = {}
 ) => {
+    console.log('Hydrata Mapstore2');
     const staticPlugins = getPlugins(plugins);
     const history = storeOpts.noRouter ? null : require('./History').default;
     const storeManager = createStoreManager(
