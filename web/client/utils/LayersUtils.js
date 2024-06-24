@@ -177,7 +177,7 @@ export const flattenArrayOfObjects = (groupDetails) => {
     let result = [];
     groupDetails && castArray(groupDetails).forEach((a) => {
         result.push(a);
-        if (a.nodes && Array.isArray(groupDetails) && Array.isArray(a.nodes)) {
+        if (a?.nodes && Array.isArray(groupDetails) && Array.isArray(a?.nodes)) {
             result = result.concat(flattenArrayOfObjects(a.nodes));
         }
     });

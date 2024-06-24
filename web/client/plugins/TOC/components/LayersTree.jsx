@@ -166,8 +166,8 @@ const LayersTree = ({
                                     ...(filterText && { sortable: false }),
                                     ...(nodeType === nodeTypes.GROUP && filterText && { expanded: true }),
                                     ...(nodeType === nodeTypes.GROUP && currentNode?.id === defaultGroupId && { sortable: false }),
-                                    ...(nodeType === nodeTypes.GROUP && loopGroupCondition(currentNode, childNode => childNode.loadingError === 'Error') && { error: true }),
-                                    ...(nodeType === nodeTypes.GROUP && loopGroupCondition(currentNode, childNode => childNode.loading ) && { loading: true })
+                                    ...(nodeType === nodeTypes.GROUP && loopGroupCondition(currentNode, childNode => childNode?.loadingError === 'Error') && { error: true }),
+                                    ...(nodeType === nodeTypes.GROUP && loopGroupCondition(currentNode, childNode => childNode?.loading ) && { loading: true })
                                 };
                             }}
                             getNodeStyle={getNodeStyle}

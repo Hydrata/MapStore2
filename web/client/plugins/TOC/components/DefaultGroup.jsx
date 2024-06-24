@@ -252,9 +252,9 @@ const DefaultGroup = ({
                     </DropNode>
                     {node?.nodes?.map?.((childNode, _index) => cloneElement(children, {
                         ...props,
-                        key: childNode.id,
+                        key: childNode?.id,
                         node: childNode,
-                        parentId: node.id,
+                        parentId: node?.id,
                         index: _index,
                         mutuallyExclusive: node?.nodesMutuallyExclusive,
                         onChange: (value) => {
