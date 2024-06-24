@@ -58,7 +58,10 @@ const initialReorderLayers = (groups, allLayers) => {
                 if (isObject(node)) {
                     return layers.concat(initialReorderLayers([node], allLayers));
                 }
-                return layers.concat(getLayer(node, allLayers));
+                if (node !== undefined && node !== null) {
+                    return layers.concat(getLayer(node, allLayers));
+                }
+                return layers;
             }, [])
         );
     }, []);
@@ -136,13 +139,13 @@ export const getGroupNodes = (node) => {
     if (node && node.nodes) {
         return node.nodes.reduce((a, b) => {
             let nodes = [].concat(a);
-            if (b.nodes) {
+            if (b?.nodes) {
                 nodes = a.concat(getGroupNodes(b));
             }
             if (isString(b)) {
                 return [...nodes, b];
             }
-            return [...nodes, b.id];
+            return [...nodes, b?.id];
         }, []);
     }
     return [];
