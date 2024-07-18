@@ -27,14 +27,16 @@ import {
     getPrintVendorParams,
     resetDefaultPrintingService,
     getDefaultPrintingService,
-    getLegendIconsSize
+    getLegendIconsSize,
+    parseCreditRemovingTagsOrSymbol,
+    getLayersCredits
 } from '../PrintUtils';
 import ConfigUtils from '../ConfigUtils';
 import { KVP1, REST1 } from '../../test-resources/layers/wmts';
 import { poi as TMS110_1 } from '../../test-resources/layers/tms';
 import { BasemapAT, NASAGIBS, NLS_CUSTOM_URL, LINZ_CUSTOM_URL } from '../../test-resources/layers/tileprovider';
 import { setStore } from '../StateUtils';
-import { getGoogleMercatorScales } from '../MapUtils';
+import { getGoogleMercatorScales, getScales } from '../MapUtils';
 
 const layer = {
     url: "http://mygeoserver",
@@ -395,6 +397,17 @@ describe('PrintUtils', () => {
         const specs = getMapfishLayersSpecification([layer], { projection: "EPSG:3857" }, {}, 'legend');
         expect(specs).toExist();
         expect(specs.length).toBe(1);
+        expect(specs[0].classes.length).toBe(1);
+        // legendURL is a GetLegendGraphic request
+        expect(specs[0].classes[0].icons[0].indexOf('GetLegendGraphic') !== -1).toBe(true);
+        // LANGUAGE, if not included, should not be a parameter of the legend URL
+        expect(specs[0].classes[0].icons[0].indexOf('LANGUAGE')).toBe(-1);
+        const specs2 = getMapfishLayersSpecification([layer], { projection: "EPSG:3857", language: 'de' }, {}, 'legend');
+        expect(specs2).toExist();
+        expect(specs2.length).toBe(1);
+        expect(specs2[0].classes.length).toBe(1);
+        // LANGUAGE, if included, should be a parameter of the legend URL
+        expect(specs2[0].classes[0].icons[0].indexOf('LANGUAGE=de')).toBeGreaterThan(0);
     });
     it('toOpenLayers2Style for vector layer wich contains a FeatureCollection using the default style', () => {
         const style = toOpenLayers2Style(vectorWithFtCollInside, null, "FeatureCollection");
@@ -543,17 +556,50 @@ describe('PrintUtils', () => {
             ...testSpec,
             scaleZoom: 3,
             scales: [2000000, 1000000, 500000, 100000, 50000]
+        }, {
+            print: {
+                map: {
+                    useFixedScales: true
+                }
+            }
         });
         expect(printSpec).toExist();
         expect(printSpec.pages[0].scale).toBe(100000);
     });
-    it('getMapfishPrintSpecification with standard scales', () => {
+    it('getMapfishPrintSpecification with standard scales for print map with projection 3857 [google web mercator]', () => {
         const printSpec = getMapfishPrintSpecification({
             ...testSpec,
-            scaleZoom: 3
+            zoom: 3
         });
         expect(printSpec).toExist();
         expect(printSpec.pages[0].scale).toBe(getGoogleMercatorScales(0, 21)[3]);
+    });
+    it('getMapfishPrintSpecification with fixed scales for print map with projection 4326', () => {
+        const projection = 'EPSG:4326';
+        const printSpec = getMapfishPrintSpecification({
+            ...testSpec,
+            projection,
+            scaleZoom: 3,
+            scales: [2000000, 1000000, 500000, 100000, 50000]
+        }, {
+            print: {
+                map: {
+                    useFixedScales: true
+                }
+            }
+        });
+        expect(printSpec).toExist();
+        expect(printSpec.pages[0].scale).toBe(100000);
+    });
+    it('getMapfishPrintSpecification with standard scales for print map with projection 4326', () => {
+        const projection = 'EPSG:4326';
+        const printSpec = getMapfishPrintSpecification({
+            ...testSpec,
+            zoom: 3,
+            projection
+        });
+        expect(printSpec).toExist();
+        expect(printSpec.pages[0].scale).toBe(getScales(projection)[3]);
     });
     it('from rgba to rgb', () => {
         const rgb = rgbaTorgb("rgba(255, 255, 255, 0.1)");
@@ -917,6 +963,56 @@ describe('PrintUtils', () => {
                 expect(validation["map-preview"]).toExist();
                 expect(validation["map-preview"].valid).toBe(false);
                 expect(validation["map-preview"].errors).toEqual(["error1", "error2"]);
+            });
+        });
+        describe('getting credits text', () => {
+            beforeEach(() => {
+                resetDefaultPrintingService();
+            });
+            it("test parseCreditRemovingTagsOrSymbol", () => {
+                const layerObj = {
+                    center: [10, 20],
+                    name: "layer 01",
+                    credits: {
+                        title: 'OSM Simple Light | Rendering <a href="https://www.geo-solutions.it/">GeoSolutions</a> | Data © <a href="http://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="http://www.openstreetmap.org/copyright">ODbL</a>'
+                    }
+                };
+                const parsedCreditTxt = parseCreditRemovingTagsOrSymbol(layerObj.credits.title);
+                expect(parsedCreditTxt).toEqual('OSM Simple Light Rendering GeoSolutions Data © OpenStreetMap contributors, ODbL');
+            });
+            it("test getLayersCredits", () => {
+                const layersArr = [{
+                    center: [10, 20],
+                    name: "layer 01",
+                    credits: {
+                        title: 'OSM Simple Light | Rendering <a href="https://www.geo-solutions.it/">GeoSolutions</a> | Data © <a href="http://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="http://www.openstreetmap.org/copyright">ODbL</a>'
+                    }
+                },
+                {
+                    center: [10, 30],
+                    name: "layer 02",
+                    credits: {
+                        title: 'Attribution layer 02'
+                    }
+                }, {
+                    center: [20, 30],
+                    name: "layer 03"
+                }, {
+                    center: [40, 45],
+                    name: "layer 04",
+                    credits: {
+                        title: ''
+                    }
+                },
+                {
+                    center: [22, 33],
+                    name: "layer 05",
+                    credits: {
+                        title: 'Attribution layer 03 @ | polygon layer'
+                    }
+                }];
+                const reqLayersCreditTxt = getLayersCredits(layersArr);
+                expect(reqLayersCreditTxt).toEqual('OSM Simple Light Rendering GeoSolutions Data © OpenStreetMap contributors, ODbL | Attribution layer 02 | Attribution layer 03 @ polygon layer');
             });
         });
     });
