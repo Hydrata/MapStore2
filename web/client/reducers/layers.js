@@ -60,12 +60,12 @@ const insertNode = (nodes, node, parent, asFirst = false) => {
     if (!parent) {
         return asFirst ? [node, ...nodes] : [...nodes, node];
     }
-    return nodes.filter(n => n != null).map(n => isString(n) ? n : (n.id === parent ? {
+    return nodes.map(n => isString(n) ? n : (n.id === parent ? {
         ...n,
-        nodes: asFirst ? [node, ...(n.nodes || [])] : [...(n.nodes || []), node]
+        nodes: asFirst ? [node, ...n.nodes] : [...n.nodes, node]
     } : {
         ...n,
-        nodes: insertNode(n.nodes || [], node, parent, asFirst)
+        nodes: insertNode(n.nodes, node, parent, asFirst)
     }));
 };
 

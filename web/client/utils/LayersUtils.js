@@ -134,7 +134,7 @@ export const getNode = (nodes, id) => {
 
 export const getGroupNodes = (node) => {
     if (node && node.nodes) {
-        return node.nodes.filter(n => n != null).reduce((a, b) => {
+        return node.nodes.reduce((a, b) => {
             let nodes = [].concat(a);
             if (b.nodes) {
                 nodes = a.concat(getGroupNodes(b));
@@ -504,7 +504,7 @@ export const removeEmptyGroups = (groups) => {
     }, []);
 };
 export const getNotEmptyGroup = (group) => {
-    const nodes = (group.nodes || []).filter(n => n != null).reduce((gNodes, node) => {
+    const nodes = group.nodes.reduce((gNodes, node) => {
         return node.nodes ? gNodes.concat(LayersUtils.getNotEmptyGroup(node)) : gNodes.concat(node);
     }, []);
     return nodes.length > 0 ? Object.assign({}, group, {nodes: nodes}) : [];
@@ -951,7 +951,7 @@ It works for layers too
 **/
 export const deepRemove = (nodes, findValue) => {
     if (nodes && isArray(nodes) && nodes.length > 0) {
-        return nodes.filter((node) => node != null && ((node.id && node.id !== findValue) || (isString(node) && node !== findValue))).map((node) => isObject(node) ? Object.assign({}, node, node.nodes ? {
+        return nodes.filter((node) => (node.id && node.id !== findValue) || (isString(node) && node !== findValue )).map((node) => isObject(node) ? Object.assign({}, node, node.nodes ? {
             nodes: deepRemove(node.nodes, findValue)
         } : {}) : node);
     }
@@ -1155,7 +1155,7 @@ export const getTitle = (title, locale = '') => {
  * @return {object[]} array of nodes (groups and subgroups)
 */
 export const flattenGroups = (groups, idx = 0, wholeGroup = false) => {
-    return groups.filter((group) => group != null && group.nodes).reduce((acc, g) => {
+    return groups.filter((group) => group.nodes).reduce((acc, g) => {
         acc.push(wholeGroup ? g : {label: g.title, value: g.id});
         if (g.nodes.length > 0) {
             return acc.concat(flattenGroups(g.nodes, idx + 1, wholeGroup));
