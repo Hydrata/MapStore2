@@ -535,12 +535,13 @@ export const getDerivedLayersVisibility = (layers = [], groups = []) => {
 export const denormalizeGroups = (allLayers, groups) => {
     const flattenGroups = flattenArrayOfObjects(groups).filter(isObject);
     let getNormalizedGroup = (group, layers) => {
-        const nodes = group?.nodes?.map((node) => {
+        const nodes = (group?.nodes || []).map((node) => {
+            if (node == null) return null;
             if (isObject(node)) {
                 return getNormalizedGroup(node, layers);
             }
-            return layers.find((layer) => layer.id === node);
-        });
+            return layers.find((layer) => layer.id === node) || null;
+        }).filter(n => n != null);
         return {
             ...group,
             nodes,
@@ -548,14 +549,14 @@ export const denormalizeGroups = (allLayers, groups) => {
             visibility: group?.visibility === undefined ? true : group.visibility
         };
     };
-    let normalizedLayers = allLayers.map((layer) => ({
+    let normalizedLayers = allLayers.filter(l => l != null).map((layer) => ({
         ...layer,
         inactive: getInactiveNode(layer?.group || DEFAULT_GROUP_ID, flattenGroups),
         expanded: layer.expanded || false
     }));
     return {
         flat: normalizedLayers,
-        groups: groups.map((group) => getNormalizedGroup(group, normalizedLayers))
+        groups: groups.filter(g => g != null).map((group) => getNormalizedGroup(group, normalizedLayers))
     };
 };
 
