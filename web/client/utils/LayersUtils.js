@@ -54,11 +54,11 @@ export const getWpsUrl = l => l && l.wpsUrl || (l.search && l.search.url) || l.u
 const initialReorderLayers = (groups, allLayers) => {
     return groups.slice(0).reverse().reduce((previous, group) => {
         return previous.concat(
-            group.nodes.slice(0).reverse().reduce((layers, node) => {
+            (group.nodes || []).filter(n => n != null).slice(0).reverse().reduce((layers, node) => {
                 if (isObject(node)) {
                     return layers.concat(initialReorderLayers([node], allLayers));
                 }
-                return layers.concat(getLayer(node, allLayers));
+                return layers.concat(getLayer(node, allLayers) || []);
             }, [])
         );
     }, []);
@@ -1056,8 +1056,12 @@ export const moveNode = (groups, node, groupId, newLayers, foreground = true) =>
             return parent ? tree.concat(parent) : tree;
         }, []).pop();
         if (parentGroup) {
-            group = getNode([group], parentGroup.id).nodes[0];
-            newGroups = deepChange(newGroups, parentGroup.id, 'nodes', foreground ? [group].concat(parentGroup.nodes) : parentGroup.nodes.concat(group));
+            const parentInNewGroup = getNode([group], parentGroup.id);
+            group = parentInNewGroup && parentInNewGroup.nodes && parentInNewGroup.nodes[0]
+                ? parentInNewGroup.nodes[0]
+                : group;
+            const existingNodes = (parentGroup.nodes || []).filter(n => n != null);
+            newGroups = deepChange(newGroups, parentGroup.id, 'nodes', foreground ? [group].concat(existingNodes) : existingNodes.concat(group));
         } else {
             newGroups = [group].concat(newGroups);
         }
