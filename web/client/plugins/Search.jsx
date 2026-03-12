@@ -376,7 +376,7 @@ const SearchPlugin = connect((state) => ({
             key="searchBar"
             {...this.props}
             searchOptions={this.getCurrentServices()}
-            placeholder={this.getServiceOverrides("placeholder")}
+            placeholder={this.getServiceOverrides("placeholder") || this.props.placeholder}
             placeholderMsgId={this.getServiceOverrides("placeholderMsgId")}
             defaultZoomLevel={this.props.coordinateSearchOptions?.maxZoomLevel || 12}
         />);
@@ -387,7 +387,7 @@ const SearchPlugin = connect((state) => ({
                         <ToggleButton/>
                         {this.props.enabled ? search : null}
                     </>
-                ) : (search)
+                ) : (this.props.withToggle && !this.props.enabled ? null : search)
         );
     };
 
