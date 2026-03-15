@@ -135,7 +135,7 @@ module.exports = (...args) => mapArgumentsToObject(args, ({
         })
     },
     output: {
-        hashFunction: "xxhash64", // needed for newer version of node (> version 16)
+        hashFunction: "sha256", // needed for newer version of node (> version 16)
         path: paths.dist,
         publicPath,
         filename: "[name].js",
