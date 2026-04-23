@@ -142,8 +142,28 @@ export const searchItemSelected = (action$) =>
                     // check if the service has been configured to start a GetFeatureInfo request based on the item selected
                     // if so, then do it with a point inside the geometry
                     let bbox = item.bbox || item.properties.bbox || toBbox(item);
+                    const [minx, miny, maxx, maxy] = bbox || [];
+                    const crs = "EPSG:4326";
+                    // Reject malformed bboxes: non-finite, or out-of-range for the declared CRS
+                    // (e.g. UTM metres mis-labelled as EPSG:4326). Without this guard the map
+                    // silently zooms to the globe instead of to the clicked search result.
+                    const isFinite4 = [minx, miny, maxx, maxy].every(Number.isFinite);
+                    const inRange4326 =
+                        crs === "EPSG:4326"
+                            ? Math.abs(minx) <= 180 && Math.abs(maxx) <= 180 &&
+                              Math.abs(miny) <= 90 && Math.abs(maxy) <= 90
+                            : true;
+                    if (!bbox || !isFinite4 || !inRange4326) {
+                        /* eslint-disable no-console */
+                        console.error(
+                            "[search] refusing to zoom: bbox outside declared CRS range",
+                            { crs, bbox, itemId: item && (item.id || (item.properties && item.properties.id)) }
+                        );
+                        /* eslint-enable no-console */
+                        return Rx.Observable.of(addMarker(item));
+                    }
                     let actions = [
-                        zoomToExtent([bbox[0], bbox[1], bbox[2], bbox[3]], "EPSG:4326", item.__SERVICE__ && item.__SERVICE__.options && item.__SERVICE__.options.maxZoomLevel || 21),
+                        zoomToExtent([minx, miny, maxx, maxy], crs, item.__SERVICE__ && item.__SERVICE__.options && item.__SERVICE__.options.maxZoomLevel || 21),
                         addMarker(item)
                     ];
                     return actions;

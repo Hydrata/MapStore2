@@ -146,6 +146,131 @@ describe('search Epics', () => {
         expect(actions[3].type).toBe(TEXT_SEARCH_ADD_MARKER);
     });
 
+    // TASK-480: defensive bbox validation in searchItemSelected
+    // Malformed bboxes (non-finite, or out-of-range for EPSG:4326, e.g. UTM metres
+    // mis-labelled as lat/lon) must NOT reach zoomToExtent — that silently zooms the
+    // map to the world origin. Marker still fires.
+    it('searchItemSelected dispatches zoomToExtent for a valid 4326 bbox', () => {
+        let action = selectSearchItem({
+            "type": "Feature",
+            "bbox": [10, 40, 11, 41],
+            "geometry": {
+                "type": "Point",
+                "coordinates": [10.5, 40.5]
+            },
+            "properties": {
+                "name": "Valid 4326"
+            }
+        }, {
+            size: { width: 200, height: 200 },
+            projection: "EPSG:4326"
+        });
+
+        store.dispatch(action);
+
+        let actions = store.getActions();
+        const types = actions.map(a => a.type);
+        expect(types.indexOf(ZOOM_TO_EXTENT)).toNotBe(-1);
+        expect(types.indexOf(TEXT_SEARCH_ADD_MARKER)).toNotBe(-1);
+        const zoomAction = actions.find(a => a.type === ZOOM_TO_EXTENT);
+        expect(zoomAction.extent).toEqual([10, 40, 11, 41]);
+    });
+
+    it('searchItemSelected skips zoom for out-of-range bbox (UTM metres labelled 4326)', () => {
+        // Silence the expected console.error
+        const origError = console.error;
+        let captured = null;
+        console.error = (...args) => { captured = args; };
+        try {
+            let action = selectSearchItem({
+                "type": "Feature",
+                // UTM Zone 16N metres — looks like a point but is outside [-180,180] / [-90,90]
+                "bbox": [335916, 4407246, 335916, 4407246],
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [335916, 4407246]
+                },
+                "properties": {
+                    "name": "Bad UTM bbox"
+                }
+            }, {
+                size: { width: 200, height: 200 },
+                projection: "EPSG:4326"
+            });
+
+            store.dispatch(action);
+
+            let actions = store.getActions();
+            const types = actions.map(a => a.type);
+            expect(types.indexOf(ZOOM_TO_EXTENT)).toBe(-1);
+            expect(types.indexOf(TEXT_SEARCH_ADD_MARKER)).toNotBe(-1);
+            expect(captured).toNotBe(null);
+            expect(captured[0]).toContain("refusing to zoom");
+        } finally {
+            console.error = origError;
+        }
+    });
+
+    it('searchItemSelected skips zoom for NaN bbox', () => {
+        const origError = console.error;
+        console.error = () => {};
+        try {
+            let action = selectSearchItem({
+                "type": "Feature",
+                "bbox": [NaN, 40, 41, NaN],
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [10, 40]
+                },
+                "properties": {
+                    "name": "NaN bbox"
+                }
+            }, {
+                size: { width: 200, height: 200 },
+                projection: "EPSG:4326"
+            });
+
+            store.dispatch(action);
+
+            let actions = store.getActions();
+            const types = actions.map(a => a.type);
+            expect(types.indexOf(ZOOM_TO_EXTENT)).toBe(-1);
+            expect(types.indexOf(TEXT_SEARCH_ADD_MARKER)).toNotBe(-1);
+        } finally {
+            console.error = origError;
+        }
+    });
+
+    it('searchItemSelected skips zoom for Infinity bbox', () => {
+        const origError = console.error;
+        console.error = () => {};
+        try {
+            let action = selectSearchItem({
+                "type": "Feature",
+                "bbox": [-Infinity, -Infinity, Infinity, Infinity],
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": [0, 0]
+                },
+                "properties": {
+                    "name": "Infinity bbox"
+                }
+            }, {
+                size: { width: 200, height: 200 },
+                projection: "EPSG:4326"
+            });
+
+            store.dispatch(action);
+
+            let actions = store.getActions();
+            const types = actions.map(a => a.type);
+            expect(types.indexOf(ZOOM_TO_EXTENT)).toBe(-1);
+            expect(types.indexOf(TEXT_SEARCH_ADD_MARKER)).toNotBe(-1);
+        } finally {
+            console.error = origError;
+        }
+    });
+
     it('produces the selectSearchItem epic with maxZoomLevel', () => {
         let action = selectSearchItem({
             "type": "Feature",
