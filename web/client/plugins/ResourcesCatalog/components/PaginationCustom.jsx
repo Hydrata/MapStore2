@@ -24,6 +24,9 @@ function PaginationCustom({
             setPage(activePage);
         }
     }, [activePage]);
+    if (items <= 1) {
+        return null;
+    }
     return (
         <Pagination
             className="custom"
