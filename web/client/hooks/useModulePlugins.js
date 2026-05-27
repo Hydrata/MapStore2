@@ -44,6 +44,9 @@ function useModulePlugins({
 }) {
     const [plugins, setPlugins] = useState(storedPlugins);
     const [pending, setPending] = useState(true);
+    // TASK-1294: surface chunk-load / dynamic-import failures so the Viewer
+    // can show a reload affordance instead of a silent blank screen.
+    const [pluginLoadError, setPluginLoadError] = useState(false);
     const normalizedEntries = useMemo(
         () => Object.keys(pluginsEntries).reduce((prev, current) => ({...prev, [normalizeName(current)]: pluginsEntries[current]}), {}),
         [pluginsEntries]
@@ -116,6 +119,9 @@ function useModulePlugins({
                 .catch(() => {
                     setPlugins({});
                     setPending(false);
+                    // TASK-1294: set error flag so callers can show a retry
+                    // affordance instead of leaving the user on a blank screen.
+                    setPluginLoadError(true);
                 });
         } else {
             setPlugins(storedPlugins);
@@ -142,7 +148,7 @@ function useModulePlugins({
         }
     }, [pluginsString]);
 
-    return { plugins, pending };
+    return { plugins, pending, pluginLoadError };
 }
 
 export default useModulePlugins;
