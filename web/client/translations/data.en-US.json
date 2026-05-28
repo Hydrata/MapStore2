@@ -4442,6 +4442,10 @@
         "noContentYetTitle": "No user groups",
         "noContentYetContent": "There are no user groups. Click on \"New Group\" to create one"
       },
+      "my-resourcesSection": {
+        "noContentYetTitle": "No resources yet",
+        "noContentYetContent": "Items you create or import will appear here."
+      },
       "mapsFilter": "Maps",
       "dashboardsFilter": "Dashboards",
       "geostoriesFilter": "Geostories",
