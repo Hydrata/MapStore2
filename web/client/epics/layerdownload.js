@@ -96,7 +96,13 @@ const hasOutputFormat = (data) => {
     const operation = get(data, "WFS_Capabilities.OperationsMetadata.Operation");
     const getFeature = find(operation, function(o) { return o.name === 'GetFeature'; });
     const parameter = get(getFeature, "Parameter");
-    const outputFormatValue = find(parameter, function(o) { return o.name === 'outputFormat'; }).Value;
+    // TASK-1405 (ISSUE 6) — guard against undefined from find() when the WFS
+    // GetCapabilities response does not contain an outputFormat parameter block
+    // (e.g. a terrain WMS/WCS layer that has no WFS endpoint). Without this,
+    // `.Value` on undefined throws "Cannot read properties of undefined" which
+    // tears down the observable chain in fetchFormatsWFSDownload.
+    const outputFormatParam = find(parameter, function(o) { return o.name === 'outputFormat'; });
+    const outputFormatValue = outputFormatParam ? outputFormatParam.Value : [];
     const pickedObj = pick(DOWNLOAD_FORMATS_LOOKUP, outputFormatValue);
     return toPairs(pickedObj).map(([prop, value]) => ({ name: prop, label: value }));
 };
@@ -195,9 +201,16 @@ export const openDownloadTool = (action$) =>
 export const fetchFormatsWFSDownload = (action$) =>
     action$.ofType(FORMAT_OPTIONS_FETCH)
         .switchMap( action => {
+            // TASK-1405 (ISSUE 6) — add .catch() to prevent an unhandled
+            // observable error from tearing down the chain when the WFS
+            // capabilities request fails (e.g. terrain layers have no WFS
+            // endpoint — the capabilities URL returns a non-WFS response).
             return getLayerWFSCapabilities(action)
                 .map((data) => {
                     return updateFormats(hasOutputFormat(data));
+                })
+                .catch(() => {
+                    return Rx.Observable.of(updateFormats([]));
                 });
         });
 export const startFeatureExportDownload = (action$, store) =>
