@@ -428,6 +428,43 @@ describe('Openlayers layer', () => {
         expect(layer.layer.getSource().format_.constructor.name).toBe('TopoJSON');
     });
 
+    it('test wms vector tile source requests a full per-tile GetMap URL (not the bare endpoint)', () => {
+        // Regression: OL UrlTile processes `urls`/`url` AFTER `tileUrlFunction`, so
+        // spreading `urls` into the VectorTileSource clobbered the delegating
+        // tileUrlFunction with a template fn that emitted the bare WMS endpoint
+        // (no BBOX/WIDTH/HEIGHT) -> GeoServer OWS exception -> blank vector tile layer.
+        const options = {
+            "type": 'wms',
+            "visibility": true,
+            "name": 'osm:vector_tile',
+            "group": 'Vector',
+            "url": "http://sample.server/geoserver/wms",
+            "singleTile": true,
+            format: 'application/vnd.mapbox-vector-tile'
+        };
+        const layer = ReactDOM.render(<OpenlayersLayer
+            type="wms"
+            options={options}
+            map={map} />, document.getElementById("container"));
+        expect(layer).toBeTruthy();
+        expect(layer.layer.constructor.name).toBe('VectorTileLayer');
+        const source = layer.layer.getSource();
+        const view = map.getView();
+        const projection = view.getProjection();
+        const tileGrid = source.getTileGrid();
+        const z = tileGrid.getZForResolution(view.getResolution());
+        const tileCoord = tileGrid.getTileCoordForCoordAndZ(view.getCenter(), z);
+        const url = source.getTileUrlFunction()(tileCoord, 1, projection);
+        expect(url).toBeTruthy();
+        // must be a real GetMap request, not just the endpoint
+        expect(url).toContain('REQUEST=GetMap');
+        expect(url).toContain('BBOX=');
+        expect(url).toContain('WIDTH=');
+        expect(url).toContain('HEIGHT=');
+        expect(url).toContain('FORMAT=' + encodeURIComponent('application/vnd.mapbox-vector-tile'));
+        expect(url).toContain('LAYERS=' + encodeURIComponent('osm:vector_tile'));
+    });
+
     it('test wms vector formats styles are applied', (done) => {
         const options = {
             "type": 'wms',

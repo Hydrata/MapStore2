@@ -147,10 +147,21 @@ const createLayer = (options, map, mapId) => {
     };
     let layer;
     if (vectorFormat) {
+        // NOTE: do NOT spread `urls` into the VectorTileSource. OL's UrlTile
+        // constructor processes `urls`/`url` AFTER `tileUrlFunction`, so a present
+        // `urls` option calls setUrls()->setTileUrlFunction(createFromTemplates(...))
+        // and CLOBBERS the explicit delegating tileUrlFunction below. The template
+        // url has no {x}/{y}/{z} placeholders (it is the bare WMS endpoint), so OL
+        // would request `<base>/ows` with no GetMap params -> GeoServer returns an
+        // OWS ExceptionReport -> zero features -> the vector tile layer paints
+        // nothing. Pull `urls` out of sourceOptions for the vector path so the
+        // tileUrlFunction (which delegates to the TileWMS source and builds the
+        // full per-tile GetMap URL) survives.
+        const { urls: _unusedVtUrls, ...vectorSourceOptions } = sourceOptions;
         layer = new VectorTileLayer({
             ...layerConfig,
             source: new VectorTileSource({
-                ...sourceOptions,
+                ...vectorSourceOptions,
                 format: new OL_VECTOR_FORMATS[options.format]({
                     layerName: '_layer_'
                 }),
