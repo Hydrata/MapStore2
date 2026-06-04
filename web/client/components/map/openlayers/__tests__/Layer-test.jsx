@@ -463,6 +463,25 @@ describe('Openlayers layer', () => {
         expect(url).toContain('HEIGHT=');
         expect(url).toContain('FORMAT=' + encodeURIComponent('application/vnd.mapbox-vector-tile'));
         expect(url).toContain('LAYERS=' + encodeURIComponent('osm:vector_tile'));
+        // Regression: the raster `tileLoadFunction` (its body calls image.getImage())
+        // must NOT survive into the VectorTileSource, or OL invokes it per MVT tile
+        // and throws `TypeError: tile.getImage is not a function` -> blank layer.
+        // OL's default vector loader (which the source must fall back to) does not
+        // call getImage, so invoking it with a tile lacking getImage must not throw
+        // that TypeError.
+        const tileLoadFunction = source.getTileLoadFunction();
+        expect(tileLoadFunction).toBeTruthy();
+        let threwGetImage = false;
+        try {
+            // fake tile/src deliberately omit getImage; the raster loader would die here
+            tileLoadFunction({ setLoader: () => {} }, url);
+        } catch (e) {
+            if (/getImage is not a function/.test(e.message)) {
+                threwGetImage = true;
+            }
+            // any other throw (e.g. network) is irrelevant to this regression
+        }
+        expect(threwGetImage).toBe(false);
     });
 
     it('test wms vector formats styles are applied', (done) => {

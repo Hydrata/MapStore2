@@ -157,7 +157,14 @@ const createLayer = (options, map, mapId) => {
         // nothing. Pull `urls` out of sourceOptions for the vector path so the
         // tileUrlFunction (which delegates to the TileWMS source and builds the
         // full per-tile GetMap URL) survives.
-        const { urls: _unusedVtUrls, ...vectorSourceOptions } = sourceOptions;
+        // Also do NOT spread `tileLoadFunction` into the VectorTileSource. The one
+        // built above is a RASTER image loader (loadFunction's body calls
+        // image.getImage()), which OL would invoke per MVT tile -> it throws
+        // `TypeError: tile.getImage is not a function` synchronously BEFORE any
+        // fetch -> the vector tiles never load and the layer paints nothing.
+        // Pulling it out lets VectorTileSource fall back to OL's default vector
+        // (MVT) loader, which fetches via the correct tileUrlFunction above.
+        const { urls: _unusedVtUrls, tileLoadFunction: _unusedVtTLF, ...vectorSourceOptions } = sourceOptions;
         layer = new VectorTileLayer({
             ...layerConfig,
             source: new VectorTileSource({
