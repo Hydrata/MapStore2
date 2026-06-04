@@ -382,7 +382,13 @@ class OpenlayersMap extends React.Component {
     getIntersectedFeatures = (map, pixel) => {
         let groupIntersectedFeatures = {};
         map.forEachFeatureAtPixel(pixel, (feature, layer) => {
-            if (layer?.get('msId')) {
+            // ol/render/Feature instances (from MVT / vector-tile layers) are not full
+            // ol/Feature objects: they lack the ol/Object API (e.g. hasProperties) that
+            // GeoJSON.writeFeatureObject relies on, so serializing one throws. Because
+            // getIntersectedFeatures runs synchronously inside the singleclick handler
+            // *before* onClick is dispatched, that throw silently aborts map-click identify
+            // entirely (and floods the console on pointermove). Skip non-serializable features.
+            if (layer?.get('msId') && typeof feature?.hasProperties === 'function') {
                 const geoJSONFeature = geoJSONFormat.writeFeatureObject(feature, {
                     featureProjection: this.props.projection,
                     dataProjection: 'EPSG:4326'

@@ -310,6 +310,43 @@ describe('OpenlayersMap', () => {
             done();
         }, 500);
     });
+    it('click on a render feature (MVT) does not abort the click handler', (done) => {
+        // Regression: ol/render/Feature (from MVT / vector-tile layers) has no hasProperties,
+        // so GeoJSON.writeFeatureObject throws on it. getIntersectedFeatures must skip such
+        // features rather than let the throw abort the synchronous singleclick handler before
+        // onClick is dispatched (which silently broke map-click identify on MVT layers).
+        const testHandlers = {
+            handler: () => {}
+        };
+        const spy = expect.spyOn(testHandlers, 'handler');
+        const comp = (<OpenlayersMap projection="EPSG:4326" center={{y: 43.9, x: 10.3}} zoom={11}
+            onClick={testHandlers.handler}/>);
+        const map = ReactDOM.render(comp, document.getElementById("map"));
+        expect(map).toBeTruthy();
+        setTimeout(() => {
+            // RenderFeature-like hit feature: has getGeometry/getProperties/getType but NO hasProperties
+            const renderFeature = {
+                getGeometry: () => ({ getType: () => 'Polygon', getFirstCoordinate: () => [0.5, 0.5] }),
+                getProperties: () => ({ id: 1 }),
+                getType: () => 'Polygon'
+            };
+            const layer = { get: (key) => key === 'msId' ? 'mvtLayer' : false };
+            map.map.forEachFeatureAtPixel = (pixel, callback) => {
+                callback.call(null, renderFeature, layer);
+            };
+            map.map.dispatchEvent({
+                type: 'singleclick',
+                coordinate: [0.5, 0.5],
+                pixel: map.map.getPixelFromCoordinate([0.5, 0.5]),
+                originalEvent: {}
+            });
+            // onClick still fires (the RenderFeature serialization throw no longer aborts the handler)
+            expect(spy.calls.length).toEqual(1);
+            // and the non-serializable RenderFeature is excluded from intersectedFeatures
+            expect(spy.calls[0].arguments[0].intersectedFeatures).toEqual([]);
+            done();
+        }, 500);
+    });
     it('disable single click', (done) => {
         const testHandlers = {
             handler: () => {}
