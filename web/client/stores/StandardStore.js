@@ -27,6 +27,10 @@ const appStore = (
         },
         appReducers = {},
         appEpics = {},
+        // Extra Redux middlewares to prepend ahead of the epic/router middlewares
+        // (generic app-supplied hook; see main.jsx). Default [] keeps every
+        // existing caller's behaviour byte-identical.
+        appMiddlewares = [],
         rootReducerFunc = ({ state, action, allReducers }) => allReducers(state, action)
     },
     plugins = {},
@@ -82,7 +86,7 @@ const appStore = (
         }
     }
 
-    let middlewares = [epicMiddleware];
+    let middlewares = [...appMiddlewares, epicMiddleware];
     if (!storeOpts.noRouter) {
         // Build the middleware for intercepting and dispatching navigation actions
         const reduxRouterMiddleware = routerMiddleware(history);

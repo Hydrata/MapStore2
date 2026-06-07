@@ -38,6 +38,13 @@ const main = (config = {}, Component) => {
             },
             appReducers = {},
             appEpics = {},
+            // Optional extra Redux middlewares the app wants in the applyMiddleware
+            // chain (e.g. an analytics/session-replay middleware). Generic — not
+            // tied to any specific consumer. Prepended ahead of the epic/router
+            // middlewares so they observe every dispatched action, including those
+            // re-dispatched by redux-observable epics. (Hydrata: @openreplay/
+            // tracker-redux, epic 1511 W3.)
+            appMiddlewares = [],
             rootReducerFunc
         } = config;
 
@@ -45,6 +52,7 @@ const main = (config = {}, Component) => {
             initialState,
             appReducers,
             appEpics,
+            appMiddlewares,
             rootReducerFunc
         });
 
