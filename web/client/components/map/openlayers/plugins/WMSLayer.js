@@ -218,9 +218,17 @@ Layers.registerType('wms', {
             return createLayer(newOptions, map);
         }
         let needsRefresh = false;
+        // Hydrata fork divergence #3 — TASK-1607 (2026-06-10): style-only restyle.
+        // Upstream update() set needsRefresh=true after applyStyle, triggering
+        // vectorSource.clear()+refresh() on every vectorStyle change (e.g. BMP filter
+        // toggles in epicsVectorDraw.js). For OL 7.4.0, applyStyle/setStyle restyles
+        // CACHED vector tiles with zero network — needsRefresh must NOT be set here.
+        // The params/_v_ diff at ~:278 (BmpFormContainer.js:308-311 path) is unaffected
+        // and MUST keep triggering clear()+refresh().
+        // Regression test: client/js/components/__tests__/WMSLayerVectorStyleRestyle-test.jsx
         if (newIsVector && newOptions.vectorStyle && !isEqual(newOptions.vectorStyle, oldOptions.vectorStyle || {})) {
             applyStyle(newOptions.vectorStyle, layer, map);
-            needsRefresh = true;
+            // NOTE: intentionally no needsRefresh=true — restyle-in-place, no network
         }
 
         const wmsSource = layer.get('wmsSource') || layer.getSource();
