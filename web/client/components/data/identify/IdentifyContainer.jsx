@@ -73,7 +73,11 @@ export default props => {
         disableCoordinatesRow,
         disableInfoAlert,
         onInitPlugin = () => {},
-        pluginCfg
+        pluginCfg,
+        // Hydrata epic 1969 W2-corrective-4: ANUGA defers this dock while it aggregates a
+        // per-click cross-layer GetFeatureInfo burst. Default false => byte-identical to
+        // upstream on every non-ANUGA map / app where the prop is never supplied.
+        anugaAggregating = false
     } = props;
     const latlng = point && point.latlng || null;
 
@@ -112,9 +116,9 @@ export default props => {
         <ResponsivePanel
             containerStyle={dockStyle}
             containerId="identify-container"
-            containerClassName={enabled && requests.length !== 0 ? "identify-active" : ""}
+            containerClassName={enabled && requests.length !== 0 && !anugaAggregating ? "identify-active" : ""}
             glyph="map-marker"
-            open={enabled && requests.length !== 0}
+            open={enabled && requests.length !== 0 && !anugaAggregating}
             size={size}
             fluid={fluid}
             position={position}

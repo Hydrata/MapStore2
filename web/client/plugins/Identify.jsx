@@ -96,7 +96,11 @@ const selector = createStructuredSelector({
     showEmptyMessageGFI: state => showEmptyMessageGFISelector(state),
     isEditingAllowed: isEditingAllowedSelector,
     isCesium,
-    floatingIdentifyEnabled: (state) => isMouseMoveIdentifyActiveSelector(state)
+    floatingIdentifyEnabled: (state) => isMouseMoveIdentifyActiveSelector(state),
+    // Hydrata epic 1969 W2-corrective-4 — null-guarded: falsy unless the ANUGA
+    // clickDisambiguation slice is mounted AND mid-aggregation, so this is a no-op on
+    // every non-ANUGA map and every other MapStore-derived app (state.anuga undefined).
+    anugaAggregating: (state) => !!(state.anuga && state.anuga.clickDisambiguation && state.anuga.clickDisambiguation.aggregating)
 });
 // result panel
 
