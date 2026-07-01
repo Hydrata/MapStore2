@@ -33,6 +33,32 @@ describe("test IdentifyContainer", () => {
         expect(sidePanel.length).toBe(1);
     });
 
+    // Hydrata epic 1969 W2-corrective-4 — the new `anugaAggregating` prop must defer the
+    // dock even when enabled && requests.length !== 0 (so ANUGA can suppress the default
+    // Identify dock during its per-click GFI aggregation window), and must be a no-op
+    // (dock open) when absent/false. We assert the FUNCTIONAL gate: the `open` prop drives
+    // DockPanel `{open && children}` (DockPanel.jsx:82), so when deferred the viewer
+    // (which renders the accumulated GFI responses — the actual "flash" content) is NOT
+    // rendered at all. The cosmetic `identify-active` className (line ~119) is checked too,
+    // but the children assertion is the load-bearing one: it would fail if the `open=`
+    // gate (line ~121) were reverted while the className kept !anugaAggregating.
+    it('anugaAggregating defers the dock open gate; absent/false leaves it open', () => {
+        // a custom viewer that renders ONLY when the dock is open ({open && children})
+        const Viewer = ({ responses }) => <div id="c4-gfi-content">{(responses || []).length}</div>;
+        const base = { enabled: true, requests: [{}], responses: [{}], viewer: Viewer };
+        // absent -> dock open -> GFI content rendered (upstream-identical behaviour)
+        ReactDOM.render(<IdentifyContainer {...base} />, document.getElementById("container"));
+        expect(document.getElementById('c4-gfi-content')).toExist();
+        expect(document.querySelector('#identify-container.identify-active')).toExist();
+        // true -> dock deferred -> GFI content NOT rendered (the flash is suppressed)
+        ReactDOM.render(<IdentifyContainer {...base} anugaAggregating />, document.getElementById("container"));
+        expect(document.getElementById('c4-gfi-content')).toNotExist();
+        expect(document.querySelector('#identify-container.identify-active')).toNotExist();
+        // explicit false -> dock open again -> GFI content rendered
+        ReactDOM.render(<IdentifyContainer {...base} anugaAggregating={false} />, document.getElementById("container"));
+        expect(document.getElementById('c4-gfi-content')).toExist();
+    });
+
     it('test rendering as modal', () => {
         ReactDOM.render(<IdentifyContainer enabled requests={[{}]} dock={false}/>, document.getElementById("container"));
         const resizableModal = document.getElementsByClassName('ms-resizable-modal');
