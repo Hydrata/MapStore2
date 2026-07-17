@@ -1,0 +1,47 @@
+# CODEOWNERS — TASK-2297 fleet CI enforcement.
+#
+# PREPARED CONTENT for Hydrata/MapStore2 (the gmc submodule fork). This file
+# is NOT committed by any agent into the submodule — per the epic's hard
+# invariant, no agent edits the MapStore2 submodule or bumps the gmc
+# gitlink. The OPERATOR applies this content directly in the Hydrata/
+# MapStore2 repo at .github/CODEOWNERS (see
+# docs/fleet-enforcement/OPERATOR-CHECKLIST.md, step "Apply MapStore2
+# CODEOWNERS").
+#
+# Every path below is on the fleet's protected-path list: a change here can
+# redefine what a "required check" tests, or silently no-op it, without the
+# PR looking suspicious. The org ruleset's "Require review from Code Owners"
+# toggle means a PR touching any of these paths cannot merge without an
+# approving review from the listed owner — deliberately the HUMAN account,
+# never hydrata-ci-bot.
+#
+# NO branch-wide minimum-approval count is set anywhere in the ruleset — a
+# green PR touching NONE of the paths below needs zero human approvals and
+# auto-merges. Only PRs touching a path below require the human.
+#
+# MapStore2's default branch is `master`; Hydrata rides a `5.x` fork branch
+# for the gmc-consumed lineage (see docs/fleet-enforcement/rulesets/
+# org-primary/MapStore2.json — targets refs/heads/master, MapStore2's actual
+# default; confirm at apply-time which branch the fork's CI + this epic's
+# protection should actually target if that differs from upstream's
+# convention).
+#
+# Self-guard (last line): this file is on its own protected list. An agent
+# PR cannot repoint CODEOWNERS away from the human to remove the guard.
+
+# Whole .github/ tree: workflows (CI.yml, build.yml, release automation),
+# CODEOWNERS itself.
+/.github/**                          @davekennewell
+
+# JS test tooling — package.json's scripts define what "npm test"/CI's
+# "Unit Tests" step actually runs; karma configs define the test runner.
+/package.json                        @davekennewell
+/karma.conf*.js                      @davekennewell
+/build/karma.conf*.js                @davekennewell
+/project/standard/static/karma.conf*.js  @davekennewell
+
+# Java/Maven backend build+test definition (test-back-end CI job).
+/pom.xml                             @davekennewell
+
+# Self-guard — must stay the human, always, or the guard removes itself.
+/.github/CODEOWNERS                  @davekennewell
