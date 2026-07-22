@@ -28,7 +28,7 @@ import { getCapabilitiesUrl, getLayerTitleTranslations, removeWorkspace } from '
 import { isArray, head } from 'lodash';
 
 export const getUpdates = (updates, options) => {
-    return Object.keys(options).filter((opt) => options[opt]).reduce((previous, current) => {
+    return Object.keys(options || {}).filter((opt) => options[opt]).reduce((previous, current) => {
         return Object.assign(previous, {
             [current]: updates[current]
         });
@@ -46,7 +46,11 @@ export const refresh = action$ =>
     action$.ofType(REFRESH_LAYERS)
         .debounce(({debounceTime = 500} = {}) => Rx.Observable.timer(debounceTime) )
         .switchMap(action => {
-            return Rx.Observable.from(
+            // Hydrata TASK-2382: defer() converts a synchronous throw in this
+            // projection (e.g. bad action.layers) into a stream error the
+            // .catch below can absorb — otherwise it propagates to the outer
+            // stream and terminates the root epic.
+            return Rx.Observable.defer(() => Rx.Observable.from(
                 action.layers.map((layer) =>
                     Rx.Observable.forkJoin(
                         Api.getCapabilities(getCapabilitiesUrl(layer))
@@ -89,7 +93,24 @@ export const refresh = action$ =>
                         dimensions: layer.dimensions
                     }, action.options))]);
                 })
-                .mergeAll();
+                .mergeAll())
+                .catch((e) => {
+                    // Hydrata TASK-2382: an uncaught error here terminates the
+                    // ROOT epic (redux-observable 0.19) — every epic in the app
+                    // silently dead until reload. Surface loudly and recover.
+                    // eslint-disable-next-line no-console
+                    console.error('refresh(layers) epic error — recovered, root epic kept alive:', e);
+                    // Emit the wrapper shape the LAYERS_REFRESH_ERROR reducer
+                    // contracts on ({layer: <id>, fullLayer: <layer>} — see the
+                    // per-layer path above): raw layer objects would make the
+                    // reducer throw on err.fullLayer.title inside
+                    // store.dispatch, re-killing the root epic from the
+                    // recovery action itself.
+                    return Rx.Observable.of(layersRefreshError(
+                        (isArray(action.layers) ? action.layers : []).map((l) => ({ layer: l && l.id, fullLayer: l || {} })),
+                        e && e.message
+                    ));
+                });
         });
 
 /**
