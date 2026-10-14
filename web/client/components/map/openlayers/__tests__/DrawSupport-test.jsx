@@ -2332,6 +2332,19 @@ describe('Test DrawSupport', () => {
 
         done();
     });
+    it('options.noVertexInsert: the modify interaction never inserts a vertex', () => {
+        const line = {type: 'Feature', geometry: {type: 'LineString', coordinates: [[13, 43], [14, 43]]}, properties: {}};
+        const edit = (options) => {
+            renderDrawSupport();
+            return renderDrawSupport({
+                drawStatus: "drawOrEdit", drawMethod: "LineString", features: [line],
+                options: {drawEnabled: false, editEnabled: true, featureProjection: "EPSG:4326", ...options}
+            });
+        };
+        expect(edit({noVertexInsert: true}).modifyInteraction.insertVertexCondition_({})).toBe(false);
+        expect(edit({}).modifyInteraction.insertVertexCondition_({})).toBe(true);
+    });
+
     it('test modifyInteraction of Circle with geodesic', (done) => {
         let support = renderDrawSupport();
         support = renderDrawSupport({
