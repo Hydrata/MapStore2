@@ -41,7 +41,7 @@ import GeometryCollection from 'ol/geom/GeometryCollection';
 import {Style, Stroke, Fill, Text} from 'ol/style';
 import CircleStyle from 'ol/style/Circle';
 import Collection from 'ol/Collection';
-import {always, primaryAction, altKeyOnly} from 'ol/events/condition';
+import {always, never, primaryAction, altKeyOnly} from 'ol/events/condition';
 import DoubleClickZoom from 'ol/interaction/DoubleClickZoom';
 import Translate from 'ol/interaction/Translate';
 import Modify from 'ol/interaction/Modify';
@@ -1493,7 +1493,11 @@ export default class DrawSupport extends React.Component {
             features: this.modifyFeatureColl,
             condition: (e) => {
                 return primaryAction(e) && !altKeyOnly(e);
-            }
+            },
+            // options.noVertexInsert: the edit handles move existing vertices
+            // only — a drag on a segment never inserts a new vertex (e.g. a
+            // two-point line that must stay two points).
+            ...(props?.options?.noVertexInsert ? {insertVertexCondition: never} : {})
         });
 
         this.modifyInteraction.on('modifyend', (e) => {
